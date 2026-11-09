@@ -10,7 +10,7 @@ An independent learning website for the Unit 4 Reading passage **The World of Pl
 - No paid services, advertising, analytics, or third-party AI features.
 
 ## Architecture
-- Static frontend (not yet restored from the prepared ZIP).
+- A responsive Arabic registration/login shell in `public/`; the original lesson interface still needs to be restored from the prepared ZIP.
 - Cloudflare Worker API in `src/worker.js`.
 - Cloudflare D1 schema in `migrations/0001_initial.sql`.
 - Passwords are stored as salted PBKDF2-HMAC-SHA-256 hashes.
@@ -27,7 +27,8 @@ An independent learning website for the Unit 4 Reading passage **The World of Pl
 No Cloudflare resource has been created or deployed by this repository setup.
 
 ## Verification status
-- Worker JavaScript syntax check: passed locally.
+- Worker and account UI JavaScript syntax checks: passed locally.
+- Six structural security checks are included in `tests/validate.mjs`.
 - D1 migration schema creation: passed locally with SQLite.
 - Browser, live D1, Cloudflare deployment, audio, and iPhone tests: not run.
 - This project is not ready for school use or production.
