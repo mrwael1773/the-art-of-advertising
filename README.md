@@ -17,7 +17,8 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
 - State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
-- Progress is scoped to the authenticated account.
+- Progress is scoped to the authenticated account and accepts only the expected bounded quiz record for this lesson.
+- Expired sessions and stale rate-limit records are cleaned during authentication requests.
 
 ## Known source limitation
 The earlier prepared ZIP is present in the user's Library, but the current environment does not authorize raw-byte extraction. The current frontend therefore reconstructs the required learning flow from the supplied PDF and the earlier requirements; it is not a byte-for-byte restoration of the ZIP.
@@ -32,9 +33,9 @@ The earlier prepared ZIP is present in the user's Library, but the current envir
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Ten Node structural tests are present in `tests/validate.mjs`; the updated suite is awaiting a fresh GitHub Actions run.
+- Twelve Node structural tests are present in `tests/validate.mjs`; the updated suite is awaiting a fresh GitHub Actions run.
 - JavaScript syntax checks are configured in GitHub Actions; the prior run passed before the latest same-origin hardening change.
 - SQLite schema and isolation test is present in `tests/check-schema.py`; the prior run passed before the latest same-origin hardening change.
-- The latest commit's workflow result has not yet been returned by GitHub; the earlier successful run does not validate the latest commit.
-- Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
+- The latest changes require a fresh GitHub Actions run; earlier successful runs do not validate these commits.
+- The quiz score is submitted by the browser and is not independently recalculated by the server; it must not be treated as verified mastery. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
