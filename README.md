@@ -16,7 +16,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - D1 schema in `migrations/0001_initial.sql`.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Random session tokens are stored as hashes in D1 and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
-- State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
+- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
 - Login attempts are throttled per IP and per username; registration attempts are throttled per IP.
 - Quiz answers are graded by the Worker against a server-side answer key that is not included in student-facing JavaScript. Results are stored against the authenticated account.
 
