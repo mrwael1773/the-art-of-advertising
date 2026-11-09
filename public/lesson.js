@@ -49,21 +49,21 @@ const words = [
   ["imagine","يتخيّل"],["credit card","بطاقة ائتمان"],["cash","نقد"],["inconceivable","لا يمكن تصوّره"],["economic","اقتصادي"],["impractical","غير عملي"],["business","أعمال / تجاري"],["leisure","وقت الفراغ"],["goods","سلع"],["services","خدمات"],["scheduled","حدّد موعدًا"],["restaurant","مطعم"],["wallet","محفظة"],["embarrassing","مُحرج"],["situation","موقف"],["limited","محدود"],["spending","إنفاق"],["afford","يستطيع تحمّل التكلفة"],["returned","عاد"],["handed","ناول"],["cardboard","ورق مقوّى"],["signed","وقّع"],["meal","وجبة"],["industry","صناعة"],["concept","مفهوم"],["merchants","تجّار"],["alternative","بديل"],["payment","دفع"],["accepted","قُبِلَت"],["status symbol","رمز للمكانة الاجتماعية"],["cultural icon","رمز ثقافي"],["trend","اتجاه / موضة"],["expanded","توسّع"],["international","دولي"],["franchises","امتيازات تجارية"],["airline","شركة طيران"],["hotels","فنادق"],["car rentals","تأجير السيارات"],["rewards","مكافآت"],["benefits","مزايا"],["privileges","امتيازات"],["discounts","خصومات"],["loyal","مخلص"]
 ];
 const questions = [
-  {type:"reading",q:"When did Frank McNamara forget his wallet?",a:["1949","1952","1984"],c:0},
-  {type:"reading",q:"Where was the restaurant in Frank’s story?",a:["New York","Cuba","Beijing"],c:0},
-  {type:"reading",q:"What card did Frank use a year later?",a:["Visa","Diner’s Club Card","MasterCard"],c:1},
-  {type:"reading",q:"By 1952, how widely was the Diner’s Club Card accepted in the United States?",a:["By thousands of businesses","By one airline only","By no businesses"],c:0},
-  {type:"reading",q:"Which countries received Diner’s Club franchises in 1952?",a:["Canada, France, and Cuba","China, Japan, and India","Spain, Italy, and Greece"],c:0},
-  {type:"reading",q:"Which airline became the first to accept the card in 1955?",a:["Western Airlines","American Airlines","Diner’s Airlines"],c:0},
-  {type:"reading",q:"When was the first card-members rewards program created?",a:["1949","1955","1984"],c:2},
-  {type:"vocabulary",q:"What does “cash” mean?",a:["نقد","محفظة","مطعم"],c:0},
-  {type:"vocabulary",q:"What does “wallet” mean?",a:["وجبة","محفظة","خدمات"],c:1},
-  {type:"vocabulary",q:"What does “merchants” mean?",a:["مسافرون","تجّار","فنادق"],c:1},
-  {type:"vocabulary",q:"What does “alternative” mean?",a:["بديل","محدود","دولي"],c:0},
-  {type:"vocabulary",q:"What does “airline” mean?",a:["شركة طيران","متجر","بنك"],c:0},
-  {type:"vocabulary",q:"What does “rewards” mean?",a:["خصومات","مكافآت","نقد"],c:1},
-  {type:"vocabulary",q:"What does “benefits” mean?",a:["مزايا","مواقف","سلع"],c:0},
-  {type:"vocabulary",q:"What does “discounts” mean?",a:["امتيازات","خصومات","إنفاق"],c:1}
+  {type:"reading",q:"When did Frank McNamara forget his wallet?",a:["1949","1952","1984"]},
+  {type:"reading",q:"Where was the restaurant in Frank’s story?",a:["New York","Cuba","Beijing"]},
+  {type:"reading",q:"What card did Frank use a year later?",a:["Visa","Diner’s Club Card","MasterCard"]},
+  {type:"reading",q:"By 1952, how widely was the Diner’s Club Card accepted in the United States?",a:["By thousands of businesses","By one airline only","By no businesses"]},
+  {type:"reading",q:"Which countries received Diner’s Club franchises in 1952?",a:["Canada, France, and Cuba","China, Japan, and India","Spain, Italy, and Greece"]},
+  {type:"reading",q:"Which airline became the first to accept the card in 1955?",a:["Western Airlines","American Airlines","Diner’s Airlines"]},
+  {type:"reading",q:"When was the first card-members rewards program created?",a:["1949","1955","1984"]},
+  {type:"vocabulary",q:"What does “cash” mean?",a:["نقد","محفظة","مطعم"]},
+  {type:"vocabulary",q:"What does “wallet” mean?",a:["وجبة","محفظة","خدمات"]},
+  {type:"vocabulary",q:"What does “merchants” mean?",a:["مسافرون","تجّار","فنادق"]},
+  {type:"vocabulary",q:"What does “alternative” mean?",a:["بديل","محدود","دولي"]},
+  {type:"vocabulary",q:"What does “airline” mean?",a:["شركة طيران","متجر","بنك"]},
+  {type:"vocabulary",q:"What does “rewards” mean?",a:["خصومات","مكافآت","نقد"]},
+  {type:"vocabulary",q:"What does “benefits” mean?",a:["مزايا","مواقف","سلع"]},
+  {type:"vocabulary",q:"What does “discounts” mean?",a:["امتيازات","خصومات","إنفاق"]}
 ];
 const $ = s => document.querySelector(s);
 const readingList = $("#reading-list"), vocabularyList = $("#vocabulary-list"), quizArea = $("#quiz-area");
