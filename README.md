@@ -33,9 +33,9 @@ The earlier prepared ZIP is present in the user's Library, but the current envir
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Twelve Node structural tests are present in `tests/validate.mjs`; the updated suite is awaiting a fresh GitHub Actions run.
-- JavaScript syntax checks are configured in GitHub Actions; the prior run passed before the latest same-origin hardening change.
+- Twelve Node structural tests are present in `tests/validate.mjs`; the latest suite passed in GitHub Actions run #47.
+- JavaScript syntax checks are configured in GitHub Actions; the latest run passed.
 - SQLite schema and isolation test is present in `tests/check-schema.py`; the prior run passed before the latest same-origin hardening change.
 - The latest changes require a fresh GitHub Actions run; earlier successful runs do not validate these commits.
-- The quiz score is submitted by the browser and is not independently recalculated by the server; it must not be treated as verified mastery. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
+- Server-side grading protects the score from client-side score forgery, but the quiz's pedagogical validity and the student's actual understanding still require teacher review and pilot testing. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
