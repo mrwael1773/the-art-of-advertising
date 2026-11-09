@@ -10,6 +10,15 @@ const lesson = await readFile(new URL("../public/lesson.js", import.meta.url), "
 const page = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
 const styles = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
 
+test("API and static asset responses receive browser security headers", () => {
+  assert.match(worker, /headers\.set\("x-content-type-options", "nosniff"\)/);
+  assert.match(worker, /headers\.set\("x-frame-options", "DENY"\)/);
+  assert.match(worker, /headers\.set\("referrer-policy", "no-referrer"\)/);
+  assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
+  assert.match(worker, /return secureResponse\(new Response\(/);
+  assert.match(worker, /return secureResponse\(await env\.ASSETS\.fetch\(req\)\)/);
+});
+
 test("passwords use PBKDF2 with a per-user salt", () => {
   assert.match(worker, /PBKDF2/);
   assert.match(worker, /iterations:\s*ITERATIONS/);
