@@ -56,7 +56,11 @@ async function body(req) {
 }
 function originOK(req, url) {
   const origin = req.headers.get("origin");
-  return (!origin || origin === url.origin) && req.headers.get("sec-fetch-site") !== "cross-site";
+  const method = req.method.toUpperCase();
+  const changesState = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  if (req.headers.get("sec-fetch-site") === "cross-site") return false;
+  if (changesState && origin !== url.origin) return false;
+  return !origin || origin === url.origin;
 }
 async function limit(db, key, max, seconds) {
   const now = Math.floor(Date.now() / 1000), hash = b64(await digest(key));
