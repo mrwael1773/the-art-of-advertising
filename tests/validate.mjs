@@ -54,11 +54,12 @@ const lesson = await readFile(new URL("../public/lesson.js", import.meta.url), "
 const page = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
 const styles = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
 
-test("reading lesson contains six paraphrased reading units and eighteen vocabulary entries", () => {
+test("reading lesson contains six paraphrased reading paragraphs and forty-three vocabulary entries", () => {
   assert.match(lesson, /const reading = \[/);
   assert.match(lesson, /const words = \[/);
   assert.equal((lesson.match(/\{en:/g) || []).length, 6);
-  assert.equal((lesson.match(/\["[^"]+","[^"]+"\]/g) || []).length, 18);
+  assert.equal((lesson.match(/\["[^"]+","[^"]+"\]/g) || []).length, 43);
+  assert.equal((lesson.match(/type:"reading"|type:"vocabulary"/g) || []).length, 15);
 });
 
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
@@ -67,6 +68,7 @@ test("lesson has speech speed, translation reveal, quiz, and server progress per
   assert.match(page, /id="vocabulary-list"/);
   assert.match(page, /id="quiz-area"/);
   assert.match(lesson, /speechSynthesis/);
+  assert.match(lesson, /إيقاف النطق/);
   assert.match(lesson, /utterance\.rate/);
   assert.match(lesson, /method:"PUT"/);
   assert.match(lesson, /method:"GET"/);
