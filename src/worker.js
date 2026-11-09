@@ -124,19 +124,21 @@ async function handleProgress(req, env, user) {
   }
   if (req.method !== "PUT") return reply({ error: "Method not allowed" }, 405, { allow: "GET, PUT" });
   const data = await body(req), key = typeof data.lessonKey === "string" ? data.lessonKey : "";
-  const progress = data.progress;
-  if (key !== "world-of-plastic-reading" || !progress || typeof progress !== "object" || Array.isArray(progress) ||
-      Object.keys(progress).sort().join(",") !== "completed,score,total" ||
-      progress.completed !== true || !Number.isInteger(progress.score) ||
-      progress.score < 0 || progress.score > 15 || progress.total !== 15) {
-    return reply({ error: "بيانات التقدم غير صالحة." }, 400);
+  const submitted = data.answers;
+  const answerKey = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+  if (key !== "world-of-plastic-reading" || !Array.isArray(submitted) ||
+      submitted.length !== answerKey.length ||
+      !submitted.every(value => Number.isInteger(value) && value >= 0 && value <= 2)) {
+    return reply({ error: "إجابات الاختبار غير صالحة." }, 400);
   }
+  const score = submitted.reduce((sum, answer, index) => sum + (answer === answerKey[index] ? 1 : 0), 0);
+  const progress = { completed: true, score, total: answerKey.length };
   const serialized = JSON.stringify(progress);
   if (enc.encode(serialized).length > 4000) return reply({ error: "بيانات التقدم كبيرة جدًا." }, 413);
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare("INSERT INTO progress(user_id,lesson_key,progress_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(user_id,lesson_key) DO UPDATE SET progress_json=excluded.progress_json,updated_at=excluded.updated_at")
     .bind(user.id, key, serialized, now).run();
-  return reply({ saved: true, updatedAt: now });
+  return reply({ saved: true, score, total: answerKey.length, completed: true, updatedAt: now });
 }
 export default {
   async fetch(req, env) {
