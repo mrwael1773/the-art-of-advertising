@@ -29,6 +29,17 @@ try:
 except sqlite3.IntegrityError:
     pass
 
+# Exercise the same atomic rate-limit upsert used by the Worker.
+rate_sql = """INSERT INTO rate_limits(key_hash,window_started,attempts) VALUES(?,?,1)
+ON CONFLICT(key_hash) DO UPDATE SET
+attempts=CASE WHEN window_started<=? THEN 1 ELSE attempts+1 END,
+window_started=CASE WHEN window_started<=? THEN excluded.window_started ELSE window_started END"""
+db.execute(rate_sql, ("ip-login", 1000, 100, 100))
+db.execute(rate_sql, ("ip-login", 1100, 200, 200))
+assert db.execute("SELECT attempts,window_started FROM rate_limits WHERE key_hash='ip-login'").fetchone() == (2, 1000)
+db.execute(rate_sql, ("ip-login", 1900, 1000, 1000))
+assert db.execute("SELECT attempts,window_started FROM rate_limits WHERE key_hash='ip-login'").fetchone() == (1, 1900)
+
 db.execute("DELETE FROM users WHERE id='u1'")
 assert db.execute("SELECT COUNT(*) FROM progress WHERE user_id='u1'").fetchone()[0] == 0
 assert db.execute("SELECT COUNT(*) FROM sessions WHERE user_id='u1'").fetchone()[0] == 0
