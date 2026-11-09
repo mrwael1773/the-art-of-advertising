@@ -113,7 +113,6 @@ async function auth(req, env, url, registering) {
   if (registering && (password.length < 10 || password.length > 128)) return reply({ error: "كلمة المرور يجب أن تكون بين 10 و128 خانة." }, 400);
   if (!registering && password.length > 128) return reply({ error: "اسم المستخدم أو كلمة المرور غير صحيحة." }, 401);
   const ip = req.headers.get("CF-Connecting-IP") || "unknown";
-  await cleanupExpired(env.DB, Math.floor(Date.now() / 1000));
   if (registering) {
     if (!await limit(env.DB, ip + ":register", 5, 3600)) {
       return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
@@ -125,6 +124,7 @@ async function auth(req, env, url, registering) {
       return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
     }
   }
+  await cleanupExpired(env.DB, Math.floor(Date.now() / 1000));
   if (registering) {
     const salt = random(16), hash = await derive(password, salt);
     const user = { id: crypto.randomUUID(), username: username };
