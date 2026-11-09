@@ -19,9 +19,9 @@ const paragraphs = [
     en: [
       "The Diner’s Club Card soon became popular in culture.",
       "It appeared in a movie and inspired a board game. In 1952, it became an international charge card in Canada, France, and Cuba.",
-      "Western Airlines accepted it in 1955. Later, all airlines in the United States accepted it, and the company expanded to hotels and car rentals."
+      "Western Airlines accepted it in 1955. Later, other airlines in the United States accepted it, and the company expanded to hotels and car rentals."
     ],
-    ar: "سرعان ما أصبحت بطاقة نادي داينرز جزءًا من الثقافة الشعبية. وظهرت في فيلم وألهمت لعبة لوحية. وفي عام 1952 أصبحت بطاقة دفع دولية في كندا وفرنسا وكوبا. وقبلتها شركة ويسترن للطيران عام 1955، ثم قبلتها جميع شركات الطيران في الولايات المتحدة لاحقًا، وتوسعت خدمات النادي إلى الفنادق وتأجير السيارات."
+    ar: "سرعان ما أصبحت بطاقة نادي داينرز جزءًا من الثقافة الشعبية. وظهرت في فيلم وألهمت لعبة لوحية. وفي عام 1952 أصبحت بطاقة دفع دولية في كندا وفرنسا وكوبا. وقبلتها شركة ويسترن للطيران عام 1955، ثم قبلتها شركات طيران أمريكية أخرى لاحقًا، وتوسعت خدمات النادي إلى الفنادق وتأجير السيارات."
   },
   {
     en: [
