@@ -31,3 +31,5 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   window_started INTEGER NOT NULL,
   attempts INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_started);
