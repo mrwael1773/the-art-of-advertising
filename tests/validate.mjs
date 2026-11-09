@@ -73,7 +73,7 @@ test("lesson has speech speed, translation reveal, quiz, and server progress per
   assert.match(lesson, /إيقاف النطق/);
   assert.match(lesson, /utterance\.rate/);
   assert.match(lesson, /method:"PUT"/);
-  assert.match(lesson, /fetch\\("\/api\/progress"/);
+  assert.match(lesson, /fetch\("\/api\/progress"/);
   assert.match(lesson, /world-of-plastic-reading/);
 });
 
