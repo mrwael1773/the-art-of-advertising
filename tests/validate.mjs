@@ -140,3 +140,16 @@ test("lesson text is inserted as text, not HTML", () => {
   assert.doesNotMatch(lesson, /innerHTML/);
   assert.match(styles, /@media\(max-width:420px\)/);
 });
+
+test("JSON request bodies are streamed and capped before full buffering", () => {
+  const start = worker.indexOf("async function body(req)");
+  const end = worker.indexOf("\nfunction originOK", start);
+  const bodyReader = worker.slice(start, end);
+  assert.notEqual(start, -1);
+  assert.match(bodyReader, /req\.body && req\.body\.getReader\(\)/);
+  assert.match(bodyReader, /size \+= part\.value\.byteLength/);
+  assert.match(bodyReader, /if \(size > 8192\)/);
+  assert.match(bodyReader, /await reader\.cancel\(\)/);
+  assert.doesNotMatch(bodyReader, /req\.text\(\)/);
+  assert.match(bodyReader, /new TextDecoder\("utf-8", \{ fatal: true \}\)/);
+});
