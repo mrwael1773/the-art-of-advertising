@@ -17,7 +17,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
 - State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
-- Progress is scoped to the authenticated account and accepts only the expected bounded quiz record for this lesson.
+- Quiz answers are graded by the Worker against a server-side answer key that is not included in the student-facing JavaScript; saved results are scoped to the authenticated account.
 - Expired sessions and stale rate-limit records are cleaned during authentication requests.
 
 ## Known source limitation
@@ -33,9 +33,9 @@ The earlier prepared ZIP is present in the user's Library, but the current envir
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Twelve Node structural tests are present in `tests/validate.mjs`; the latest suite passed in GitHub Actions run #47.
-- JavaScript syntax checks are configured in GitHub Actions; the latest run passed.
-- SQLite schema and isolation test is present in `tests/check-schema.py`; the prior run passed before the latest same-origin hardening change.
-- The latest changes require a fresh GitHub Actions run; earlier successful runs do not validate these commits.
+- Fifteen Node structural tests are present in `tests/validate.mjs`. The previous 12-test suite passed in GitHub Actions run #49; the three newly added authentication lifecycle checks are awaiting their own CI result.
+- JavaScript syntax checks are configured in GitHub Actions; run #49 passed before the three latest test additions.
+- SQLite schema and isolation test is present in `tests/check-schema.py`; run #49 passed.
+- The latest authentication lifecycle test additions require a fresh GitHub Actions run; earlier successful runs do not validate these new tests.
 - Server-side grading protects the score from client-side score forgery, but the quiz's pedagogical validity and the student's actual understanding still require teacher review and pilot testing. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
