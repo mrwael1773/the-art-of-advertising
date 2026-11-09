@@ -5,21 +5,29 @@ An independent learning website for the Unit 4 Reading passage **The World of Pl
 ## Project boundaries
 - This repository is separate from English Hero and Cosmic Quest.
 - Learning content must come only from the supplied course PDF.
-- Public self-registration is allowed; the intended school audience is first-year secondary students at Gulf Secondary School, but registration is not restricted to that school.
+- Public self-registration is allowed. The intended educational audience is first-year secondary students at Gulf Secondary School, but registration is open to everyone.
 - Each account must only access its own progress.
 - No paid services, advertising, analytics, or third-party AI features.
 
-## Planned architecture
-- Static frontend.
-- Cloudflare Worker for authentication and progress APIs.
-- Cloudflare D1 for account, session, and progress records.
-- Passwords are stored only as salted password hashes; sessions use secure, HttpOnly cookies.
-- The browser must never receive administrative secrets.
+## Architecture
+- Static frontend (not yet restored from the prepared ZIP).
+- Cloudflare Worker API in `src/worker.js`.
+- Cloudflare D1 schema in `migrations/0001_initial.sql`.
+- Passwords are stored as salted PBKDF2-HMAC-SHA-256 hashes.
+- Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
+- Progress queries are scoped to the authenticated session's user ID; clients cannot choose another user's ID.
 
-## Safety and deployment
-- Do not deploy or configure production resources without explicit deployment approval.
-- Do not put secrets in client-side files.
-- Do not claim school readiness until authentication, authorization, data isolation, content, audio, and target-device tests have passed.
+## Local setup still required
+1. Create a free Cloudflare D1 database.
+2. Replace the placeholder `database_id` in `wrangler.toml`.
+3. Apply migrations with Wrangler.
+4. Run the Worker locally and test registration, login, logout, and cross-account isolation.
+5. Restore and connect the frontend from the prepared project archive.
 
-## Current status
-Repository foundation only. Application files and Cloudflare resources have not yet been deployed.
+No Cloudflare resource has been created or deployed by this repository setup.
+
+## Verification status
+- Worker JavaScript syntax check: passed locally.
+- D1 migration schema creation: passed locally with SQLite.
+- Browser, live D1, Cloudflare deployment, audio, and iPhone tests: not run.
+- This project is not ready for school use or production.
