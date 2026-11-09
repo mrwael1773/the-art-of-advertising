@@ -18,7 +18,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
 - State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
 - Quiz answers are graded by the Worker against a server-side answer key that is not included in the student-facing JavaScript; saved results are scoped to the authenticated account.
-- Expired sessions and stale rate-limit records are cleaned during authentication requests.
+- Login attempts are throttled both per IP address and per username; registration attempts are also throttled per IP. Expired sessions and stale rate-limit records are cleaned during authentication requests.
 
 ## Known source limitation
 The earlier prepared ZIP is present in the user's Library, but the current environment does not authorize raw-byte extraction. The current frontend therefore reconstructs the required learning flow from the supplied PDF and the earlier requirements; it is not a byte-for-byte restoration of the ZIP.
@@ -33,9 +33,9 @@ The earlier prepared ZIP is present in the user's Library, but the current envir
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Fifteen Node structural tests are present in `tests/validate.mjs`. The previous 12-test suite passed in GitHub Actions run #49; the three newly added authentication lifecycle checks are awaiting their own CI result.
-- JavaScript syntax checks are configured in GitHub Actions; run #49 passed before the three latest test additions.
-- SQLite schema and isolation test is present in `tests/check-schema.py`; run #49 passed.
-- The latest authentication lifecycle test additions require a fresh GitHub Actions run; earlier successful runs do not validate these new tests.
+- Sixteen Node structural tests are present in `tests/validate.mjs`. The 15-test suite passed in GitHub Actions run #57; the latest layered-login-throttling test and implementation require a fresh CI run.
+- JavaScript syntax checks are configured in GitHub Actions; run #57 passed before the latest layered-login-throttling change.
+- SQLite schema and isolation test is present in `tests/check-schema.py`; run #57 passed before the latest layered-login-throttling change.
+- The latest login-throttling change and its regression test require a fresh GitHub Actions run; earlier successful runs do not validate this change.
 - Server-side grading protects the score from client-side score forgery, but the quiz's pedagogical validity and the student's actual understanding still require teacher review and pilot testing. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
