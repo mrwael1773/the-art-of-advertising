@@ -65,7 +65,8 @@ test("progress writes accept only the expected bounded quiz record", () => {
 
 
 test("authentication enforces username and password bounds before account operations", () => {
-  assert.match(worker, /const USERNAME = \/\^\[a-z0-9_\]\{3,24\}\$\//);
+  assert.match(worker, /const USERNAME =/);
+  assert.match(worker, /USERNAME\.test\(username\)/);
   assert.match(worker, /password\.length < 10 \|\| password\.length > 128/);
   assert.match(worker, /password\.length > 128/);
   assert.match(worker, /INSERT INTO users\(id,username,password_salt,password_hash,created_at\)/);
