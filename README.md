@@ -1,34 +1,39 @@
 # The Art of Advertising
 
-An independent learning website for the Unit 4 Reading passage **The World of Plastic**.
+An independent learning website for Unit 4 Reading: **The World of Plastic**.
 
 ## Project boundaries
 - This repository is separate from English Hero and Cosmic Quest.
-- Learning content must come only from the supplied course PDF.
-- Public self-registration is allowed. The intended educational audience is first-year secondary students at Gulf Secondary School, but registration is open to everyone.
+- Learning material is derived only from the supplied course PDF.
+- Self-registration is open to everyone; the intended school audience is first-year secondary students at Gulf Secondary School.
 - Each account must only access its own progress.
-- No paid services, advertising, analytics, or third-party AI features.
+- No paid services, ads, analytics, or third-party AI features.
 
-## Architecture
-- A responsive Arabic registration/login shell in `public/`; the original lesson interface still needs to be restored from the prepared ZIP.
+## Current implementation
+- Responsive Arabic account interface in `public/`.
+- Reading lesson with six paraphrased sections, paragraph and sentence speech, adjustable speed, stop control, linked Arabic translations, 43 vocabulary entries, and 15 activities (7 comprehension + 8 vocabulary).
 - Cloudflare Worker API in `src/worker.js`.
-- Cloudflare D1 schema in `migrations/0001_initial.sql`.
-- Passwords are stored as salted PBKDF2-HMAC-SHA-256 hashes.
+- D1 schema in `migrations/0001_initial.sql`.
+- Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
-- Progress queries are scoped to the authenticated session's user ID; clients cannot choose another user's ID.
+- Progress is scoped to the authenticated account.
+
+## Known source limitation
+The earlier prepared ZIP is present in the user's Library, but the current environment does not authorize raw-byte extraction. The current frontend therefore reconstructs the required learning flow from the supplied PDF and the earlier requirements; it is not a byte-for-byte restoration of the ZIP.
 
 ## Local setup still required
 1. Create a free Cloudflare D1 database.
 2. Replace the placeholder `database_id` in `wrangler.toml`.
-3. Apply migrations with Wrangler.
-4. Run the Worker locally and test registration, login, logout, and cross-account isolation.
-5. Restore and connect the frontend from the prepared project archive.
+3. Apply the migration and run the Worker locally.
+4. Test registration, login, logout, session expiry, rate limits, and cross-account isolation.
+5. Test the interface and speech on the target browsers and iPhone devices.
 
-No Cloudflare resource has been created or deployed by this repository setup.
+No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Worker and account UI JavaScript syntax checks: passed locally.
-- Six structural security checks are included in `tests/validate.mjs`.
-- D1 migration schema creation: passed locally with SQLite.
-- Browser, live D1, Cloudflare deployment, audio, and iPhone tests: not run.
+- Nine Node structural tests are present in `tests/validate.mjs`; not executed in the current environment.
+- JavaScript syntax checks are configured in GitHub Actions; not confirmed as passed.
+- SQLite schema and isolation test is present in `tests/check-schema.py`; not executed in the current environment.
+- The first GitHub Actions run ended in failure without exposing any job records, so the cause remains undiagnosed.
+- Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
