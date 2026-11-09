@@ -40,3 +40,12 @@ test("Cloudflare binding is explicit and database ID is not fabricated", () => {
   assert.match(config, /binding = "DB"/);
   assert.match(config, /REPLACE_WITH_D1_DATABASE_ID/);
 });
+
+const frontend = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+
+test("account UI renders user-controlled values as text and uses same-origin API calls", () => {
+  assert.match(frontend, /accountName\.textContent/);
+  assert.match(frontend, /credentials:\s*"same-origin"/);
+  assert.doesNotMatch(frontend, /innerHTML/);
+  assert.doesNotMatch(frontend, /localStorage|sessionStorage/);
+});
