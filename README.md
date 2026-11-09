@@ -33,8 +33,8 @@ The previously prepared ZIP is listed in the user's Library, but its raw bytes c
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- GitHub Actions run **#85** passed on commit `cd6f9cd544c93d7fe87e0a0c79eb7ebfd62af0be`.
-- The workflow passed JavaScript syntax checks, all **17 Node structural tests**, and the SQLite schema, account-isolation, and rate-limit SQL tests.
+- GitHub Actions run **#96** passed on commit `f14987dadc753c42ffb1ab6de66737c5c17fda7e`.
+- The workflow passed JavaScript syntax checks, all **19 Node structural tests**, and the SQLite schema, account-isolation, and rate-limit SQL tests.
 - These automated checks do not exercise the Worker against a live Cloudflare D1 database.
 - Live registration, login, logout, session expiry, rate-limit behavior, and two-account isolation remain unverified.
 - Real browser/device and iPhone speech testing, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
