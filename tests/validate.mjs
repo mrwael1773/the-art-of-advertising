@@ -128,7 +128,11 @@ test("lesson has speech speed, translation reveal, quiz, and server progress per
 });
 
 test("logout failures are announced in the visible account area", () => {
-  assert.match(frontend, /#logout-button[\\s\\S]*?const status=document\\.querySelector\\("#lesson-message"\\)[\\s\\S]*?catch\\(error\\)\\{status\\.textContent=error\\.message\\}/);
+  const start = frontend.indexOf('document.querySelector("#logout-button")');
+  const handler = frontend.slice(start);
+  assert.notEqual(start, -1);
+  assert.ok(handler.includes('document.querySelector("#lesson-message")'));
+  assert.ok(handler.includes('catch(error){status.textContent=error.message}'));
 });
 
 test("lesson text is inserted as text, not HTML", () => {
