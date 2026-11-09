@@ -132,11 +132,13 @@ test("quiz completion is kept distinct from the student's score", () => {
   assert.match(lesson, /result\.score < 0 \|\| result\.score > questions\.length/);
 });
 
-test("reading lesson does not overstate later airline acceptance", () => {
-  assert.match(lesson, /Later, other airlines in the United States accepted it/);
-  assert.match(lesson, /شركات طيران أمريكية أخرى لاحقًا/);
-  assert.doesNotMatch(lesson, /all airlines in the United States accepted it/);
-  assert.doesNotMatch(lesson, /جميع شركات الطيران في الولايات المتحدة/);
+test("reading lesson accurately reflects the ten-year expansion to every US airline", () => {
+  assert.match(lesson, /Western Airlines accepted it in 1955\. Ten years later, the card was accepted by every airline in the United States/);
+  assert.match(lesson, /وبعد عشر سنوات، أصبحت البطاقة مقبولة لدى جميع شركات الطيران في الولايات المتحدة/);
+  assert.match(lesson, /Diner’s Club expanded its services to hotels, car rentals, and other businesses/);
+  assert.match(lesson, /ووسّع نادي داينرز خدماته لتشمل الفنادق وتأجير السيارات وغيرها من الأنشطة التجارية/);
+  assert.doesNotMatch(lesson, /other airlines in the United States accepted it/);
+  assert.doesNotMatch(lesson, /شركات طيران أمريكية أخرى لاحقًا/);
 });
 
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
