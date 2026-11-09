@@ -123,6 +123,14 @@ test("reading lesson contains six paraphrased reading paragraphs and forty-three
   assert.equal((lesson.match(/type:"reading"|type:"vocabulary"/g) || []).length, 15);
 });
 
+test("quiz completion is kept distinct from the student's score", () => {
+  assert.match(lesson, /نتيجة الاختبار السابقة:/);
+  assert.match(lesson, /نتيجة الاختبار: /);
+  assert.match(lesson, /Math\.round\(\(record\.score \/ record\.total\) \* 100\)/);
+  assert.match(lesson, /Math\.round\(\(result\.score \/ result\.total\) \* 100\)/);
+  assert.doesNotMatch(lesson, /progress-fill\)\.style\.width = "100%"/);
+});
+
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
   assert.match(page, /id="speech-speed"/);
   assert.match(page, /id="reading-list"/);
