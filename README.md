@@ -4,38 +4,41 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 
 ## Project boundaries
 - This repository is separate from English Hero and Cosmic Quest.
-- Learning material is derived only from the supplied course PDF.
+- Learning material is based only on the supplied course PDF and paraphrased for learners.
 - Self-registration is open to everyone; the intended school audience is first-year secondary students at Gulf Secondary School.
 - Each account must only access its own progress.
 - No paid services, ads, analytics, or third-party AI features.
 
 ## Current implementation
 - Responsive Arabic account interface in `public/`.
-- Reading lesson with six paraphrased sections, paragraph and sentence speech, adjustable speed, stop control, linked Arabic translations, 43 vocabulary entries, and 15 activities (7 comprehension + 8 vocabulary).
+- Reading lesson with six paraphrased sections, paragraph and sentence speech, adjustable speed, stop control, Arabic translations, 43 vocabulary entries, and 15 activities (7 comprehension + 8 vocabulary).
 - Cloudflare Worker API in `src/worker.js`.
 - D1 schema in `migrations/0001_initial.sql`.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
-- Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
+- Random session tokens are stored as hashes in D1 and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
 - State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
-- Quiz answers are graded by the Worker against a server-side answer key that is not included in the student-facing JavaScript; saved results are scoped to the authenticated account.
-- Login attempts are throttled both per IP address and per username; registration attempts are also throttled per IP. Expired sessions and stale rate-limit records are cleaned during authentication requests.
+- Login attempts are throttled per IP and per username; registration attempts are throttled per IP.
+- Quiz answers are graded by the Worker against a server-side answer key that is not included in student-facing JavaScript. Results are stored against the authenticated account.
 
-## Known source limitation
-The earlier prepared ZIP is present in the user's Library, but the current environment does not authorize raw-byte extraction. The current frontend therefore reconstructs the required learning flow from the supplied PDF and the earlier requirements; it is not a byte-for-byte restoration of the ZIP.
+## Source limitation
+The previously prepared ZIP is listed in the user's Library, but its raw bytes could not be accessed in the current environment. The current frontend was reconstructed from the supplied PDF and available requirements; it has not been verified as a byte-for-byte restoration of that ZIP.
 
 ## Local setup still required
 1. Create a free Cloudflare D1 database.
 2. Replace the placeholder `database_id` in `wrangler.toml`.
 3. Apply the migration and run the Worker locally.
-4. Test registration, login, logout, session expiry, rate limits, and cross-account isolation.
+4. Test registration, login, logout, session expiry, rate limits, and cross-account isolation against a running Worker/D1 instance.
 5. Test the interface and speech on the target browsers and iPhone devices.
 
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Sixteen Node structural tests are present in `tests/validate.mjs`. The 15-test suite passed in GitHub Actions run #57; the latest layered-login-throttling test and implementation require a fresh CI run.
-- JavaScript syntax checks are configured in GitHub Actions; run #57 passed before the latest layered-login-throttling change.
-- SQLite schema and isolation test is present in `tests/check-schema.py`; run #57 passed before the latest layered-login-throttling change.
-- GitHub Actions run #67 validates the latest login-throttling change and expanded SQLite constraint/isolation checks.
-- Server-side grading protects the score from client-side score forgery, but the quiz's pedagogical validity and the student's actual understanding still require teacher review and pilot testing. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
-- This project is not ready for school use or production.
+- GitHub Actions run **#85** passed on commit `cd6f9cd544c93d7fe87e0a0c79eb7ebfd62af0be`.
+- The workflow passed JavaScript syntax checks, all **17 Node structural tests**, and the SQLite schema, account-isolation, and rate-limit SQL tests.
+- These automated checks do not exercise the Worker against a live Cloudflare D1 database.
+- Live registration, login, logout, session expiry, rate-limit behavior, and two-account isolation remain unverified.
+- Real browser/device and iPhone speech testing, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
+- Server-side grading prevents a student-facing client from simply submitting a claimed score, but it does not establish educational mastery or prove the quiz's pedagogical validity.
+- This project is **not ready for school use or production**.
+
+Keep pull request #1 as a draft. Do not merge or deploy until outstanding verification is completed and explicitly approved.
