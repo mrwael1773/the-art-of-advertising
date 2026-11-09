@@ -184,5 +184,6 @@ $("#finish-quiz").addEventListener("click", async () => {
 });
 const speedRow = $(".speed-control");
 if (speedRow) speedRow.append(stop);
+window.addEventListener("account-ready", restoreProgress);
 restoreProgress();
 })();
