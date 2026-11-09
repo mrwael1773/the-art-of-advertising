@@ -46,9 +46,28 @@ function setCookie(url, token, age) {
 async function body(req) {
   if (!(req.headers.get("content-type") || "").toLowerCase().includes("application/json")) throw Error("JSON_REQUIRED");
   if (Number(req.headers.get("content-length") || 0) > 8192) throw Error("TOO_LARGE");
-  const raw = await req.text();
-  if (enc.encode(raw).length > 8192) throw Error("TOO_LARGE");
+  const reader = req.body && req.body.getReader();
+  if (!reader) throw Error("BAD_JSON");
+  const chunks = [];
+  let size = 0;
+  while (true) {
+    const part = await reader.read();
+    if (part.done) break;
+    size += part.value.byteLength;
+    if (size > 8192) {
+      try { await reader.cancel(); } catch (_) {}
+      throw Error("TOO_LARGE");
+    }
+    chunks.push(part.value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
   try {
+    const raw = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     const v = JSON.parse(raw);
     if (!v || typeof v !== "object" || Array.isArray(v)) throw Error();
     return v;
