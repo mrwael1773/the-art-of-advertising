@@ -95,8 +95,16 @@ async function auth(req, env, url, registering) {
   if (!registering && password.length > 128) return reply({ error: "اسم المستخدم أو كلمة المرور غير صحيحة." }, 401);
   const ip = req.headers.get("CF-Connecting-IP") || "unknown";
   await cleanupExpired(env.DB, Math.floor(Date.now() / 1000));
-  if (!await limit(env.DB, ip + (registering ? ":register" : ":login:" + username), registering ? 5 : 8, registering ? 3600 : 900)) {
-    return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
+  if (registering) {
+    if (!await limit(env.DB, ip + ":register", 5, 3600)) {
+      return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
+    }
+  } else {
+    // Apply both an IP-wide ceiling and a per-username ceiling to slow password spraying.
+    if (!await limit(env.DB, ip + ":login", 30, 900) ||
+        !await limit(env.DB, ip + ":login:" + username, 8, 900)) {
+      return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
+    }
   }
   if (registering) {
     const salt = random(16), hash = await derive(password, salt);
