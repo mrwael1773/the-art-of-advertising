@@ -127,6 +127,10 @@ test("lesson has speech speed, translation reveal, quiz, and server progress per
   assert.match(lesson, /world-of-plastic-reading/);
 });
 
+test("logout failures are announced in the visible account area", () => {
+  assert.match(frontend, /#logout-button[\\s\\S]*?const status=document\\.querySelector\\("#lesson-message"\\)[\\s\\S]*?catch\\(error\\)\\{status\\.textContent=error\\.message\\}/);
+});
+
 test("lesson text is inserted as text, not HTML", () => {
   assert.match(lesson, /textContent/);
   assert.doesNotMatch(lesson, /innerHTML/);
