@@ -63,6 +63,28 @@ test("progress writes accept only the expected bounded quiz record", () => {
   assert.match(worker, /key !== "world-of-plastic-reading"/);
 });
 
+
+test("authentication enforces username and password bounds before account operations", () => {
+  assert.match(worker, /const USERNAME = \/\^\[a-z0-9_\]\{3,24\}\$\//);
+  assert.match(worker, /password\.length < 10 \|\| password\.length > 128/);
+  assert.match(worker, /password\.length > 128/);
+  assert.match(worker, /INSERT INTO users\(id,username,password_salt,password_hash,created_at\)/);
+});
+
+test("session lookup requires an unexpired hashed bearer cookie and logout revokes it", () => {
+  assert.match(worker, /sessions\.token_hash=\? AND sessions\.expires_at>\?/);
+  assert.match(worker, /b64\(await digest\(token\)\)/);
+  assert.match(worker, /DELETE FROM sessions WHERE token_hash=\?/);
+  assert.match(worker, /set-cookie: setCookie\(url, "", 0\)/);
+  assert.match(worker, /HttpOnly; SameSite=Lax; Max-Age=/);
+});
+
+test("progress API only accesses records for the authenticated session user", () => {
+  assert.match(worker, /const user = await sessionUser\(req, env\);[\s\S]*?return await handleProgress\(req, env, user\)/);
+  assert.match(worker, /SELECT lesson_key,progress_json,updated_at FROM progress WHERE user_id=\?/);
+  assert.match(worker, /bind\(user\.id\)/);
+});
+
 test("Cloudflare binding is explicit and database ID is not fabricated", () => {
   assert.match(config, /binding = "DB"/);
   assert.match(config, /REPLACE_WITH_D1_DATABASE_ID/);
