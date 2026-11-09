@@ -62,6 +62,10 @@ function originOK(req, url) {
   if (changesState && origin !== url.origin) return false;
   return !origin || origin === url.origin;
 }
+async function cleanupExpired(db, now) {
+  await db.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(now).run();
+  await db.prepare("DELETE FROM rate_limits WHERE window_started<=?").bind(now - 86400).run();
+}
 async function limit(db, key, max, seconds) {
   const now = Math.floor(Date.now() / 1000), hash = b64(await digest(key));
   await db.prepare("INSERT INTO rate_limits(key_hash,window_started,attempts) VALUES(?,?,1) ON CONFLICT(key_hash) DO UPDATE SET attempts=CASE WHEN window_started<=? THEN 1 ELSE attempts+1 END, window_started=CASE WHEN window_started<=? THEN excluded.window_started ELSE window_started END")
@@ -90,6 +94,7 @@ async function auth(req, env, url, registering) {
   if (registering && (password.length < 10 || password.length > 128)) return reply({ error: "كلمة المرور يجب أن تكون بين 10 و128 خانة." }, 400);
   if (!registering && password.length > 128) return reply({ error: "اسم المستخدم أو كلمة المرور غير صحيحة." }, 401);
   const ip = req.headers.get("CF-Connecting-IP") || "unknown";
+  await cleanupExpired(env.DB, Math.floor(Date.now() / 1000));
   if (!await limit(env.DB, ip + (registering ? ":register" : ":login:" + username), registering ? 5 : 8, registering ? 3600 : 900)) {
     return reply({ error: "محاولات كثيرة. حاول لاحقًا." }, 429);
   }
@@ -119,10 +124,14 @@ async function handleProgress(req, env, user) {
   }
   if (req.method !== "PUT") return reply({ error: "Method not allowed" }, 405, { allow: "GET, PUT" });
   const data = await body(req), key = typeof data.lessonKey === "string" ? data.lessonKey : "";
-  if (!/^[a-z0-9-]{1,64}$/.test(key) || !data.progress || typeof data.progress !== "object" || Array.isArray(data.progress)) {
+  const progress = data.progress;
+  if (key !== "world-of-plastic-reading" || !progress || typeof progress !== "object" || Array.isArray(progress) ||
+      Object.keys(progress).sort().join(",") !== "completed,score,total" ||
+      progress.completed !== true || !Number.isInteger(progress.score) ||
+      progress.score < 0 || progress.score > 15 || progress.total !== 15) {
     return reply({ error: "بيانات التقدم غير صالحة." }, 400);
   }
-  const serialized = JSON.stringify(data.progress);
+  const serialized = JSON.stringify(progress);
   if (enc.encode(serialized).length > 4000) return reply({ error: "بيانات التقدم كبيرة جدًا." }, 413);
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare("INSERT INTO progress(user_id,lesson_key,progress_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(user_id,lesson_key) DO UPDATE SET progress_json=excluded.progress_json,updated_at=excluded.updated_at")
