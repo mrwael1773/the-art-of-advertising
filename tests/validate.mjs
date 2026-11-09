@@ -46,6 +46,19 @@ test("state-changing requests require the exact same-origin Origin header", () =
   assert.match(worker, /sec-fetch-site/);
 });
 
+test("expired sessions and stale rate-limit records are cleaned during authentication", () => {
+  assert.match(worker, /DELETE FROM sessions WHERE expires_at<=\?/);
+  assert.match(worker, /DELETE FROM rate_limits WHERE window_started<=\?/);
+  assert.match(schema, /idx_rate_limits_window ON rate_limits\(window_started\)/);
+});
+
+test("progress writes accept only the expected bounded quiz record", () => {
+  assert.match(worker, /Object\.keys\(progress\)\.sort\(\)\.join\(","\) !== "completed,score,total"/);
+  assert.match(worker, /progress\.score > 15/);
+  assert.match(worker, /progress\.total !== 15/);
+  assert.match(worker, /key !== "world-of-plastic-reading"/);
+});
+
 test("Cloudflare binding is explicit and database ID is not fabricated", () => {
   assert.match(config, /binding = "DB"/);
   assert.match(config, /REPLACE_WITH_D1_DATABASE_ID/);
