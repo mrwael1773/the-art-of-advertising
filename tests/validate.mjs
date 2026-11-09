@@ -49,3 +49,32 @@ test("account UI renders user-controlled values as text and uses same-origin API
   assert.doesNotMatch(frontend, /innerHTML/);
   assert.doesNotMatch(frontend, /localStorage|sessionStorage/);
 });
+
+const lesson = await readFile(new URL("../public/lesson.js", import.meta.url), "utf8");
+const page = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+const styles = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
+
+test("reading lesson contains six paraphrased reading units and eighteen vocabulary entries", () => {
+  assert.match(lesson, /const reading = \[/);
+  assert.match(lesson, /const words = \[/);
+  assert.equal((lesson.match(/\{en:/g) || []).length, 6);
+  assert.equal((lesson.match(/\["[^"]+","[^"]+"\]/g) || []).length, 18);
+});
+
+test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
+  assert.match(page, /id="speech-speed"/);
+  assert.match(page, /id="reading-list"/);
+  assert.match(page, /id="vocabulary-list"/);
+  assert.match(page, /id="quiz-area"/);
+  assert.match(lesson, /speechSynthesis/);
+  assert.match(lesson, /utterance\.rate/);
+  assert.match(lesson, /method:"PUT"/);
+  assert.match(lesson, /method:"GET"/);
+  assert.match(lesson, /world-of-plastic-reading/);
+});
+
+test("lesson text is inserted as text, not HTML", () => {
+  assert.match(lesson, /textContent/);
+  assert.doesNotMatch(lesson, /innerHTML/);
+  assert.match(styles, /@media\(max-width:420px\)/);
+});
