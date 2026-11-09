@@ -132,6 +132,13 @@ test("quiz completion is kept distinct from the student's score", () => {
   assert.match(lesson, /result\.score < 0 \|\| result\.score > questions\.length/);
 });
 
+test("reading lesson does not overstate later airline acceptance", () => {
+  assert.match(lesson, /Later, other airlines in the United States accepted it/);
+  assert.match(lesson, /شركات طيران أمريكية أخرى لاحقًا/);
+  assert.doesNotMatch(lesson, /all airlines in the United States accepted it/);
+  assert.doesNotMatch(lesson, /جميع شركات الطيران في الولايات المتحدة/);
+});
+
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
   assert.match(page, /id="speech-speed"/);
   assert.match(page, /id="reading-list"/);
