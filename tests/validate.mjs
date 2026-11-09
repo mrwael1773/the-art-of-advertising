@@ -38,7 +38,9 @@ test("rate limiting and bounded request bodies are present", () => {
   assert.match(worker, /rate_limits/);
   assert.match(worker, /8192/);
   assert.match(worker, /429/);
-});\n\ntest("state-changing requests require the exact same-origin Origin header", () => {
+});
+
+test("state-changing requests require the exact same-origin Origin header", () => {
   assert.match(worker, /const changesState = \["POST", "PUT", "PATCH", "DELETE"\]\.includes\(method\)/);
   assert.match(worker, /if \(changesState && origin !== url\.origin\) return false/);
   assert.match(worker, /sec-fetch-site/);
