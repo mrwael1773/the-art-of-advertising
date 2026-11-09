@@ -3,10 +3,18 @@ const ITERATIONS = 310000;
 const enc = new TextEncoder();
 const USERNAME = /^[a-z0-9_]{3,24}$/;
 
+function secureResponse(response) {
+  const headers = new Headers(response.headers);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("x-frame-options", "DENY");
+  headers.set("referrer-policy", "no-referrer");
+  headers.set("cross-origin-resource-policy", "same-origin");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 function reply(data, status, headers) {
-  return new Response(JSON.stringify(data), { status: status || 200, headers: Object.assign({
+  return secureResponse(new Response(JSON.stringify(data), { status: status || 200, headers: Object.assign({
     "content-type": "application/json; charset=utf-8", "cache-control": "no-store"
-  }, headers || {}) });
+  }, headers || {}) }));
 }
 function b64(bytes) {
   let s = ""; for (const b of bytes) s += String.fromCharCode(b);
@@ -189,7 +197,7 @@ export default {
         if (!user) return reply({ error: "يلزم تسجيل الدخول." }, 401);
         return await handleProgress(req, env, user);
       }
-      if (env.ASSETS) return env.ASSETS.fetch(req);
+      if (env.ASSETS) return secureResponse(await env.ASSETS.fetch(req));
       return reply({ error: "Not found" }, 404);
     } catch (e) {
       const m = String(e && e.message || "");
