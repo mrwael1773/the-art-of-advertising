@@ -36,6 +36,6 @@ No Cloudflare resource has been created or deployed.
 - Sixteen Node structural tests are present in `tests/validate.mjs`. The 15-test suite passed in GitHub Actions run #57; the latest layered-login-throttling test and implementation require a fresh CI run.
 - JavaScript syntax checks are configured in GitHub Actions; run #57 passed before the latest layered-login-throttling change.
 - SQLite schema and isolation test is present in `tests/check-schema.py`; run #57 passed before the latest layered-login-throttling change.
-- The latest login-throttling change and expanded SQLite constraint/isolation checks require a fresh GitHub Actions run; earlier successful runs do not validate these changes.
+- GitHub Actions run #67 validates the latest login-throttling change and expanded SQLite constraint/isolation checks.
 - Server-side grading protects the score from client-side score forgery, but the quiz's pedagogical validity and the student's actual understanding still require teacher review and pilot testing. Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
