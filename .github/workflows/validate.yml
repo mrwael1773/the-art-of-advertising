@@ -1,0 +1,31 @@
+name: Project checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/student-auth]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check JavaScript syntax
+        run: |
+          node --check src/worker.js
+          node --check public/app.js
+          node --check public/lesson.js
+      - name: Run project tests
+        run: node --test tests/validate.mjs
+      - name: Validate database schema and isolation
+        run: python tests/check-schema.py
