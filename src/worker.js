@@ -147,6 +147,7 @@ export default {
         if (!user) return reply({ error: "يلزم تسجيل الدخول." }, 401);
         return await handleProgress(req, env, user);
       }
+      if (env.ASSETS) return env.ASSETS.fetch(req);
       return reply({ error: "Not found" }, 404);
     } catch (e) {
       const m = String(e && e.message || "");
