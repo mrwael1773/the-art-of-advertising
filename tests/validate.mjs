@@ -129,6 +129,7 @@ test("quiz completion is kept distinct from the student's score", () => {
   assert.match(lesson, /Math\.round\(\(record\.score \/ record\.total\) \* 100\)/);
   assert.match(lesson, /Math\.round\(\(result\.score \/ result\.total\) \* 100\)/);
   assert.doesNotMatch(lesson, /progress-fill\)\.style\.width = "100%"/);
+  assert.match(lesson, /result\.score < 0 \|\| result\.score > questions\.length/);
 });
 
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
