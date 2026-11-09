@@ -155,31 +155,34 @@ async function restoreProgress() {
   } catch (_) {}
 }
 $("#finish-quiz").addEventListener("click", async () => {
-  let score = 0, answered = 0;
-  questions.forEach((question, index) => {
+  const answers = [], answered = questions.filter((question, index) => {
     const selected = document.querySelector('input[name="question-' + index + '"]:checked');
-    if (selected) {
-      answered++;
-      if (Number(selected.value) === question.c) score++;
-    }
-  });
+    if (selected) answers[index] = Number(selected.value);
+    return Boolean(selected);
+  }).length;
   if (answered !== questions.length) {
     $("#quiz-result").textContent = "أكمل جميع الأسئلة أولًا. أجبت عن " + answered + " من " + questions.length + ".";
     return;
   }
-  completed = true;
-  $("#quiz-result").textContent = "نتيجتك: " + score + " من " + questions.length + (score === questions.length ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
-  $("#progress-label").textContent = "اكتمل الاختبار · " + score + "/" + questions.length;
-  $("#progress-fill").style.width = "100%";
+  $("#finish-quiz").disabled = true;
+  $("#lesson-message").textContent = "جارٍ تصحيح إجاباتك وحفظ نتيجتك...";
   try {
     const response = await fetch("/api/progress", {
       method:"PUT", credentials:"same-origin", headers:{"content-type":"application/json"},
-      body:JSON.stringify({lessonKey:"world-of-plastic-reading",progress:{completed:true,score,total:questions.length}})
+      body:JSON.stringify({lessonKey:"world-of-plastic-reading",answers})
     });
     if (!response.ok) throw Error("SAVE_FAILED");
-    $("#lesson-message").textContent = "تم حفظ نتيجتك في حسابك.";
+    const result = await response.json();
+    if (!Number.isInteger(result.score) || result.total !== questions.length) throw Error("BAD_RESULT");
+    completed = true;
+    $("#quiz-result").textContent = "نتيجتك: " + result.score + " من " + result.total + (result.score === result.total ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
+    $("#progress-label").textContent = "اكتمل الاختبار · " + result.score + "/" + result.total;
+    $("#progress-fill").style.width = "100%";
+    $("#lesson-message").textContent = "تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.";
   } catch (_) {
-    $("#lesson-message").textContent = "ظهرت نتيجتك، لكن تعذر حفظها على الخادم.";
+    $("#lesson-message").textContent = "تعذر تصحيح الاختبار أو حفظ النتيجة. تحقق من اتصالك وتسجيل دخولك ثم حاول مجددًا.";
+  } finally {
+    $("#finish-quiz").disabled = false;
   }
 });
 const speedRow = $(".speed-control");
