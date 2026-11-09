@@ -57,9 +57,9 @@ const page = await readFile(new URL("../public/index.html", import.meta.url), "u
 const styles = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
 
 test("reading lesson contains six paraphrased reading paragraphs and forty-three vocabulary entries", () => {
-  assert.match(lesson, /const reading = \[/);
+  assert.match(lesson, /const paragraphs = \[/);
   assert.match(lesson, /const words = \[/);
-  assert.equal((lesson.match(/\{en:/g) || []).length, 6);
+  assert.equal((lesson.match(/en: \[/g) || []).length, 6);
   assert.equal((lesson.match(/\["[^"]+","[^"]+"\]/g) || []).length, 43);
   assert.equal((lesson.match(/type:"reading"|type:"vocabulary"/g) || []).length, 15);
 });
