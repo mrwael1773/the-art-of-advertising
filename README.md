@@ -16,6 +16,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - D1 schema in `migrations/0001_initial.sql`.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Session tokens are random, stored hashed in D1, and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
+- State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
 - Progress is scoped to the authenticated account.
 
 ## Known source limitation
@@ -31,9 +32,9 @@ The earlier prepared ZIP is present in the user's Library, but the current envir
 No Cloudflare resource has been created or deployed.
 
 ## Verification status
-- Nine Node structural tests are present in `tests/validate.mjs`; not executed in the current environment.
-- JavaScript syntax checks are configured in GitHub Actions; not confirmed as passed.
-- SQLite schema and isolation test is present in `tests/check-schema.py`; not executed in the current environment.
-- The first GitHub Actions run ended in failure without exposing any job records, so the cause remains undiagnosed.
+- Ten Node structural tests are present in `tests/validate.mjs`; the updated suite is awaiting a fresh GitHub Actions run.
+- JavaScript syntax checks are configured in GitHub Actions; the prior run passed before the latest same-origin hardening change.
+- SQLite schema and isolation test is present in `tests/check-schema.py`; the prior run passed before the latest same-origin hardening change.
+- The latest commit's workflow result has not yet been returned by GitHub; the earlier successful run does not validate the latest commit.
 - Live D1, Cloudflare deployment, browser/device, and iPhone speech tests have not been run.
 - This project is not ready for school use or production.
