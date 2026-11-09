@@ -16,7 +16,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - D1 schema in `migrations/0001_initial.sql`.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Random session tokens are stored as hashes in D1 and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
-- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected.
+- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected. API and static asset responses also receive `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Cross-Origin-Resource-Policy: same-origin`.
 - Login attempts are throttled per IP and per username; registration attempts are throttled per IP.
 - Quiz answers are graded by the Worker against a server-side answer key that is not included in student-facing JavaScript. Results are stored against the authenticated account.
 
@@ -36,6 +36,7 @@ No Cloudflare resource has been created or deployed.
 - GitHub Actions runs **#110** (push) and **#111** (pull request) passed on commit `0ee4d25dabec6e07358e9ab3dc3d5e211bae0927`.
 - At that verification point, the workflow passed JavaScript syntax checks, all **21 Node structural tests**, and the SQLite schema, account-isolation, and rate-limit SQL tests.
 - The quiz answer-key alignment regression test was added and passed in GitHub Actions runs **#116** (push) and **#117** (pull request) on commit `73ec5d0b1040b5c6592eb91348f0c50f8a9b2d84`; the suite then contained **22 Node structural tests**.
+- Browser security-header coverage was added and passed in GitHub Actions pull-request run **#122** on commit `0bbfbcd7b76bb3003ff9ccfc414ae30c39ed6310`; the suite now contains **23 Node structural tests**.
 - These automated checks do not exercise the Worker against a live Cloudflare D1 database.
 - Live registration, login, logout, session expiry, rate-limit behavior, and two-account isolation remain unverified.
 - Real browser/device and iPhone speech testing, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
