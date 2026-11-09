@@ -52,6 +52,15 @@ test("expired sessions and stale rate-limit records are cleaned during authentic
   assert.match(schema, /idx_rate_limits_window ON rate_limits\(window_started\)/);
 });
 
+test("authentication throttles requests before running expired-record cleanup", () => {
+  const authStart = worker.indexOf("async function auth(");
+  const authEnd = worker.indexOf("\nasync function handleProgress", authStart);
+  const authBody = worker.slice(authStart, authEnd);
+  const throttle = authBody.indexOf("await limit(env.DB");
+  const cleanup = authBody.indexOf("await cleanupExpired(env.DB");
+  assert.ok(throttle !== -1 && cleanup !== -1 && throttle < cleanup);
+});
+
 test("progress writes accept only the expected bounded quiz record", () => {
   assert.match(worker, /const answerKey = \[0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1\]/);
   const questionStart = lesson.indexOf("const questions = [");
