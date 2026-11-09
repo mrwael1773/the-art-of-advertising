@@ -142,15 +142,15 @@ test("reading lesson accurately reflects the ten-year expansion to every US airl
 });
 
 test("server answer key matches the correct option in every displayed quiz question", () => {
-  const keyMatch = worker.match(/const answerKey = (\\[[^\\]]+\\])/);
+  const keyMatch = worker.match(/const answerKey = (\[[^\]]+\])/);
   assert.ok(keyMatch, "server answer key must exist");
   const answerKey = JSON.parse(keyMatch[1]);
   const start = lesson.indexOf("const questions = [");
-  const end = lesson.indexOf("\\n];", start);
+  const end = lesson.indexOf("\n];", start);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
   const questionBlock = lesson.slice(start, end);
-  const optionArrays = [...questionBlock.matchAll(/a:(\\[[^\\]]*\\])/g)]
+  const optionArrays = [...questionBlock.matchAll(/a:(\[[^\]]*\])/g)]
     .map(match => JSON.parse(match[1]));
   const expectedCorrectAnswers = [
     "1949",
