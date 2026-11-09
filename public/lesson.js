@@ -173,7 +173,7 @@ $("#finish-quiz").addEventListener("click", async () => {
     });
     if (!response.ok) throw Error("SAVE_FAILED");
     const result = await response.json();
-    if (!Number.isInteger(result.score) || result.total !== questions.length) throw Error("BAD_RESULT");
+    if (!Number.isInteger(result.score) || result.score < 0 || result.score > questions.length || result.total !== questions.length) throw Error("BAD_RESULT");
     $("#quiz-result").textContent = "نتيجتك: " + result.score + " من " + result.total + (result.score === result.total ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
     $("#progress-label").textContent = "نتيجة الاختبار: " + result.score + "/" + result.total;
     $("#progress-fill").style.width = Math.round((result.score / result.total) * 100) + "%";
