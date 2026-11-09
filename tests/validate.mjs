@@ -54,6 +54,9 @@ test("expired sessions and stale rate-limit records are cleaned during authentic
 
 test("progress writes accept only the expected bounded quiz record", () => {
   assert.match(worker, /const answerKey = \[0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1\]/);
+  const questionStart = lesson.indexOf("const questions = [");
+  const questionEnd = lesson.indexOf("];", questionStart);
+  assert.doesNotMatch(lesson.slice(questionStart, questionEnd), /,c:\\d/);
   assert.match(worker, /submitted\.length !== answerKey\.length/);
   assert.match(worker, /submitted\.every\(value => Number\.isInteger\(value\) && value >= 0 && value <= 2\)/);
   assert.match(worker, /submitted\.reduce\(/);
