@@ -72,6 +72,12 @@ test("authentication enforces username and password bounds before account operat
   assert.match(worker, /INSERT INTO users\(id,username,password_salt,password_hash,created_at\)/);
 });
 
+test("login throttling limits both one IP and repeated attempts against one username", () => {
+  assert.match(worker, /ip \+ ":login", 30, 900/);
+  assert.match(worker, /ip \+ ":login:" \+ username, 8, 900/);
+  assert.match(worker, /ip \+ ":register", 5, 3600/);
+});
+
 test("session lookup requires an unexpired hashed bearer cookie and logout revokes it", () => {
   assert.match(worker, /sessions\.token_hash=\? AND sessions\.expires_at>\?/);
   assert.match(worker, /b64\(await digest\(token\)\)/);
