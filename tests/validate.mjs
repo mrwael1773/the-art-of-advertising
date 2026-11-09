@@ -46,6 +46,8 @@ const frontend = await readFile(new URL("../public/app.js", import.meta.url), "u
 test("account UI renders user-controlled values as text and uses same-origin API calls", () => {
   assert.match(frontend, /accountName\.textContent/);
   assert.match(frontend, /credentials:\s*"same-origin"/);
+  assert.match(frontend, /account-ready/);
+  assert.match(lesson, /addEventListener\("account-ready", restoreProgress\)/);
   assert.doesNotMatch(frontend, /innerHTML/);
   assert.doesNotMatch(frontend, /localStorage|sessionStorage/);
 });
