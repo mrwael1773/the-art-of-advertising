@@ -68,7 +68,6 @@ const questions = [
 const $ = s => document.querySelector(s);
 const readingList = $("#reading-list"), vocabularyList = $("#vocabulary-list"), quizArea = $("#quiz-area");
 if (!readingList || !vocabularyList || !quizArea) return;
-let completed = false;
 function say(text) {
   if (!("speechSynthesis" in window)) {
     $("#lesson-message").textContent = "النطق غير مدعوم في هذا المتصفح أو الجهاز.";
@@ -146,10 +145,11 @@ async function restoreProgress() {
     const saved = (data.progress || []).find(row => row.lesson_key === "world-of-plastic-reading");
     if (saved) {
       const record = JSON.parse(saved.progress_json);
-      if (record.completed) {
-        completed = true;
-        $("#progress-label").textContent = "أكملت الاختبار سابقًا · " + record.score + "/" + questions.length;
-        $("#progress-fill").style.width = "100%";
+      if (record.completed && Number.isInteger(record.score) &&
+          Number.isInteger(record.total) && record.total === questions.length &&
+          record.score >= 0 && record.score <= record.total) {
+        $("#progress-label").textContent = "نتيجة الاختبار السابقة: " + record.score + "/" + record.total;
+        $("#progress-fill").style.width = Math.round((record.score / record.total) * 100) + "%";
       }
     }
   } catch (_) {}
@@ -174,10 +174,9 @@ $("#finish-quiz").addEventListener("click", async () => {
     if (!response.ok) throw Error("SAVE_FAILED");
     const result = await response.json();
     if (!Number.isInteger(result.score) || result.total !== questions.length) throw Error("BAD_RESULT");
-    completed = true;
     $("#quiz-result").textContent = "نتيجتك: " + result.score + " من " + result.total + (result.score === result.total ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
-    $("#progress-label").textContent = "اكتمل الاختبار · " + result.score + "/" + result.total;
-    $("#progress-fill").style.width = "100%";
+    $("#progress-label").textContent = "نتيجة الاختبار: " + result.score + "/" + result.total;
+    $("#progress-fill").style.width = Math.round((result.score / result.total) * 100) + "%";
     $("#lesson-message").textContent = "تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.";
   } catch (_) {
     $("#lesson-message").textContent = "تعذر تصحيح الاختبار أو حفظ النتيجة. تحقق من اتصالك وتسجيل دخولك ثم حاول مجددًا.";
