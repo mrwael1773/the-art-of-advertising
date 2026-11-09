@@ -76,7 +76,7 @@ test("session lookup requires an unexpired hashed bearer cookie and logout revok
   assert.match(worker, /sessions\.token_hash=\? AND sessions\.expires_at>\?/);
   assert.match(worker, /b64\(await digest\(token\)\)/);
   assert.match(worker, /DELETE FROM sessions WHERE token_hash=\?/);
-  assert.match(worker, /set-cookie: setCookie\(url, "", 0\)/);
+  assert.match(worker, /"set-cookie": setCookie\(url, "", 0\)/);
   assert.match(worker, /HttpOnly; SameSite=Lax; Max-Age=/);
 });
 
