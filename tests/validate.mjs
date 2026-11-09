@@ -141,6 +141,41 @@ test("reading lesson accurately reflects the ten-year expansion to every US airl
   assert.doesNotMatch(lesson, /شركات طيران أمريكية أخرى لاحقًا/);
 });
 
+test("server answer key matches the correct option in every displayed quiz question", () => {
+  const keyMatch = worker.match(/const answerKey = (\\[[^\\]]+\\])/);
+  assert.ok(keyMatch, "server answer key must exist");
+  const answerKey = JSON.parse(keyMatch[1]);
+  const start = lesson.indexOf("const questions = [");
+  const end = lesson.indexOf("\\n];", start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const questionBlock = lesson.slice(start, end);
+  const optionArrays = [...questionBlock.matchAll(/a:(\\[[^\\]]*\\])/g)]
+    .map(match => JSON.parse(match[1]));
+  const expectedCorrectAnswers = [
+    "1949",
+    "New York",
+    "Diner’s Club Card",
+    "By thousands of businesses",
+    "Canada, France, and Cuba",
+    "Western Airlines",
+    "1984",
+    "نقد",
+    "محفظة",
+    "تجّار",
+    "بديل",
+    "شركة طيران",
+    "مكافآت",
+    "مزايا",
+    "خصومات"
+  ];
+  assert.equal(optionArrays.length, expectedCorrectAnswers.length);
+  assert.equal(answerKey.length, expectedCorrectAnswers.length);
+  expectedCorrectAnswers.forEach((expected, index) => {
+    assert.equal(optionArrays[index][answerKey[index]], expected, "Question " + (index + 1) + " answer key mismatch");
+  });
+});
+
 test("lesson has speech speed, translation reveal, quiz, and server progress persistence", () => {
   assert.match(page, /id="speech-speed"/);
   assert.match(page, /id="reading-list"/);
