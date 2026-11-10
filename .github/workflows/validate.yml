@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feature/student-auth]
+    branches: [feature/local-student-progress]
 
 permissions:
   contents: read
@@ -17,25 +17,18 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.12"
       - name: Check JavaScript syntax
         run: |
           node --check src/worker.js
           node --check public/app.js
+          node --check public/progress-store.js
           node --check public/lesson.js
-      - name: Run project tests
+          node --check tests/browser-smoke.mjs
+      - name: Run local progress and security tests
         run: node --test tests/validate.mjs
-      - name: Test Worker authentication and account isolation
-        run: node --test tests/worker-integration.mjs
-      - name: Test Worker against isolated local D1
-        run: node tests/d1-integration.mjs
-      - name: Validate database schema and isolation
-        run: python tests/check-schema.py
       - name: Install pinned browser test runtime
         run: npm install --no-save --no-package-lock playwright@1.56.1 axe-core@4.10.3
       - name: Install Chromium for browser smoke tests
         run: npx playwright install chromium
-      - name: Test student flows in Chromium
+      - name: Test local student flows in Chromium
         run: node tests/browser-smoke.mjs
