@@ -117,7 +117,7 @@ async function main() {
     const otherPage = await otherContext.newPage();
     await otherPage.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await otherPage.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.match(await otherPage.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
+    assert.match(await otherPage.locator("#progress-label").textContent(), /لم يبدأ الاختبار بعد/);
     await otherContext.close();
 
     for (const width of [320, 360, 390, 768, 1280]) {
