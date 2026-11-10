@@ -195,3 +195,40 @@ test("progress reads are isolated to the authenticated account", async () => {
   assert.deepEqual((await firstProgress.json()).progress.map(row => row.lesson_key), ["lesson-a"]);
   assert.deepEqual((await secondProgress.json()).progress.map(row => row.lesson_key), ["lesson-b"]);
 });
+
+
+test("state-changing requests reject cross-origin and cross-site attempts with security headers", async () => {
+  const db = new MemoryD1();
+  const crossOrigin = await worker.fetch(new Request("https://lesson.example/api/register", {
+    method: "POST",
+    headers: {
+      origin: "https://attacker.example",
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ username: "cross_site", password: "strong-password-7" })
+  }), { DB: db });
+  assert.equal(crossOrigin.status, 403);
+  assert.equal(db.users.size, 0);
+
+  const crossSite = await worker.fetch(new Request("https://lesson.example/api/register", {
+    method: "POST",
+    headers: {
+      origin: "https://lesson.example",
+      "sec-fetch-site": "cross-site",
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ username: "cross_fetch", password: "strong-password-8" })
+  }), { DB: db });
+  assert.equal(crossSite.status, 403);
+  assert.equal(db.users.size, 0);
+
+  for (const header of [
+    ["x-content-type-options", "nosniff"],
+    ["x-frame-options", "DENY"],
+    ["referrer-policy", "no-referrer"],
+    ["cross-origin-resource-policy", "same-origin"],
+    ["cache-control", "no-store"]
+  ]) {
+    assert.equal(crossOrigin.headers.get(header[0]), header[1], header[0] + " must be present on rejected API responses");
+  }
+});
