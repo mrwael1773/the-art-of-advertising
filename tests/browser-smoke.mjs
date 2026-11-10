@@ -89,7 +89,7 @@ async function main() {
     await page.locator(`input[name="question-0"][value="1"]`).check();
     assert.equal(await page.locator(".answer-feedback").count(), 0);
     await page.locator("#finish-quiz").click();
-    assert.equal(page.url(), origin + "/quiz.html");
+    assert.equal(new URL(page.url()).pathname, "/quiz");
     assert.match(await page.locator("#quiz-result").textContent(), /أكمل جميع الأسئلة/);
     assert.equal(await page.locator("#account-panel").count(), 0);
 
@@ -117,7 +117,7 @@ async function main() {
       await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
-    await page.waitForURL("**/results.html");
+    await page.waitForURL("**/results");
     assert.match(await page.locator("h2").textContent(), /النتيجة النهائية/);
     assert.match(await page.locator("#final-score").textContent(), /13\s*\/\s*15/);
     assert.equal(await page.locator(".wrong-answer").count(), 2);
