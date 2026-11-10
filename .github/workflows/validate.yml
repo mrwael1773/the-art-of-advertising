@@ -22,6 +22,7 @@ jobs:
           node --check src/worker.js
           node --check public/app.js
           node --check public/lesson.js
+          node --check public/results.js
           node --check tests/browser-smoke.mjs
       - name: Run security and behavior tests
         run: node --test tests/validate.mjs
