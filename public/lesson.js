@@ -137,26 +137,24 @@ stop.classList.add("stop-speech");
 $("#speech-speed").addEventListener("input", event => {
   $("#speed-value").textContent = Number(event.target.value).toFixed(2) + "×";
 });
-async function restoreProgress() {
-  try {
-    const response = await fetch("/api/progress", {credentials:"same-origin",cache:"no-store"});
-    if (!response.ok) return;
-    const data = await response.json();
-    const saved = (data.progress || []).find(row => row.lesson_key === "world-of-plastic-reading");
-    if (saved) {
-      const record = JSON.parse(saved.progress_json);
-      if (record.completed && Number.isInteger(record.score) &&
-          Number.isInteger(record.total) && record.total === questions.length &&
-          record.score >= 0 && record.score <= record.total) {
-        $("#progress-label").textContent = "نتيجة الاختبار السابقة: " + record.score + "/" + record.total;
-        $("#quiz-result").textContent = "آخر نتيجة محفوظة: " + record.score + " من " + record.total + ". يمكنك مراجعة الدرس ثم إعادة الاختبار.";
-        $("#progress-fill").setAttribute("data-score", String(record.score));
-      }
+function restoreProgress() {
+  const record = window.StudentProgressStore?.get("world-of-plastic-reading");
+  if (record && record.completed && record.total === questions.length) {
+    $("#progress-label").textContent = "نتيجة الاختبار المحفوظة: " + record.score + "/" + record.total;
+    $("#quiz-result").textContent = "آخر نتيجة محفوظة على هذا الجهاز: " + record.score + " من " + record.total + ". يمكنك مراجعة الدرس ثم إعادة الاختبار.";
+    $("#progress-fill").setAttribute("data-score", String(record.score));
+    if (Array.isArray(record.answers) && record.answers.length === questions.length) {
+      record.answers.forEach((answer, index) => {
+        if (!Number.isInteger(answer) || answer < 0 || answer >= questions[index].a.length) return;
+        const option = $('input[name="question-' + index + '"][value="' + answer + '"]');
+        if (option) option.checked = true;
+      });
     }
-  } catch (_) {}
+  }
 }
-$("#finish-quiz").addEventListener("click", async () => {
-  const answers = [], answered = questions.filter((question, index) => {
+$("#finish-quiz").addEventListener("click", () => {
+  const answers = [];
+  const answered = questions.filter((question, index) => {
     const selected = document.querySelector('input[name="question-' + index + '"]:checked');
     if (selected) answers[index] = Number(selected.value);
     return Boolean(selected);
@@ -166,29 +164,27 @@ $("#finish-quiz").addEventListener("click", async () => {
     return;
   }
   $("#finish-quiz").disabled = true;
-  $("#quiz-result").textContent = "جارٍ تصحيح المحاولة الجديدة...";
-  $("#lesson-message").textContent = "جارٍ تصحيح إجاباتك وحفظ نتيجتك...";
+  $("#quiz-result").textContent = "جارٍ تصحيح المحاولة...";
+  $("#lesson-message").textContent = "جارٍ تصحيح إجاباتك وحفظ نتيجتك على هذا الجهاز...";
   try {
-    const response = await fetch("/api/progress", {
-      method:"PUT", credentials:"same-origin", headers:{"content-type":"application/json"},
-      body:JSON.stringify({lessonKey:"world-of-plastic-reading",answers})
+    const answerKey = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const score = answers.reduce((sum, answer, index) => sum + (answer === answerKey[index] ? 1 : 0), 0);
+    window.StudentProgressStore.save("world-of-plastic-reading", {
+      completed: true, score, total: questions.length, answers
     });
-    if (!response.ok) throw Error("SAVE_FAILED");
-    const result = await response.json();
-    if (!Number.isInteger(result.score) || result.score < 0 || result.score > questions.length || result.total !== questions.length) throw Error("BAD_RESULT");
-    $("#quiz-result").textContent = "نتيجتك: " + result.score + " من " + result.total + (result.score === result.total ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
-    $("#progress-label").textContent = "نتيجة الاختبار: " + result.score + "/" + result.total;
-    $("#progress-fill").setAttribute("data-score", String(result.score));
-    $("#lesson-message").textContent = "تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.";
+    $("#quiz-result").textContent = "نتيجتك: " + score + " من " + questions.length + (score === questions.length ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
+    $("#progress-label").textContent = "نتيجة الاختبار: " + score + "/" + questions.length;
+    $("#progress-fill").setAttribute("data-score", String(score));
+    $("#lesson-message").textContent = "تم حفظ نتيجتك على هذا الجهاز وفي هذا المتصفح.";
   } catch (_) {
-    $("#quiz-result").textContent = "لم تُحفظ المحاولة الجديدة. بقيت آخر نتيجة محفوظة كما هي.";
-    $("#lesson-message").textContent = "تعذر تصحيح الاختبار أو حفظ النتيجة. تحقق من اتصالك وتسجيل دخولك ثم حاول مجددًا.";
+    $("#quiz-result").textContent = "تعذر حفظ المحاولة على هذا الجهاز. تحقق من مساحة التخزين وإعدادات المتصفح ثم حاول مجددًا.";
+    $("#lesson-message").textContent = "لم تُحفظ النتيجة؛ لا تغلق الصفحة قبل إعادة المحاولة.";
   } finally {
     $("#finish-quiz").disabled = false;
   }
 });
 const speedRow = $(".speed-control");
 if (speedRow) speedRow.append(stop);
-window.addEventListener("account-ready", restoreProgress);
+
 restoreProgress();
 })();
