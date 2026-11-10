@@ -9,6 +9,7 @@ const frontend = await readFile(new URL("../public/app.js", import.meta.url), "u
 const lesson = await readFile(new URL("../public/lesson.js", import.meta.url), "utf8");
 const page = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
 const styles = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
+const staticHeaders = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
 
 test("API and static asset responses receive browser security headers", () => {
   assert.match(worker, /headers\.set\("x-content-type-options", "nosniff"\)/);
@@ -17,6 +18,14 @@ test("API and static asset responses receive browser security headers", () => {
   assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
   assert.match(worker, /return secureResponse\(new Response\(/);
   assert.match(worker, /return secureResponse\(await env\.ASSETS\.fetch\(req\)\)/);
+});
+
+test("Cloudflare static asset headers cover assets served before the Worker", () => {
+  assert.match(staticHeaders, /^\/\*\n/);
+  assert.match(staticHeaders, /X-Content-Type-Options: nosniff/);
+  assert.match(staticHeaders, /X-Frame-Options: DENY/);
+  assert.match(staticHeaders, /Referrer-Policy: no-referrer/);
+  assert.match(staticHeaders, /Cross-Origin-Resource-Policy: same-origin/);
 });
 
 test("passwords use PBKDF2 with a per-user salt", () => {
