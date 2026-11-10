@@ -149,8 +149,8 @@ test("reading lesson contains six paraphrased reading paragraphs and forty-three
 test("quiz completion is kept distinct from the student's score", () => {
   assert.match(lesson, /نتيجة الاختبار السابقة:/);
   assert.match(lesson, /نتيجة الاختبار: /);
-  assert.match(lesson, /Math\.round\(\(record\.score \/ record\.total\) \* 100\)/);
-  assert.match(lesson, /Math\.round\(\(result\.score \/ result\.total\) \* 100\)/);
+  assert.match(lesson, /setAttribute\("data-score", String\(record\.score\)\)/);
+  assert.match(lesson, /setAttribute\("data-score", String\(result\.score\)\)/);
   assert.doesNotMatch(lesson, /progress-fill\)\.style\.width = "100%"/);
   assert.match(lesson, /result\.score < 0 \|\| result\.score > questions\.length/);
 });
