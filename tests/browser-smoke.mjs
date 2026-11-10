@@ -149,6 +149,7 @@ async function main() {
     await page.locator("#password").fill("browser-test-password-1");
     await page.getByRole("button", { name: "إنشاء الحساب" }).click();
     await page.locator("#account-panel").waitFor({ state: "visible" });
+    await page.getByText("اختر إجابة واحدة لكل سؤال، ثم اضغط على «تحقق من الإجابات» لعرض نتيجتك.").waitFor({ state: "visible" });
     assert.match(await page.locator("#account-name").textContent(), /browser_alpha/);
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
 
