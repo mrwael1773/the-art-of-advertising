@@ -136,6 +136,17 @@ async function main() {
     await page.reload({ waitUntil: "networkidle" });
     assert.match(await page.locator("#result-unavailable").textContent(), /غير متاحة/);
     assert.equal(await page.locator(".wrong-answer").count(), 0);
+    await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
+    const allCorrectAnswers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    for (let i = 0; i < allCorrectAnswers.length; i++) {
+      await page.locator(`input[name="question-${i}"][value="${allCorrectAnswers[i]}"]`).check();
+    }
+    await page.locator("#finish-quiz").click();
+    await page.waitForURL("**/results");
+    assert.match(await page.locator("#final-score").textContent(), /15\s*\/\s*15/);
+    assert.equal(await page.locator(".wrong-answer").count(), 0);
+    assert.equal(await page.locator("#all-correct").isVisible(), true);
+    assert.equal(await page.locator("#wrong-heading").isVisible(), false);
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({
