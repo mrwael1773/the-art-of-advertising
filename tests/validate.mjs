@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import vm from "node:vm";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 const [worker, config, app, lesson, page, headers, styles] = await Promise.all([
@@ -36,7 +35,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
   assert.match(styles, /color-scheme:dark/);
-  assert.match(page, /حفظ محلي/);
+  assert.doesNotMatch(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
   assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);
