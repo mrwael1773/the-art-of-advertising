@@ -53,6 +53,6 @@ test("practice answer positions are balanced and preserve original answer indexe
   assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
-  assert.ok(lesson.includes('input.dispatchEvent(new Event("change"'));
+  assert.ok(lesson.includes('input.addEventListener("change"'));
 });
 
