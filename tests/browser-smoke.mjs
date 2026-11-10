@@ -104,7 +104,17 @@ async function main() {
     await page.keyboard.press("Tab");
     assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab");
     assert.notEqual(await page.locator("#login-tab").evaluate(element => getComputedStyle(element).outlineStyle), "none");
-    await page.keyboard.press("Tab");
+    assert.equal(await page.locator("#login-tab").getAttribute("aria-controls"), "auth-form");
+    assert.equal(await page.locator("#auth-form").getAttribute("role"), "tabpanel");
+    assert.equal(await page.locator("#auth-form").getAttribute("aria-labelledby"), "login-tab");
+    assert.equal(await page.locator("#register-tab").getAttribute("tabindex"), "-1");
+    await page.keyboard.press("ArrowLeft");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab");
+    assert.equal(await page.locator("#register-tab").getAttribute("aria-selected"), "true");
+    assert.equal(await page.locator("#login-tab").getAttribute("tabindex"), "-1");
+    await page.keyboard.press("ArrowRight");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab");
+    await page.keyboard.press("ArrowLeft");
     assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab");
     await page.keyboard.press("Enter");
     assert.equal(await page.locator("#password-hint").isVisible(), true);
