@@ -17,7 +17,7 @@ test("Worker only serves static assets and retains security headers", () => {
   assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
   assert.match(worker, /content-security-policy/);
   assert.match(worker, /env\.ASSETS\.fetch\(request\)/);
-  assert.doesNotMatch(worker, /env\\.DB|D1|api/);
+  assert.doesNotMatch(worker, /env\.DB|D1|api/);
   assert.doesNotMatch(config, /d1_databases|database_id|binding = "DB"/);
 });
 
