@@ -47,7 +47,7 @@ body{background:radial-gradient(ellipse at 12% 0%,#20395d 0,transparent 38%),rad
 .tabs{background:#101c2e}.tab{color:#b5c2d5}.tab.active{background:#263a57;color:#fff;box-shadow:0 2px 9px #0004}
 input{background:#0f1b2d;border-color:#40516a;color:#edf4ff}
 input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
-.primary{background:#477fc4;color:#fff}.secondary,.logout-link{background:#253650;color:#e7edf7}
+.primary{background:#315f96;color:#fff}.secondary,.logout-link{background:#253650;color:#e7edf7}
 .speed-control{background:#101c2e;color:#dce7f7}.speed-control input{background:transparent;accent-color:#8db8ff}
 .reading-card,.vocab-card,.learning-link{background:#1d2b42;border-color:#3a4c66;color:#e7edf7}
 .reading-card-top strong,.section-tag,.menu-number{color:#a9caff}
