@@ -64,3 +64,10 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .success-mark{background:#173c36;color:#a9ead4}
 .message.success,.quiz-result{color:#8de0bd}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Immediate practice answer feedback */
+.answer-feedback{min-height:20px;margin:8px 2px 0;font-size:13px;font-weight:800}
+.answer-feedback:empty{display:none}
+.answer-feedback.is-correct{color:#8de0bd}
+.answer-feedback.is-wrong{color:#ffaaa8}
+.quiz-option:has(input:checked){background:#263e5e;border-color:#8db8ff}

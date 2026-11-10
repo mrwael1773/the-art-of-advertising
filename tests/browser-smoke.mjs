@@ -80,6 +80,14 @@ async function main() {
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
+    assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
+    assert.equal(await page.locator(".answer-feedback").count(), 15);
+    const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
+    assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
+    await page.locator(`input[name="question-0"][value="1"]`).check();
+    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة خاطئة.*الإجابة الصحيحة/);
+    await page.locator(`input[name="question-0"][value="0"]`).check();
+    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة صحيحة/);
     assert.equal(await page.locator("#account-panel").count(), 0);
 
     const response = await page.request.get(origin + "/");
@@ -114,6 +122,7 @@ async function main() {
     await page.reload({ waitUntil: "networkidle" });
     assert.match(await page.locator("#progress-label").textContent(), /15\/15/);
     assert.match(await page.locator("#quiz-result").textContent(), /15 من 15/);
+    assert.equal(await page.locator(".answer-feedback.is-correct").count(), 15);
     for (let i = 0; i < answers.length; i++) {
       assert.equal(
         await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).isChecked(),
@@ -127,7 +136,7 @@ async function main() {
     const otherPage = await otherContext.newPage();
     await otherPage.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await otherPage.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.match(await otherPage.locator("#progress-label").textContent(), /لم يبدأ الاختبار بعد/);
+    assert.match(await otherPage.locator("#progress-label").textContent(), /لم تبدأ التمارين بعد/);
     await otherContext.close();
 
     for (const width of [320, 360, 390, 768, 1280]) {
