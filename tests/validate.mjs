@@ -1,13 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import vm from "node:vm";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, store, headers, styles] = await Promise.all([
+const [worker, config, app, lesson, page, headers, styles] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
-  read("../public/progress-store.js"), read("../public/_headers"), read("../public/styles.css")
+  read("../public/_headers"), read("../public/styles.css")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
@@ -36,7 +35,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
   assert.match(styles, /color-scheme:dark/);
-  assert.match(page, /حفظ محلي/);
+  assert.doesNotMatch(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
   assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);
@@ -44,68 +43,17 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(lesson, /if\(quizArea\)questions\.forEach/);
 });
 
-test("quiz result persistence validates the record and uses local browser storage", () => {
-  assert.match(store, /localStorage\.getItem/);
-  assert.match(store, /localStorage\.setItem/);
-  assert.match(store, /Number\.isInteger\(record\.score\)/);
-  assert.match(store, /record\.completed !== true/);
-  assert.match(lesson, /StudentProgressStore\.save/);
-  assert.match(lesson, /StudentProgressStore\?\.get/);
+test("practice answers and results are not persisted between visits", () => {
+  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|sessionStorage|restore\(/);
+  assert.doesNotMatch(page, /progress-store|حفظ محلي/);
+  assert.match(lesson, /localStorage\.removeItem/);
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
-test("practice answer positions are balanced and preserve saved answer indexes", () => {
+test("practice answer positions are balanced and preserve original answer indexes", () => {
   assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
-  assert.ok(lesson.includes('input.dispatchEvent(new Event("change"'));
+  assert.ok(lesson.includes('input.addEventListener("change"'));
 });
 
-test("local progress survives a page reload and rejects malformed or impossible scores", async () => {
-  const data = new Map();
-  const localStorage = {
-    getItem: key => data.has(key) ? data.get(key) : null,
-    setItem: (key, value) => data.set(key, String(value)),
-    removeItem: key => data.delete(key)
-  };
-  const makeStore = () => {
-    const window = { localStorage };
-    vm.runInNewContext(store, { window, Number, JSON, Object, TypeError, Date });
-    return window.StudentProgressStore;
-  };
-  const firstPage = makeStore();
-  const saved = firstPage.save("world-of-plastic-reading", {
-    completed: true, score: 12, total: 15, answers: Array(15).fill(0)
-  });
-  assert.equal(saved.score, 12);
-  assert.equal(firstPage.get("world-of-plastic-reading").total, 15);
-
-  const afterReload = makeStore();
-  assert.equal(afterReload.get("world-of-plastic-reading").score, 12);
-  assert.equal(afterReload.get("missing-lesson"), null);
-  assert.throws(() => afterReload.save("bad", { completed: true, score: 16, total: 15 }), /غير صالحة/);
-  assert.throws(() => afterReload.save("bad", { completed: false, score: 1, total: 15 }), /غير صالحة/);
-
-  data.set("art-of-advertising:student-progress:v1", "{broken-json");
-  assert.equal(makeStore().get("world-of-plastic-reading"), null);
-  afterReload.clear("world-of-plastic-reading");
-  assert.equal(data.has("art-of-advertising:student-progress:v1"), false);
-});
-
-test("unavailable browser storage does not crash progress restoration", () => {
-  const window = { localStorage: {
-    getItem() { throw new DOMException("Storage is disabled", "SecurityError"); },
-    setItem() { throw new DOMException("Storage is disabled", "SecurityError"); },
-    removeItem() { throw new DOMException("Storage is disabled", "SecurityError"); }
-  }};
-  vm.runInNewContext(store, { window, Number, JSON, Object, TypeError, Date, DOMException });
-  assert.equal(window.StudentProgressStore.get("world-of-plastic-reading"), null);
-  assert.throws(() => window.StudentProgressStore.save("world-of-plastic-reading", {
-    completed: true, score: 1, total: 15
-  }), error => error.name === "SecurityError");
-});
-
-test("the same browser origin stores no identity fields or account credentials", () => {
-  assert.doesNotMatch(store, /username|password|email|studentName/i);
-  assert.match(store, /art-of-advertising:student-progress:v1/);
-});

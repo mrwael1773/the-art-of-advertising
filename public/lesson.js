@@ -1,5 +1,6 @@
 (() => {
 "use strict";
+try{window.localStorage.removeItem("art-of-advertising:student-progress:v1");}catch(_){}
 const paragraphs = [
 [
 ["Can you imagine a world without credit cards?","هل يمكنك تخيّل عالمٍ بلا بطاقات ائتمان؟"],
@@ -63,7 +64,7 @@ const questions = [
 {q:"What does “benefits” mean?",a:["مزايا","مواقف","سلع"],correct:0},
 {q:"What does “discounts” mean?",a:["امتيازات","خصومات","إنفاق"],correct:1}
 ];
-// Distribute the correct answer positions evenly without changing stored answer indexes.
+// Distribute the correct answer positions evenly without changing original answer indexes.
 const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
 questions.forEach((q,i)=>{
   const distractors=q.a.map((_,index)=>index).filter(index=>index!==q.correct);
@@ -80,7 +81,21 @@ if(vocabularyList)words.forEach(([word,meaning])=>{const card=document.createEle
 if(quizArea)questions.forEach((q,i)=>{const block=document.createElement("div");block.className="quiz-question";const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;const group=document.createElement("div");group.className="quiz-options";const feedback=document.createElement("p");feedback.className="answer-feedback";feedback.setAttribute("role","status");feedback.setAttribute("aria-live","polite");q.displayOrder.forEach(originalIndex=>{const answer=q.a[originalIndex];const label=document.createElement("label");label.className="quiz-option";const input=document.createElement("input");input.type="radio";input.name="question-"+i;input.value=String(originalIndex);input.addEventListener("change",()=>{const correct=Number(input.value)===q.correct;feedback.className="answer-feedback "+(correct?"is-correct":"is-wrong");feedback.textContent=correct?"✓ إجابة صحيحة.":"✗ إجابة خاطئة. الإجابة الصحيحة: "+q.a[q.correct];});const span=document.createElement("span");span.textContent=answer;label.append(input,span);group.append(label);});block.append(heading,group,feedback);quizArea.append(block);});
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
-function restore(){const record=window.StudentProgressStore?.get("world-of-plastic-reading");if(record&&record.completed&&record.total===questions.length){const progressLabel=$("#progress-label"),quizResult=$("#quiz-result"),progressFill=$("#progress-fill");if(progressLabel)progressLabel.textContent="نتيجة التمارين المحفوظة: "+record.score+"/"+record.total;if(quizResult)quizResult.textContent="آخر نتيجة للتمارين محفوظة على هذا الجهاز: "+record.score+" من "+record.total+".";if(progressFill)progressFill.setAttribute("data-score",String(record.score));if(Array.isArray(record.answers)&&record.answers.length===questions.length)record.answers.forEach((a,i)=>{if(Number.isInteger(a)&&a>=0&&a<questions[i].a.length){const input=$('input[name="question-'+i+'"][value="'+a+'"]');if(input){input.checked=true;input.dispatchEvent(new Event("change",{bubbles:true}));}}});}}
-const finishButton=$("#finish-quiz");if(finishButton)finishButton.addEventListener("click",()=>{const answers=[];let answered=0;questions.forEach((q,i)=>{const selected=document.querySelector('input[name="question-'+i+'"]:checked');if(selected){answers[i]=Number(selected.value);answered++;}});if(answered!==questions.length){$("#quiz-result").textContent="أكمل جميع الأسئلة أولًا. أجبت عن "+answered+" من "+questions.length+".";return;}const score=answers.reduce((sum,a,i)=>sum+(a===questions[i].correct?1:0),0);try{window.StudentProgressStore.save("world-of-plastic-reading",{completed:true,score,total:questions.length,answers});$("#quiz-result").textContent="نتيجتك: "+score+" من "+questions.length;$("#progress-label").textContent="نتيجة التمارين: "+score+"/"+questions.length;$("#progress-fill").setAttribute("data-score",String(score));$("#lesson-message").textContent="تم حفظ نتيجتك على هذا الجهاز وفي هذا المتصفح.";}catch(_){$("#quiz-result").textContent="تعذر حفظ النتيجة على هذا الجهاز.";}});
-const speedRow=$(".speed-control");if(speedRow)speedRow.append(stop);restore();
+const finishButton=$("#finish-quiz");
+if(finishButton)finishButton.addEventListener("click",()=>{
+  let answered=0;
+  const answers=[];
+  questions.forEach((q,i)=>{
+    const selected=document.querySelector('input[name="question-'+i+'"]:checked');
+    if(selected){answers[i]=Number(selected.value);answered++;}
+  });
+  if(answered!==questions.length){
+    $("#quiz-result").textContent="أكمل جميع الأسئلة أولًا. أجبت عن "+answered+" من "+questions.length+".";
+    return;
+  }
+  const score=answers.reduce((sum,a,i)=>sum+(a===questions[i].correct?1:0),0);
+  $("#quiz-result").textContent="نتيجتك: "+score+" من "+questions.length+". يمكنك إعادة التمارين متى شئت.";
+  $("#lesson-message").textContent="لم يتم حفظ إجاباتك أو نتيجتك؛ ابدأ محاولة جديدة عند إعادة تحميل الصفحة.";
+});
+const speedRow=$(".speed-control");if(speedRow)speedRow.append(stop);
 })();
