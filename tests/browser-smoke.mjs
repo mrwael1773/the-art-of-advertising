@@ -132,6 +132,19 @@ async function main() {
     });
     assert.deepEqual(authenticatedAccessibility, [], `Authenticated accessibility violations: ${JSON.stringify(authenticatedAccessibility)}`);
 
+    // Verify sequential keyboard access to lesson controls and labeled quiz choices.
+    await page.locator("#logout-button").focus();
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "speech-speed");
+    await page.keyboard.press("Tab");
+    assert.match(await page.evaluate(() => document.activeElement.textContent), /استمع للفقرة/);
+    await page.keyboard.press("Tab");
+    assert.match(await page.evaluate(() => document.activeElement.textContent), /إظهار الترجمة/);
+    const quizChoice = page.locator('input[name="question-0"][value="0"]');
+    assert.equal(await quizChoice.evaluate(input => input.labels?.length === 1), true, "Quiz radio choices must have associated labels");
+    await quizChoice.focus();
+    assert.equal(await quizChoice.evaluate(input => document.activeElement === input), true);
+
     // Confirm basic learner controls respond in the rendered browser UI.
     await page.locator("#speech-speed").evaluate(element => {
       element.value = "1.1";
