@@ -45,7 +45,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.ok(lesson.includes('window.location.assign("./results.html")'));
   assert.ok(resultPage.includes("النتيجة النهائية"));
   assert.ok(resultPage.includes("results.js"));
-  assert.ok(resultScript.includes('sessionStorage.removeItem("art-of-advertising:attempt-result:v1")'));
+  assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
 });
 
 test("practice answers and results are not persisted between visits", () => {
