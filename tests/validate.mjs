@@ -54,6 +54,13 @@ test("quiz result persistence validates the record and uses local browser storag
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
+test("practice answer positions are balanced and preserve saved answer indexes", () => {
+  assert.match(lesson, /const correctPositions = \\[1,2,0,1,2,1,0,2,0,2,1,0,2,0,1\\]/);
+  assert.match(lesson, /q\\.displayOrder\\.splice\\(correctPositions\\[i\\],0,q\\.correct\\)/);
+  assert.match(lesson, /input\\.value=String\\(originalIndex\\)/);
+  assert.match(lesson, /input\\.dispatchEvent\\(new Event\\("change"/);
+});
+
 test("local progress survives a page reload and rejects malformed or impossible scores", async () => {
   const data = new Map();
   const localStorage = {
