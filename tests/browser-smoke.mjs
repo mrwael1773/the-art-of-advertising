@@ -49,11 +49,28 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator("#auth-form, #username, #password, #login-tab, #register-tab").count(), 0);
+    assert.equal(await page.locator(".learning-link").count(), 3);
+    assert.equal(await page.locator("#reading-list, #vocabulary-list, #quiz-area").count(), 0);
+
+    await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
+    assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
+    assert.equal(await page.locator("#reading-list .sentence-ar[hidden]").count(), 29);
+    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
+    assert.equal(await page.locator(".sentence-ar").first().isVisible(), true);
+    assert.match(await page.locator(".sentence-ar").first().textContent(), /تخيّل/);
+    assert.equal(await page.locator(".sentence-ar[hidden]").count(), 28);
+    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
+    assert.equal(await page.locator(".sentence-ar").first().isVisible(), false);
+
+    await page.goto(origin + "/words.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
+    await page.locator(".vocab-card").first().locator(".mini-button").nth(1).click();
+    assert.equal(await page.locator(".vocab-meaning").first().isVisible(), true);
+
+    await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
-    assert.equal(await page.locator("#account-panel").isVisible(), true);
+    assert.equal(await page.locator("#account-panel").count(), 0);
 
     const response = await page.request.get(origin + "/");
     assert.equal(response.status(), 200);
@@ -98,7 +115,7 @@ async function main() {
     // A separate browser profile must not see this profile's local progress.
     const otherContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const otherPage = await otherContext.newPage();
-    await otherPage.goto(origin, { waitUntil: "networkidle" });
+    await otherPage.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await otherPage.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
     assert.match(await otherPage.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
     await otherContext.close();
