@@ -197,6 +197,23 @@ test("progress reads are isolated to the authenticated account", async () => {
 });
 
 
+test("mutating requests without Origin and reads with a foreign Origin are rejected", async () => {
+  const db = new MemoryD1();
+  const missingOrigin = await worker.fetch(new Request("https://lesson.example/api/register", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "missing_origin", password: "strong-password-9" })
+  }), { DB: db });
+  assert.equal(missingOrigin.status, 403);
+  assert.equal(db.users.size, 0);
+
+  const foreignRead = await worker.fetch(new Request("https://lesson.example/api/me", {
+    method: "GET",
+    headers: { origin: "https://attacker.example" }
+  }), { DB: db });
+  assert.equal(foreignRead.status, 403);
+});
+
 test("state-changing requests reject cross-origin and cross-site attempts with security headers", async () => {
   const db = new MemoryD1();
   const crossOrigin = await worker.fetch(new Request("https://lesson.example/api/register", {
