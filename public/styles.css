@@ -20,3 +20,20 @@
 #progress-fill[data-score="15"]{width:100%}
 
 .local-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:20px;background:#e9f7f2;color:#176b4b;font-size:11px;font-weight:800;white-space:nowrap}
+
+/* Separate learning pages */
+.page-nav{display:flex;flex-wrap:wrap;gap:7px;margin:22px 0 0;padding:7px;background:#eaf0f8;border-radius:13px}
+.page-nav a{flex:1 1 auto;text-align:center;text-decoration:none;color:#526176;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:700}
+.page-nav a.current{background:#fff;color:var(--navy);box-shadow:0 2px 8px #152b4912}
+.page-intro{margin-top:30px}
+.lesson-page{margin-top:0}
+.learning-menu{display:grid;gap:10px;margin-top:22px}
+.learning-link{display:flex;align-items:center;gap:13px;padding:15px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s}
+.learning-link:hover{border-color:#9db5d8;transform:translateY(-1px)}
+.learning-link>span:nth-child(2){display:grid;gap:3px;flex:1}
+.learning-link strong{font-size:15px;color:var(--navy)}
+.learning-link small{margin:0;font-size:12px;line-height:1.5}
+.menu-number{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#edf2fb;color:var(--blue);font-weight:900}
+.menu-arrow{font-size:19px;color:var(--blue)}
+.home-note{margin:18px 0 0;color:var(--muted);font-size:12px}
+@media(max-width:420px){.page-nav{gap:4px}.page-nav a{padding:8px 7px;font-size:12px}.learning-link{padding:12px;gap:9px}}
