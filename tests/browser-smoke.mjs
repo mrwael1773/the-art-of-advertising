@@ -14,14 +14,6 @@ const env = { ...process.env, DO_NOT_TRACK: "1", CI: "1" };
 let server;
 let serverOutput = "";
 
-function runWrangler(args) {
-  const result = spawnSync("npx", ["--yes", `wrangler@${wranglerVersion}`, ...args], {
-    cwd: process.cwd(), env, encoding: "utf8", stdio: "inherit", timeout: 180_000
-  });
-  if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`Wrangler exited with code ${result.status}`);
-}
-
 async function waitForServer() {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
@@ -36,10 +28,6 @@ async function waitForServer() {
 }
 
 async function main() {
-  runWrangler([
-    "--yes", `wrangler@${wranglerVersion}`, "dev", "--config", "wrangler.toml",
-    "--local", "--ip", "127.0.0.1", "--port", String(port), "--persist-to", stateDir
-  ]);
   server = spawn("npx", [
     "--yes", `wrangler@${wranglerVersion}`, "dev", "--config", "wrangler.toml",
     "--local", "--ip", "127.0.0.1", "--port", String(port), "--persist-to", stateDir
