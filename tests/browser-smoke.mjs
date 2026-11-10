@@ -228,6 +228,7 @@ async function main() {
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.locator("#account-panel").waitFor({ state: "visible" });
     await page.getByText("نتيجة الاختبار السابقة: 15/15").waitFor();
+    await page.getByText("آخر نتيجة محفوظة: 15 من 15. يمكنك مراجعة الدرس ثم إعادة الاختبار.").waitFor();
 
     await page.locator("#logout-button").click();
     await page.locator("#auth-form").waitFor({ state: "visible" });
