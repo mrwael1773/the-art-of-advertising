@@ -152,6 +152,13 @@ async function main() {
     assert.match(incompleteQuizState.message, /أكمل جميع الأسئلة أولًا/);
     assert.match(incompleteQuizState.progress, /لم يبدأ الدرس بعد/);
     assert.equal(incompleteQuizState.message.includes("نتيجتك:"), false);
+    const incompleteSavedProgress = await page.evaluate(async () => {
+      const response = await fetch("/api/progress", { credentials: "same-origin", cache: "no-store" });
+      if (!response.ok) throw new Error("Could not verify progress after an incomplete quiz.");
+      return await response.json();
+    });
+    assert.deepEqual(incompleteSavedProgress, { progress: [] },
+      "an incomplete quiz must not create a server-side progress record");
 
     const authenticatedAccessibility = await page.evaluate(async () => {
       const result = await axe.run(document, {
