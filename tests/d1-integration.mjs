@@ -90,6 +90,16 @@ async function main() {
   });
   assert.equal(wrongContentType.status, 415, "non-JSON API bodies must be rejected");
 
+  const jsonpContentType = await api("/api/login", {
+    method: "POST", rawBody: "{}", contentType: "application/jsonp"
+  });
+  assert.equal(jsonpContentType.status, 415, "JSON-like but non-JSON media types must be rejected");
+
+  const parameterizedJson = await api("/api/login", {
+    method: "POST", rawBody: "{}", contentType: "application/json; charset=utf-8"
+  });
+  assert.equal(parameterizedJson.status, 400, "valid JSON media types with parameters should reach JSON parsing");
+
   const oversizedBody = await api("/api/login", {
     method: "POST",
     rawBody: JSON.stringify({ username: "oversized", password: "x".repeat(9000) })
