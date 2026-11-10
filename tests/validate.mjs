@@ -53,7 +53,7 @@ test("practice answers and results are not persisted between visits", () => {
   assert.doesNotMatch(page, /progress-store|حفظ محلي/);
   assert.match(lesson, /localStorage\.removeItem/);
   assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
-  assert.ok(resultScript.includes('sessionStorage.removeItem("art-of-advertising:attempt-result:v1")'));
+  assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
