@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright";
+import axe from "axe-core";
 
 const wranglerVersion = "4.159.0";
 const config = "wrangler.test.toml";
@@ -57,6 +58,22 @@ async function main() {
     const page = await browser.newPage();
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     assert.match(await page.title(), /The Art of Advertising/);
+
+    await page.addScriptTag({ content: axe.source });
+    const accessibility = await page.evaluate(async () => {
+      const result = await axe.run(document, {
+        runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] }
+      });
+      return {
+        violations: result.violations.map(item => ({
+          id: item.id,
+          impact: item.impact,
+          description: item.description,
+          nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary }))
+        }))
+      };
+    });
+    assert.deepEqual(accessibility.violations, [], `Accessibility violations: ${JSON.stringify(accessibility.violations)}`);
 
     // Basic semantic accessibility and responsive-layout checks at common viewport widths.
     assert.equal(await page.locator("html").getAttribute("lang"), "ar");
