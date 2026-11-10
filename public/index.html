@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10233f">
+<meta name="description" content="The Art of Advertising — The World of Plastic">
+<title>The Art of Advertising | تسجيل الدخول</title>
+<link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script><script src="/lesson.js" defer></script>
+</head>
+<body><main class="shell">
+<header class="brand"><div class="brand-mark" aria-hidden="true">A</div><div><p class="eyebrow">UNIT 4 · READING</p><h1>The Art of Advertising</h1><p class="subtitle">The World of Plastic</p></div></header>
+<section class="intro"><p class="eyebrow">مساحة التعلم</p><h2>تعلّم، وتابع تقدمك خطوة بخطوة.</h2><p>أنشئ حسابًا لحفظ تقدمك ونتائجك، أو سجّل الدخول للمتابعة من حيث توقفت.</p></section>
+<section class="auth-card" aria-labelledby="auth-title">
+<div class="tabs" role="tablist" aria-label="نوع الحساب"><button class="tab active" id="login-tab" type="button" role="tab" aria-controls="auth-form" aria-selected="true" tabindex="0">تسجيل الدخول</button><button class="tab" id="register-tab" type="button" role="tab" aria-controls="auth-form" aria-selected="false" tabindex="-1">إنشاء حساب</button></div>
+<form id="auth-form" role="tabpanel" aria-labelledby="login-tab" tabindex="0" novalidate><h2 id="auth-title">مرحبًا بعودتك</h2><p class="form-hint" id="form-hint">أدخل اسم المستخدم وكلمة المرور للمتابعة.</p>
+<label for="username">اسم المستخدم</label><input id="username" name="username" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+<small>من 3 إلى 24 حرفًا إنجليزيًا أو رقمًا أو شرطة سفلية (_).</small>
+<label for="password">كلمة المرور</label><input id="password" name="password" type="password" minlength="1" maxlength="128" autocomplete="current-password" required>
+<small id="password-hint" hidden>يجب أن تتكون من 10 خانات على الأقل.</small>
+<p id="message" class="message" role="status" aria-live="polite"></p><button class="primary" id="submit-button" type="submit">دخول</button></form>
+<section id="account-panel" class="account-panel" hidden aria-live="polite">
+<div class="account-top"><div><p class="eyebrow">مساحة الطالب</p><h2>أهلًا <strong id="account-name"></strong></h2></div><button class="logout-link" id="logout-button" type="button">تسجيل الخروج</button></div>
+<div class="lesson-heading"><div><p class="eyebrow">UNIT 4 · READING 9</p><h2>The World of Plastic</h2><p class="form-hint">تعلّم أحداث القطعة خطوة بخطوة.</p></div><span class="lesson-number">01</span></div>
+<div class="lesson-progress"><span id="progress-label">لم يبدأ الدرس بعد</span><div class="progress-track"><span id="progress-fill"></span></div></div>
+<section class="learning-section" aria-labelledby="reading-title"><div class="section-heading"><div><p class="eyebrow">STEP 1</p><h3 id="reading-title">اقرأ الجمل واستمع</h3></div><span class="section-tag">Reading</span></div>
+<p class="section-note">الجمل التالية تعيد عرض أفكار القطعة بعبارات مبسطة، وليست نقلًا حرفيًا منها.</p>
+<div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.65" max="1.2" step="0.05" value="0.85"><output id="speed-value">0.85×</output></div>
+<div id="reading-list" class="reading-list"></div></section>
+<section class="learning-section" aria-labelledby="vocab-title"><div class="section-heading"><div><p class="eyebrow">STEP 2</p><h3 id="vocab-title">الكلمات المهمة</h3></div><span class="section-tag">Vocabulary</span></div><p class="section-note">اضغط على استمع لسماع نطق الكلمة، ثم اكشف معناها.</p><div id="vocabulary-list" class="vocabulary-grid"></div></section>
+<section class="learning-section" aria-labelledby="quiz-title"><div class="section-heading"><div><p class="eyebrow">STEP 3</p><h3 id="quiz-title">اختبر فهمك</h3></div><span class="section-tag">Practice</span></div><p class="section-note">اختر إجابة واحدة لكل سؤال، ثم اضغط على «تحقق من الإجابات» لعرض نتيجتك.</p><div id="quiz-area"></div><p id="quiz-result" class="quiz-result" aria-live="polite"></p><button id="finish-quiz" class="primary" type="button">تحقق من الإجابات</button></section>
+<p id="lesson-message" class="lesson-message" role="status" aria-live="polite"></p>
+</section>
+</section><footer><p>موقع تعليمي مستقل · لا نطلب بيانات شخصية غير ضرورية.</p></footer></main></body></html>

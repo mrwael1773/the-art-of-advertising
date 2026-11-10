@@ -1,25 +1,51 @@
 # The Art of Advertising
 
-An independent learning website for the Unit 4 Reading passage **The World of Plastic**.
+An independent learning website for Unit 4 Reading: **The World of Plastic**.
 
 ## Project boundaries
 - This repository is separate from English Hero and Cosmic Quest.
-- Learning content must come only from the supplied course PDF.
-- Public self-registration is allowed; the intended school audience is first-year secondary students at Gulf Secondary School, but registration is not restricted to that school.
+- Learning material is based only on the supplied course PDF and paraphrased for learners.
+- Self-registration is open to everyone; the intended school audience is first-year secondary students at Gulf Secondary School.
 - Each account must only access its own progress.
-- No paid services, advertising, analytics, or third-party AI features.
+- No paid services, ads, analytics, or third-party AI features.
 
-## Planned architecture
-- Static frontend.
-- Cloudflare Worker for authentication and progress APIs.
-- Cloudflare D1 for account, session, and progress records.
-- Passwords are stored only as salted password hashes; sessions use secure, HttpOnly cookies.
-- The browser must never receive administrative secrets.
+## Current implementation
+- Responsive Arabic account interface in `public/`.
+- Reading lesson with six paraphrased sections, paragraph and sentence speech, adjustable speed, stop control, Arabic translations, 43 vocabulary entries, and 15 activities (7 comprehension + 8 vocabulary).
+- Cloudflare Worker API in `src/worker.js`.
+- D1 schema in `migrations/0001_initial.sql`.
+- Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
+- Random session tokens are stored as hashes in D1 and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
+- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected. Worker-generated API responses receive `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Cross-Origin-Resource-Policy: same-origin`; `public/_headers` applies the same protections to static assets that Cloudflare serves before invoking the Worker.
+- Login attempts are throttled per IP and per username; registration attempts are throttled per IP.
+- Quiz answers are graded by the Worker against a server-side answer key that is not included in student-facing JavaScript. Results are stored against the authenticated account.
 
-## Safety and deployment
-- Do not deploy or configure production resources without explicit deployment approval.
-- Do not put secrets in client-side files.
-- Do not claim school readiness until authentication, authorization, data isolation, content, audio, and target-device tests have passed.
+## Source limitation
+The previously prepared ZIP is listed in the user's Library, but its raw bytes could not be accessed in the current environment. The current frontend was reconstructed from the supplied PDF and available requirements; it has not been verified as a byte-for-byte restoration of that ZIP.
 
-## Current status
-Repository foundation only. Application files and Cloudflare resources have not yet been deployed.
+## Automated local verification
+- Run `node tests/d1-integration.mjs` to start the Worker with Wrangler and an isolated local D1 database.
+- `wrangler.test.toml` is a test-only configuration with a placeholder local database ID; it does not change `wrangler.toml`.
+- The integration test applies the checked-in migration to a fresh temporary local D1 store, then exercises static security headers, JSON content-type and 8 KiB body limits, same-origin and Fetch Metadata enforcement, registration, case-insensitive username uniqueness, login, progress persistence, account isolation, invalid progress rejection, logout, expired-session rejection, and both login and registration throttling through real HTTP requests to the Worker. The expiry case updates only the disposable local test database; the throttling cases verify the per-IP registration ceiling (five allowed, sixth returns HTTP 429), per-IP login ceiling (30 allowed, 31st returns HTTP 429), and per-IP+username login ceiling (eight failed attempts followed by HTTP 429).
+- The test pins Wrangler **4.159.0** and explicitly passes `--local` for D1 migration and Worker execution. It requires Node.js/npm and network access to download Wrangler on first use, but does not require a Cloudflare login, API token, paid service, or production resource.
+- GitHub Actions runs this local D1 integration test on every push to `feature/student-auth` and pull request targeting `main`.
+
+## Production configuration still required
+1. Only after explicit approval, create a free Cloudflare D1 database.
+2. Replace the placeholder `database_id` in `wrangler.toml` with the real database ID.
+3. Apply the migration to the approved database and configure the Worker for deployment.
+4. After publication is explicitly approved, test real account flows, session expiry, rate limits, account isolation, browsers, and target devices.
+
+No Cloudflare production resource has been created or deployed.
+
+## Verification status
+- GitHub Actions validation runs are recorded against the latest branch commit; see the current branch checks before merging.
+- The latest automated verification status is determined by the checks on the current `feature/student-auth` head; earlier successful runs do not establish that later commits passed.
+- The local D1 integration test verifies static security headers, non-JSON and oversized request rejection, same-origin and cross-site Fetch Metadata enforcement, registration and case-insensitive username uniqueness, wrong-password rejection, valid login, server-side progress scoring and persistence, cross-account progress isolation, invalid-answer rejection, logout revocation, expired-session rejection, registration throttling, the per-IP login ceiling, and the per-IP+username login threshold.
+- The mocked Worker tests also cover session cookie properties; the SQLite checks exercise the schema, foreign-key cascades, and rate-limit SQL. The D1-backed Worker tests use a separate fresh temporary database and do not modify production data.
+- Local D1 tests use Cloudflare's local simulator/runtime, not a live remote Cloudflare D1 database. They materially improve API/database coverage but do not replace production verification.
+- Real browser/device and iPhone speech testing, live Cloudflare account flows, production session-expiry and rate-limit checks, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
+- Server-side grading prevents a student-facing client from simply submitting a claimed score, but it does not establish educational mastery or prove the quiz's pedagogical validity.
+- This project is **not ready for school use or production**.
+
+Keep pull request #1 as a draft. Do not merge or deploy until outstanding verification is completed and explicitly approved.

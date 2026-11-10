@@ -1,0 +1,13 @@
+name = "the-art-of-advertising-local-test"
+main = "src/worker.js"
+compatibility_date = "2026-11-09"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "the-art-of-advertising-local-test"
+database_id = "00000000-0000-4000-8000-000000000001"
+migrations_dir = "migrations"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
