@@ -144,6 +144,47 @@ async function main() {
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
 
+    // Verify that lesson audio controls call the Web Speech API with English text and the selected rate.
+    await page.evaluate(() => {
+      const calls = { cancel: 0, spoken: [] };
+      class MockUtterance {
+        constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+      }
+      Object.defineProperty(window, "speechSynthesis", {
+        configurable: true,
+        value: {
+          cancel() { calls.cancel += 1; },
+          speak(utterance) {
+            calls.spoken.push({
+              text: utterance.text,
+              lang: utterance.lang,
+              rate: utterance.rate
+            });
+          }
+        }
+      });
+      Object.defineProperty(window, "SpeechSynthesisUtterance", {
+        configurable: true,
+        value: MockUtterance
+      });
+      window.__speechTestCalls = calls;
+    });
+    await page.getByRole("button", { name: /استمع للفقرة/ }).first().click();
+    let speechCalls = await page.evaluate(() => window.__speechTestCalls);
+    assert.equal(speechCalls.cancel, 1, "Starting speech must cancel any previous utterance");
+    assert.equal(speechCalls.spoken.length, 1);
+    assert.match(speechCalls.spoken[0].text, /Credit cards have changed/);
+    assert.equal(speechCalls.spoken[0].lang, "en-US");
+    assert.equal(speechCalls.spoken[0].rate, 0.85);
+    await page.getByRole("button", { name: /استمع للجملة 1/ }).first().click();
+    speechCalls = await page.evaluate(() => window.__speechTestCalls);
+    assert.equal(speechCalls.spoken.length, 2, "Sentence speech control must issue a new utterance");
+    assert.equal(speechCalls.spoken[1].text, "Credit cards have changed the way people pay for goods and services.");
+    await page.getByRole("button", { name: "استمع" }).first().click();
+    speechCalls = await page.evaluate(() => window.__speechTestCalls);
+    assert.equal(speechCalls.spoken.length, 3, "Vocabulary speech control must issue an utterance");
+    assert.equal(speechCalls.spoken[2].text, "imagine");
+
     await page.getByRole("tab", { name: "إنشاء حساب" }).click();
     await page.locator("#username").fill("browser_alpha");
     await page.locator("#password").fill("browser-test-password-1");
