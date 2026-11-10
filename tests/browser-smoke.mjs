@@ -137,6 +137,8 @@ async function main() {
     await page.keyboard.press("Tab");
     assert.equal(await page.evaluate(() => document.activeElement.id), "speech-speed");
     await page.keyboard.press("Tab");
+    assert.match(await page.evaluate(() => document.activeElement.textContent), /إيقاف النطق/);
+    await page.keyboard.press("Tab");
     assert.match(await page.evaluate(() => document.activeElement.textContent), /استمع للفقرة/);
     await page.keyboard.press("Tab");
     assert.match(await page.evaluate(() => document.activeElement.textContent), /إظهار الترجمة/);
