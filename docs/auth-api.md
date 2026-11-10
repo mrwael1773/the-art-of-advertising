@@ -1,6 +1,6 @@
 # Authentication API
 
-All API routes are same-origin under `/api`. JSON request bodies are streamed and capped at 8 KiB. State-changing requests require an exact same-origin `Origin` header; requests marked as cross-site by Fetch Metadata are rejected.
+All API routes are same-origin under `/api`. Mutating JSON routes require the exact `application/json` media type (optional parameters such as `charset=utf-8` are accepted); JSONP and other lookalike media types are rejected. JSON request bodies are streamed and capped at 8 KiB. State-changing requests require an exact same-origin `Origin` header; requests marked as cross-site by Fetch Metadata are rejected.
 
 ## Routes
 
