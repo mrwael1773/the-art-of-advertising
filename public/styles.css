@@ -64,5 +64,3 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .success-mark{background:#173c36;color:#a9ead4}
 .message.success,.quiz-result{color:#8de0bd}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-
-.audio-next-link{display:block;margin-top:16px;padding:11px 14px;text-align:center;text-decoration:none;border-radius:12px;background:#477fc4;color:#fff;font-weight:800}

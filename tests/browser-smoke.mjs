@@ -49,20 +49,16 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator(".learning-link").count(), 4);
-    assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 1);
+    assert.equal(await page.locator(".learning-link").count(), 3);
+    assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 0);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
 
-    await page.goto(origin + "/audio.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator("#speech-speed").count(), 1);
-    assert.equal(await page.locator("#play-sample").count(), 1);
-    await page.locator("#speech-speed").evaluate(el => { el.value = "1.2"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "1.20×");
-    assert.equal(await page.locator("#reading-list, #vocabulary-list, #quiz-area").count(), 0);
-
     await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 1);
+    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
+    assert.equal(await page.locator("#speech-speed").count(), 1);
+    await page.locator("#speech-speed").evaluate(el => { el.value = "1.1"; el.dispatchEvent(new Event("input", { bubbles: true })); });
+    assert.equal(await page.locator("#speed-value").textContent(), "1.10×");
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
     assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
     assert.equal(await page.locator("#reading-list .sentence-ar[hidden]").count(), 29);
@@ -74,6 +70,10 @@ async function main() {
     assert.equal(await page.locator(".sentence-ar").first().isVisible(), false);
 
     await page.goto(origin + "/words.html", { waitUntil: "networkidle" });
+    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
+    assert.equal(await page.locator("#speech-speed").count(), 1);
+    await page.locator("#speech-speed").evaluate(el => { el.value = "1.15"; el.dispatchEvent(new Event("input", { bubbles: true })); });
+    assert.equal(await page.locator("#speed-value").textContent(), "1.15×");
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
     await page.locator(".vocab-card").first().locator(".mini-button").nth(1).click();
     assert.equal(await page.locator(".vocab-meaning").first().isVisible(), true);

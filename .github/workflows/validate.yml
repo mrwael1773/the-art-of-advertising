@@ -23,7 +23,6 @@ jobs:
           node --check public/app.js
           node --check public/progress-store.js
           node --check public/lesson.js
-          node --check public/audio.js
           node --check tests/browser-smoke.mjs
       - name: Run local progress and security tests
         run: node --test tests/validate.mjs
