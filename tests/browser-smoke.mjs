@@ -142,10 +142,16 @@ async function main() {
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
 
     // An incomplete quiz must not be submitted or create a saved progress result.
-    await page.locator("#finish-quiz").click();
-    assert.match(await page.locator("#quiz-result").textContent(), /أكمل جميع الأسئلة أولًا/);
-    assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
-    assert.equal(await page.locator("#quiz-result").textContent().includes("نتيجتك:"), false);
+    const incompleteQuizState = await page.evaluate(() => {
+      document.querySelector("#finish-quiz").click();
+      return {
+        message: document.querySelector("#quiz-result").textContent,
+        progress: document.querySelector("#progress-label").textContent
+      };
+    });
+    assert.match(incompleteQuizState.message, /أكمل جميع الأسئلة أولًا/);
+    assert.match(incompleteQuizState.progress, /لم يبدأ الدرس بعد/);
+    assert.equal(incompleteQuizState.message.includes("نتيجتك:"), false);
 
     const authenticatedAccessibility = await page.evaluate(async () => {
       const result = await axe.run(document, {
