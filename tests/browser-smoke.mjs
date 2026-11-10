@@ -71,7 +71,10 @@ async function main() {
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
 
     // Confirm basic learner controls respond in the rendered browser UI.
-    await page.locator("#speech-speed").fill("1.1");
+    await page.locator("#speech-speed").evaluate(element => {
+      element.value = "1.1";
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+    });
     assert.match(await page.locator("#speed-value").textContent(), /1\.10/);
     await page.getByRole("button", { name: "إظهار الترجمة" }).first().click();
     assert.equal(await page.locator(".sentence-ar").first().isVisible(), true);
