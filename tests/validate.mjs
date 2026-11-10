@@ -16,6 +16,7 @@ test("API and static asset responses receive browser security headers", () => {
   assert.match(worker, /headers\.set\("x-frame-options", "DENY"\)/);
   assert.match(worker, /headers\.set\("referrer-policy", "no-referrer"\)/);
   assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
+  assert.match(worker, /headers\.set\("content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"\)/);
   assert.match(worker, /return secureResponse\(new Response\(/);
   assert.match(worker, /return secureResponse\(await env\.ASSETS\.fetch\(req\)\)/);
 });
@@ -26,6 +27,7 @@ test("Cloudflare static asset headers cover assets served before the Worker", ()
   assert.match(staticHeaders, /X-Frame-Options: DENY/);
   assert.match(staticHeaders, /Referrer-Policy: no-referrer/);
   assert.match(staticHeaders, /Cross-Origin-Resource-Policy: same-origin/);
+  assert.match(staticHeaders, /Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'/);
 });
 
 test("passwords use PBKDF2 with a per-user salt", () => {
