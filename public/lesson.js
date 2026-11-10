@@ -149,6 +149,7 @@ async function restoreProgress() {
           Number.isInteger(record.total) && record.total === questions.length &&
           record.score >= 0 && record.score <= record.total) {
         $("#progress-label").textContent = "نتيجة الاختبار السابقة: " + record.score + "/" + record.total;
+        $("#quiz-result").textContent = "آخر نتيجة محفوظة: " + record.score + " من " + record.total + ". يمكنك مراجعة الدرس ثم إعادة الاختبار.";
         $("#progress-fill").setAttribute("data-score", String(record.score));
       }
     }
