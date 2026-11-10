@@ -102,6 +102,24 @@ async function call(db, path, options) {
   return worker.fetch(request(path, options), { DB: db });
 }
 
+test("authentication fails closed when rate-limit storage is unavailable", async () => {
+  const db = {
+    prepare() {
+      return {
+        bind() { return this; },
+        async run() { throw Error("simulated D1 outage"); },
+        async first() { throw Error("simulated D1 outage"); }
+      };
+    }
+  };
+  const response = await call(db, "/api/register", {
+    method: "POST", body: { username: "storage_failure", password: "strong-password-0" }
+  });
+  assert.equal(response.status, 500);
+  assert.deepEqual(await response.json(), { error: "حدث خطأ داخلي." });
+  assert.equal(response.headers.get("set-cookie"), null);
+});
+
 test("registration creates a host-only secure session and /api/me returns the account", async () => {
   const db = new MemoryD1();
   const response = await call(db, "/api/register", {
