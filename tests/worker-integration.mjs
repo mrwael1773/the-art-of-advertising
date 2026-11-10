@@ -280,7 +280,7 @@ test("session lookup fails closed when D1 is unavailable", async () => {
       };
     }
   };
-  const cookie = "session=" + "A".repeat(43);
+  const cookie = "__Host-session=" + "A".repeat(43);
   for (const path of ["/api/me", "/api/progress"]) {
     const response = await call(unavailableDb, path, { cookie });
     assert.equal(response.status, 500, path + " must not authenticate when session storage is unavailable");
