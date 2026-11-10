@@ -166,6 +166,7 @@ $("#finish-quiz").addEventListener("click", async () => {
     return;
   }
   $("#finish-quiz").disabled = true;
+  $("#quiz-result").textContent = "جارٍ تصحيح المحاولة الجديدة...";
   $("#lesson-message").textContent = "جارٍ تصحيح إجاباتك وحفظ نتيجتك...";
   try {
     const response = await fetch("/api/progress", {
@@ -180,6 +181,7 @@ $("#finish-quiz").addEventListener("click", async () => {
     $("#progress-fill").setAttribute("data-score", String(result.score));
     $("#lesson-message").textContent = "تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.";
   } catch (_) {
+    $("#quiz-result").textContent = "لم تُحفظ المحاولة الجديدة. بقيت آخر نتيجة محفوظة كما هي.";
     $("#lesson-message").textContent = "تعذر تصحيح الاختبار أو حفظ النتيجة. تحقق من اتصالك وتسجيل دخولك ثم حاول مجددًا.";
   } finally {
     $("#finish-quiz").disabled = false;
