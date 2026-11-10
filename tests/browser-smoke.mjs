@@ -125,7 +125,8 @@ async function main() {
     assert.match(await page.locator(".wrong-answer").first().textContent(), /الإجابة الصحيحة/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /1949/);
     assert.equal(await page.evaluate(() => sessionStorage.getItem("art-of-advertising:attempt-result:v1")), null);
-    assert.equal(await page.locator('#result-content a[href="./quiz.html"]').count(), 1);
+    assert.equal(await page.locator('#result-content a[href="./index.html"]').count(), 1);
+    assert.match(await page.locator("#result-content a[href=\"./index.html\"]").textContent(), /العودة إلى القائمة الرئيسية/);
     await page.route(origin + "/__test/axe.js", route => route.fulfill({ status: 200, contentType: "application/javascript; charset=utf-8", body: axe.source }));
     await page.addScriptTag({ url: origin + "/__test/axe.js" });
     const resultAccessibility = await page.evaluate(async () => {
