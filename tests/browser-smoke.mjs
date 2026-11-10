@@ -115,30 +115,19 @@ async function main() {
     }
     await page.locator("#finish-quiz").click();
     await page.waitForFunction(() => document.querySelector("#quiz-result")?.textContent.includes("15 من 15"));
-    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("art-of-advertising:student-progress:v1")));
-    assert.equal(stored["world-of-plastic-reading"].score, 15);
-    assert.equal(stored["world-of-plastic-reading"].total, 15);
-
+    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
     await page.reload({ waitUntil: "networkidle" });
-    assert.match(await page.locator("#progress-label").textContent(), /15\/15/);
-    assert.match(await page.locator("#quiz-result").textContent(), /15 من 15/);
-    assert.equal(await page.locator(".answer-feedback.is-correct").count(), 15);
+    assert.equal(await page.locator("#quiz-result").textContent(), "");
     for (let i = 0; i < answers.length; i++) {
       assert.equal(
         await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).isChecked(),
-        true,
-        `Saved answer for question ${i + 1} was not restored`
+        false,
+        `Answer for question ${i + 1} unexpectedly persisted after reload`
       );
     }
-
-    // A separate browser profile must not see this profile's local progress.
-    const otherContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const otherPage = await otherContext.newPage();
-    await otherPage.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
-    assert.equal(await otherPage.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.match(await otherPage.locator("#progress-label").textContent(), /لم تبدأ التمارين بعد/);
-    await otherContext.close();
-
+    assert.equal(await page.locator("#finish-quiz").count(), 1);
+    await page.locator(`input[name="question-0"][value="0"]`).check();
+    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة صحيحة/);
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({
@@ -150,7 +139,7 @@ async function main() {
     }
     assert.deepEqual(apiRequests, [], "The page must not send progress or account API requests");
     await context.close();
-    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, quiz save/reload including selected answers, profile isolation, responsive widths, and no account/progress API calls.");
+    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, non-persistent answers/results after reload, responsive widths, and no account/progress API calls.");
   } finally {
     await browser.close();
   }
