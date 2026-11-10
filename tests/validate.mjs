@@ -44,7 +44,7 @@ test("quiz result persistence validates the record and uses local browser storag
   assert.match(store, /record\.completed !== true/);
   assert.match(lesson, /StudentProgressStore\.save/);
   assert.match(lesson, /StudentProgressStore\?\.get/);
-  assert.equal([...lesson.matchAll(/correct:\\s*[0-2]/g)].length, 15);
+  assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
 test("local progress survives a page reload and rejects malformed or impossible scores", async () => {
