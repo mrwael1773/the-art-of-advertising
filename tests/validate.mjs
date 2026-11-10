@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, headers, styles] = await Promise.all([
+const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
+  read("../public/results.html"), read("../public/results.js"),
   read("../public/_headers"), read("../public/styles.css")
 ]);
 
@@ -41,12 +42,18 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);
   assert.match(lesson, /if\(vocabularyList\)words\.forEach/);
   assert.match(lesson, /if\(quizArea\)questions\.forEach/);
+  assert.ok(lesson.includes('window.location.assign("./results.html")'));
+  assert.ok(resultPage.includes("النتيجة النهائية"));
+  assert.ok(resultPage.includes("results.js"));
+  assert.ok(resultScript.includes('sessionStorage.removeItem("art-of-advertising:attempt-result:v1")'));
 });
 
 test("practice answers and results are not persisted between visits", () => {
-  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|sessionStorage|restore\(/);
+  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|restore\(/);
   assert.doesNotMatch(page, /progress-store|حفظ محلي/);
   assert.match(lesson, /localStorage\.removeItem/);
+  assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
+  assert.ok(resultScript.includes('sessionStorage.removeItem("art-of-advertising:attempt-result:v1")'));
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
@@ -54,6 +61,6 @@ test("practice answer positions are balanced and preserve original answer indexe
   assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
-  assert.ok(lesson.includes('input.addEventListener("change"'));
+  assert.ok(lesson.includes("window.location.assign"));
 });
 
