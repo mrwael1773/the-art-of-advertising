@@ -27,5 +27,7 @@ jobs:
           node --check public/lesson.js
       - name: Run project tests
         run: node --test tests/validate.mjs
+      - name: Test Worker authentication and account isolation
+        run: node --test tests/worker-integration.mjs
       - name: Validate database schema and isolation
         run: python tests/check-schema.py
