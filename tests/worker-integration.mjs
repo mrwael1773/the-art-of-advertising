@@ -1,9 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { webcrypto } from "node:crypto";
 import worker from "../src/worker.js";
 
-globalThis.crypto = webcrypto;
 
 class MemoryD1 {
   constructor() {
