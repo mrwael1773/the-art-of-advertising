@@ -81,6 +81,16 @@ async function main() {
       assert.ok(dimensions.scroll <= dimensions.client + 1, `Horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
     }
     await page.setViewportSize(originalViewport);
+
+    // Keyboard users must be able to reach and activate the account tabs with visible focus.
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab");
+    assert.notEqual(await page.locator("#login-tab").evaluate(element => getComputedStyle(element).outlineStyle), "none");
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab");
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator("#password-hint").isVisible(), true);
     assert.equal(await page.locator("#account-panel").isVisible(), false);
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
