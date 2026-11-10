@@ -80,6 +80,7 @@ async function main() {
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
+    assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
     assert.equal(await page.locator(".answer-feedback").count(), 15);
     const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
     assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
@@ -134,7 +135,7 @@ async function main() {
     const otherPage = await otherContext.newPage();
     await otherPage.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await otherPage.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.match(await otherPage.locator("#progress-label").textContent(), /لم يبدأ الاختبار بعد/);
+    assert.match(await otherPage.locator("#progress-label").textContent(), /لم تبدأ التمارين بعد/);
     await otherContext.close();
 
     for (const width of [320, 360, 390, 768, 1280]) {
