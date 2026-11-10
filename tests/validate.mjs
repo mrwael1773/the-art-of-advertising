@@ -31,9 +31,9 @@ test("passwords use PBKDF2 with a per-user salt", () => {
 test("session cookies use host-only scope and HTTPS-only Secure attributes", () => {
   assert.match(worker, /function cookieName\(url\) \{ return url\.protocol === "https:" \? "__Host-session" : "session"; \}/);
   assert.match(worker, /function setCookie\(url, token, age\)/);
-  assert.match(worker, /Path=\\/; HttpOnly; SameSite=Lax; Max-Age=/);
+  assert.ok(worker.includes("Path=/; HttpOnly; SameSite=Lax; Max-Age="));
   assert.match(worker, /const secure = url\.protocol === "https:" \? "; Secure" : ""/);
-  assert.match(worker, /return cookieName\(url\) \+ "=" \+ token \+ "; Path=\\/; HttpOnly; SameSite=Lax; Max-Age=" \+ age \+ secure/);
+  assert.ok(worker.includes('return cookieName(url) + "=" + token + "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" + age + secure'));
   assert.doesNotMatch(worker, /; Domain=/i);
   assert.match(worker, /const SESSION_TTL = 604800/);
   assert.match(worker, /random\(32\)/);
