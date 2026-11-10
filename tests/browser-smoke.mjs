@@ -142,6 +142,12 @@ async function main() {
     assert.match(await page.evaluate(() => document.activeElement.textContent), /استمع للفقرة/);
     await page.keyboard.press("Tab");
     assert.match(await page.evaluate(() => document.activeElement.textContent), /إظهار الترجمة/);
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator(".sentence-ar").first().isVisible(), true, "Translation reveal must work with Enter");
+    assert.match(await page.evaluate(() => document.activeElement.textContent), /إخفاء الترجمة/);
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator(".sentence-ar").first().isVisible(), false, "Translation hide must work with Enter");
+    assert.match(await page.evaluate(() => document.activeElement.textContent), /إظهار الترجمة/);
     const quizChoice = page.locator('input[name="question-0"][value="0"]');
     assert.equal(await quizChoice.evaluate(input => input.labels?.length === 1), true, "Quiz radio choices must have associated labels");
     await quizChoice.focus();
