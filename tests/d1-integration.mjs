@@ -70,7 +70,7 @@ async function main() {
     "--yes", `wrangler@${wranglerVersion}`, "dev",
     "--config", config, "--local", "--ip", "127.0.0.1",
     "--port", String(port), "--persist-to", stateDir
-  ], { cwd: process.cwd(), env, stdio: ["ignore", "pipe", "pipe"] });
+  ], { cwd: process.cwd(), env, stdio: ["ignore", "pipe", "pipe"], detached: process.platform !== "win32" });
   server.stdout.on("data", chunk => { serverOutput += chunk.toString(); });
   server.stderr.on("data", chunk => { serverOutput += chunk.toString(); });
   await waitForServer();
@@ -165,12 +165,23 @@ async function main() {
 try {
   await main();
 } finally {
-  if (server && server.exitCode === null) {
-    server.kill("SIGTERM");
-    await new Promise(resolve => {
-      const fallback = setTimeout(resolve, 5_000);
-      server.once("exit", () => { clearTimeout(fallback); resolve(); });
-    });
+  if (server && server.exitCode === null && server.signalCode === null) {
+    const exited = new Promise(resolve => server.once("exit", resolve));
+    try {
+      if (process.platform === "win32") server.kill("SIGTERM");
+      else process.kill(-server.pid, "SIGTERM");
+    } catch {
+      server.kill("SIGTERM");
+    }
+    await Promise.race([exited, new Promise(resolve => setTimeout(resolve, 5_000))]);
+    if (server.exitCode === null && server.signalCode === null) {
+      try {
+        if (process.platform === "win32") server.kill("SIGKILL");
+        else process.kill(-server.pid, "SIGKILL");
+      } catch {
+        server.kill("SIGKILL");
+      }
+    }
   }
   rmSync(stateDir, { recursive: true, force: true });
 }
