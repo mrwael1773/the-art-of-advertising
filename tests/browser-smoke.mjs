@@ -140,6 +140,13 @@ async function main() {
     await page.locator("#account-panel").waitFor({ state: "visible" });
     assert.match(await page.locator("#account-name").textContent(), /browser_alpha/);
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
+
+    // An incomplete quiz must not be submitted or create a saved progress result.
+    await page.locator("#finish-quiz").click();
+    assert.match(await page.locator("#quiz-result").textContent(), /أكمل جميع الأسئلة أولًا/);
+    assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
+    assert.equal(await page.locator("#quiz-result").textContent().includes("نتيجتك:"), false);
+
     const authenticatedAccessibility = await page.evaluate(async () => {
       const result = await axe.run(document, {
         runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] }
