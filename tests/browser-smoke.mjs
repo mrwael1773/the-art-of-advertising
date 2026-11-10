@@ -61,7 +61,8 @@ async function main() {
     assert.equal(response.headers()["x-content-type-options"], "nosniff");
     assert.ok(response.headers()["content-security-policy"]);
 
-    await page.addScriptTag({ content: axe.source });
+    await page.route(origin + "/__test/axe.js", route => route.fulfill({ status: 200, contentType: "application/javascript; charset=utf-8", body: axe.source }));
+    await page.addScriptTag({ url: origin + "/__test/axe.js" });
     const accessibility = await page.evaluate(async () => {
       const result = await axe.run(document, {
         runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] }
