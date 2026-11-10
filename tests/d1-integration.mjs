@@ -100,6 +100,16 @@ async function main() {
   });
   assert.equal(parameterizedJson.status, 400, "valid JSON media types with parameters should reach JSON parsing");
 
+  const malformedJson = await api("/api/login", {
+    method: "POST", rawBody: "{not-json"
+  });
+  assert.equal(malformedJson.status, 400, "malformed JSON must be rejected");
+
+  const invalidUtf8 = await api("/api/login", {
+    method: "POST", rawBody: new Uint8Array([0xc3, 0x28])
+  });
+  assert.equal(invalidUtf8.status, 400, "invalid UTF-8 request bodies must be rejected");
+
   const oversizedBody = await api("/api/login", {
     method: "POST",
     rawBody: JSON.stringify({ username: "oversized", password: "x".repeat(9000) })
@@ -111,6 +121,15 @@ async function main() {
     extraHeaders: { "sec-fetch-site": "cross-site" }
   });
   assert.equal(fetchMetadataCrossSite.status, 403, "cross-site Fetch Metadata must be rejected");
+
+  const unauthenticatedProgressRead = await api("/api/progress");
+  assert.equal(unauthenticatedProgressRead.status, 401, "students must sign in before reading progress");
+
+  const unauthenticatedProgressWrite = await api("/api/progress", {
+    method: "PUT",
+    body: { lessonKey: "world-of-plastic-reading", answers: Array(15).fill(0) }
+  });
+  assert.equal(unauthenticatedProgressWrite.status, 401, "students must sign in before writing progress");
 
   const registration = await api("/api/register", {
     method: "POST",
