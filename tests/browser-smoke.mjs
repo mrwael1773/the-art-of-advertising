@@ -210,6 +210,7 @@ async function main() {
     await page.locator("#finish-quiz").click();
     await page.getByText("نتيجتك: 15 من 15").waitFor();
     await page.getByText("تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.").waitFor();
+    assert.equal(await page.locator("#progress-fill").getAttribute("data-score"), "15", "CSP-safe progress indicator must reflect the saved score");
 
     // The result must survive a browser refresh and a fresh authenticated page load.
     await page.reload({ waitUntil: "domcontentloaded" });
