@@ -268,3 +268,24 @@ test("state-changing requests reject cross-origin and cross-site attempts with s
     assert.equal(crossOrigin.headers.get(header[0]), header[1], header[0] + " must be present on rejected API responses");
   }
 });
+
+
+test("session lookup fails closed when D1 is unavailable", async () => {
+  const unavailableDb = {
+    prepare() {
+      return {
+        bind() { return this; },
+        async first() { throw Error("simulated session lookup outage"); },
+        async all() { throw Error("simulated progress lookup outage"); }
+      };
+    }
+  };
+  const cookie = "session=" + "A".repeat(43);
+  for (const path of ["/api/me", "/api/progress"]) {
+    const response = await call(unavailableDb, path, { cookie });
+    assert.equal(response.status, 500, path + " must not authenticate when session storage is unavailable");
+    assert.deepEqual(await response.json(), { error: "حدث خطأ داخلي." });
+    assert.equal(response.headers.get("set-cookie"), null);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+  }
+});
