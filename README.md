@@ -26,7 +26,7 @@ The previously prepared ZIP is listed in the user's Library, but its raw bytes c
 ## Automated local verification
 - Run `node tests/d1-integration.mjs` to start the Worker with Wrangler and an isolated local D1 database.
 - `wrangler.test.toml` is a test-only configuration with a placeholder local database ID; it does not change `wrangler.toml`.
-- The integration test applies the checked-in migration to a fresh temporary local D1 store, then exercises registration, case-insensitive username uniqueness, login, same-origin enforcement, progress persistence, account isolation, invalid progress rejection, and logout through real HTTP requests to the Worker.
+- The integration test applies the checked-in migration to a fresh temporary local D1 store, then exercises registration, case-insensitive username uniqueness, login, same-origin enforcement, progress persistence, account isolation, invalid progress rejection, logout, expired-session rejection, and login throttling through real HTTP requests to the Worker. The expiry case updates only the disposable local test database; the throttling case confirms that eight failures are followed by HTTP 429 for the same IP+username.
 - The test pins Wrangler **4.159.0** and explicitly passes `--local` for D1 migration and Worker execution. It requires Node.js/npm and network access to download Wrangler on first use, but does not require a Cloudflare login, API token, paid service, or production resource.
 - GitHub Actions runs this local D1 integration test on every push to `feature/student-auth` and pull request targeting `main`.
 
@@ -39,10 +39,10 @@ The previously prepared ZIP is listed in the user's Library, but its raw bytes c
 No Cloudflare production resource has been created or deployed.
 
 ## Verification status
-- GitHub Actions **#151** (pull request) and **#152** (push) passed on commit **`514fd32f21a5bfdf066735c468eb8f417e4fc0e7`**.
+- GitHub Actions **#155** (push) and **#156** (pull request) passed on commit **`e28b04dd3a0c25e30ba19d2c7b9a29c4ec06d835`**.
 - Both runs passed JavaScript syntax checks, all **23 Node structural tests**, the mocked Worker lifecycle tests, the real Worker + isolated local D1 HTTP integration test, and the SQLite schema/isolation checks.
-- The local D1 integration test verified registration, case-insensitive username uniqueness, wrong-password rejection, valid login, same-origin enforcement, server-side progress scoring and persistence, cross-account progress isolation, invalid-answer rejection, and logout revocation.
-- The mocked Worker tests also cover expired sessions and session cookie properties; the SQLite checks exercise the schema, foreign-key cascades, and rate-limit SQL. Rate-limit behavior has not yet been exercised end-to-end through the D1-backed Worker.
+- The local D1 integration test verified registration, case-insensitive username uniqueness, wrong-password rejection, valid login, same-origin enforcement, server-side progress scoring and persistence, cross-account progress isolation, invalid-answer rejection, logout revocation, expired-session rejection, and the per-IP+username login threshold (eight failed attempts followed by HTTP 429).
+- The mocked Worker tests also cover session cookie properties; the SQLite checks exercise the schema, foreign-key cascades, and rate-limit SQL. The D1-backed Worker tests use a separate fresh temporary database and do not modify production data.
 - Local D1 tests use Cloudflare's local simulator/runtime, not a live remote Cloudflare D1 database. They materially improve API/database coverage but do not replace production verification.
 - Real browser/device and iPhone speech testing, live Cloudflare account flows, production session-expiry and rate-limit checks, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
 - Server-side grading prevents a student-facing client from simply submitting a claimed score, but it does not establish educational mastery or prove the quiz's pedagogical validity.
