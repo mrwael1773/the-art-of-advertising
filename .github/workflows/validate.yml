@@ -29,5 +29,7 @@ jobs:
         run: node --test tests/validate.mjs
       - name: Test Worker authentication and account isolation
         run: node --test tests/worker-integration.mjs
+      - name: Test Worker against isolated local D1
+        run: node tests/d1-integration.mjs
       - name: Validate database schema and isolation
         run: python tests/check-schema.py
