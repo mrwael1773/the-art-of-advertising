@@ -37,7 +37,7 @@ No Cloudflare resource has been created or deployed.
 - At that verification point, the workflow passed JavaScript syntax checks, all **21 Node structural tests**, and the SQLite schema, account-isolation, and rate-limit SQL tests.
 - The quiz answer-key alignment regression test was added and passed in GitHub Actions runs **#116** (push) and **#117** (pull request) on commit `73ec5d0b1040b5c6592eb91348f0c50f8a9b2d84`; the suite then contained **22 Node structural tests**.
 - Browser security-header coverage was added and passed in GitHub Actions pull-request run **#122** on commit `0bbfbcd7b76bb3003ff9ccfc414ae30c39ed6310`; the suite then contained **23 Node structural tests**.
-- The latest GitHub Actions pull-request run **#124** passed on commit `13fc93a7f8b0c9879b436a9815ab9fc62d1553eb**`; all **23 Node structural tests** and the database schema/isolation checks passed.
+- The latest GitHub Actions pull-request run **#124** passed on commit `13fc93a7f8b0c9879b436a9815ab9fc62d1553eb`**`; all **23 Node structural tests** and the database schema/isolation checks passed.
 - These automated checks do not exercise the Worker against a live Cloudflare D1 database.
 - Live registration, login, logout, session expiry, rate-limit behavior, and two-account isolation remain unverified.
 - Real browser/device and iPhone speech testing, security penetration testing, teacher review, and supervised pilot testing remain outstanding.
