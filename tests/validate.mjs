@@ -44,8 +44,9 @@ test("student page has no registration, login, username, or password controls", 
 });
 
 test("practice answers and results are not persisted between visits", () => {
-  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage|sessionStorage|restore\(/);
+  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|sessionStorage|restore\(/);
   assert.doesNotMatch(page, /progress-store|حفظ محلي/);
+  assert.match(lesson, /localStorage\.removeItem/);
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
