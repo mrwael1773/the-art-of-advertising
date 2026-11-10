@@ -15,7 +15,7 @@ if(!valid){unavailable.hidden=false;unavailable.textContent="النتيجة غي
 content.hidden=false;
 document.querySelector("#final-score").textContent=result.score+" / "+result.total;
 const list=document.querySelector("#wrong-answers");
-if(result.wrongAnswers.length===0){document.querySelector("#all-correct").hidden=false;return;}
+if(result.wrongAnswers.length===0){document.querySelector("#wrong-heading").hidden=true;document.querySelector("#all-correct").hidden=false;return;}
 result.wrongAnswers.forEach((item,index)=>{
   const card=document.createElement("article");card.className="wrong-answer";
   const question=document.createElement("p");question.className="wrong-question";question.textContent=(index+1)+". "+item.question;
