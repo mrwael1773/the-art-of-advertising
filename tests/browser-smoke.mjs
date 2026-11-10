@@ -116,6 +116,16 @@ async function main() {
     assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab");
     await page.keyboard.press("ArrowLeft");
     assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab");
+    await page.keyboard.press("Home");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab", "Home must focus the first tab");
+    assert.equal(await page.locator("#login-tab").getAttribute("aria-selected"), "true");
+    await page.keyboard.press("End");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab", "End must focus the last tab");
+    assert.equal(await page.locator("#register-tab").getAttribute("aria-selected"), "true");
+    await page.keyboard.press("Home");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "login-tab");
+    await page.keyboard.press("End");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "register-tab");
     await page.keyboard.press("Enter");
     assert.equal(await page.locator("#password-hint").isVisible(), true);
     assert.equal(await page.locator("#account-panel").isVisible(), false);
