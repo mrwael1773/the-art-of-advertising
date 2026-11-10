@@ -159,7 +159,40 @@ async function main() {
   const betaStillValid = await api("/api/me", { cookie: betaCookie });
   assert.equal(betaStillValid.status, 200, "revoking one session must not affect another account");
 
-  console.log("Local D1 integration passed: registration, case-insensitive uniqueness, login, same-origin enforcement, progress persistence, account isolation, validation, and logout.");
+  // Expire one real D1-backed session without exposing or logging its bearer token.
+  const expiryRegistration = await api("/api/register", {
+    method: "POST",
+    body: { username: "expired_worker", password: "secure-test-password-4" },
+    ip: "203.0.113.41"
+  });
+  assert.equal(expiryRegistration.status, 201);
+  const expiryCookie = cookieFrom(expiryRegistration);
+  runWrangler([
+    "d1", "execute", database, "--local", "--config", config,
+    "--persist-to", stateDir, "--command",
+    "UPDATE sessions SET expires_at = 1 WHERE user_id = (SELECT id FROM users WHERE username = 'expired_worker')"
+  ]);
+  const expiredMe = await api("/api/me", { cookie: expiryCookie, ip: "203.0.113.41" });
+  assert.equal(expiredMe.status, 401, "an expired D1 session must not authenticate");
+
+  // Exercise the actual D1-backed per-IP+username login ceiling: eight failures, then 429.
+  const limitedIp = "203.0.113.77";
+  for (let attempt = 1; attempt <= 8; attempt++) {
+    const rejected = await api("/api/login", {
+      method: "POST",
+      ip: limitedIp,
+      body: { username: "limit_target", password: "incorrect-test-password" }
+    });
+    assert.equal(rejected.status, 401, `login attempt ${attempt} should be counted and rejected as bad credentials`);
+  }
+  const throttled = await api("/api/login", {
+    method: "POST",
+    ip: limitedIp,
+    body: { username: "limit_target", password: "incorrect-test-password" }
+  });
+  assert.equal(throttled.status, 429, "the ninth attempt for the same IP and username must be throttled");
+
+  console.log("Local D1 integration passed: registration, case-insensitive uniqueness, login, same-origin enforcement, progress persistence, account isolation, validation, logout, expired-session rejection, and D1-backed login throttling.");
 }
 
 try {
