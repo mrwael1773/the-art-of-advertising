@@ -83,13 +83,14 @@ async function main() {
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
     assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
-    assert.equal(await page.locator(".answer-feedback").count(), 15);
+    assert.equal(await page.locator(".answer-feedback").count(), 0);
     const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
     assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
     await page.locator(`input[name="question-0"][value="1"]`).check();
-    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة خاطئة.*الإجابة الصحيحة/);
-    await page.locator(`input[name="question-0"][value="0"]`).check();
-    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة صحيحة/);
+    assert.equal(await page.locator(".answer-feedback").count(), 0);
+    await page.locator("#finish-quiz").click();
+    assert.equal(new URL(page.url()).pathname, "/quiz");
+    assert.match(await page.locator("#quiz-result").textContent(), /أكمل جميع الأسئلة/);
     assert.equal(await page.locator("#account-panel").count(), 0);
 
     const response = await page.request.get(origin + "/");
@@ -111,25 +112,41 @@ async function main() {
     });
     assert.deepEqual(accessibility, [], `Accessibility violations: ${JSON.stringify(accessibility)}`);
 
-    const answers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const answers = [1, 0, 1, 1, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
     for (let i = 0; i < answers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
-    await page.waitForFunction(() => document.querySelector("#quiz-result")?.textContent.includes("15 من 15"));
-    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
+    await page.waitForURL("**/results");
+    assert.match(await page.locator("h2").textContent(), /النتيجة النهائية/);
+    assert.match(await page.locator("#final-score").textContent(), /13\s*\/\s*15/);
+    assert.equal(await page.locator(".wrong-answer").count(), 2);
+    assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara forget his wallet\?/);
+    assert.match(await page.locator(".wrong-answer").first().textContent(), /الإجابة الصحيحة/);
+    assert.match(await page.locator(".wrong-answer").first().textContent(), /1949/);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem("art-of-advertising:attempt-result:v1")), null);
+    assert.equal(await page.locator('#result-content a[href="./quiz.html"]').count(), 1);
+    await page.route(origin + "/__test/axe.js", route => route.fulfill({ status: 200, contentType: "application/javascript; charset=utf-8", body: axe.source }));
+    await page.addScriptTag({ url: origin + "/__test/axe.js" });
+    const resultAccessibility = await page.evaluate(async () => {
+      const result = await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] } });
+      return result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary })) }));
+    });
+    assert.deepEqual(resultAccessibility, [], `Result accessibility violations: ${JSON.stringify(resultAccessibility)}`);
     await page.reload({ waitUntil: "networkidle" });
-    assert.equal(await page.locator("#quiz-result").textContent(), "");
-    for (let i = 0; i < answers.length; i++) {
-      assert.equal(
-        await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).isChecked(),
-        false,
-        `Answer for question ${i + 1} unexpectedly persisted after reload`
-      );
+    assert.match(await page.locator("#result-unavailable").textContent(), /غير متاحة/);
+    assert.equal(await page.locator(".wrong-answer").count(), 0);
+    await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
+    const allCorrectAnswers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    for (let i = 0; i < allCorrectAnswers.length; i++) {
+      await page.locator(`input[name="question-${i}"][value="${allCorrectAnswers[i]}"]`).check();
     }
-    assert.equal(await page.locator("#finish-quiz").count(), 1);
-    await page.locator(`input[name="question-0"][value="0"]`).check();
-    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة صحيحة/);
+    await page.locator("#finish-quiz").click();
+    await page.waitForURL("**/results");
+    assert.match(await page.locator("#final-score").textContent(), /15\s*\/\s*15/);
+    assert.equal(await page.locator(".wrong-answer").count(), 0);
+    assert.equal(await page.locator("#all-correct").isVisible(), true);
+    assert.equal(await page.locator("#wrong-heading").isVisible(), false);
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({
@@ -141,7 +158,7 @@ async function main() {
     }
     assert.deepEqual(apiRequests, [], "The page must not send progress or account API requests");
     await context.close();
-    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, non-persistent answers/results after reload, responsive widths, and no account/progress API calls.");
+    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, final results with incorrect-answer review and one-time result transfer, responsive widths, and no account/progress API calls.");
   } finally {
     await browser.close();
   }

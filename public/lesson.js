@@ -78,7 +78,7 @@ function say(text){if(!("speechSynthesis"in window)){ $("#lesson-message").textC
 function button(label,fn){const b=document.createElement("button");b.type="button";b.className="mini-button";b.textContent=label;b.addEventListener("click",fn);return b;}
 if(readingList)paragraphs.forEach((sentences,i)=>{const card=document.createElement("article");card.className="reading-card";const top=document.createElement("div");top.className="reading-card-top";const title=document.createElement("strong");title.textContent="الفقرة "+(i+1);const listen=button("🔊 استمع للفقرة",()=>say(sentences.map(x=>x[0]).join(" ")));top.append(title,listen);card.append(top);sentences.forEach(([en,ar],j)=>{const row=document.createElement("div");const english=document.createElement("p");english.className="sentence-en";english.textContent=en;const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع للجملة",()=>say(en)));const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;const reveal=button("إظهار ترجمة الجملة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"إظهار ترجمة الجملة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);row.append(english,actions,translation);card.append(row);});readingList.append(card);});
 if(vocabularyList)words.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="vocab-card";const title=document.createElement("p");title.className="vocab-word";title.textContent=word;const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع",()=>say(word)));const translation=document.createElement("p");translation.className="vocab-meaning";translation.hidden=true;translation.textContent=meaning;const reveal=button("ترجمة الكلمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"ترجمة الكلمة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);card.append(title,actions,translation);vocabularyList.append(card);});
-if(quizArea)questions.forEach((q,i)=>{const block=document.createElement("div");block.className="quiz-question";const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;const group=document.createElement("div");group.className="quiz-options";const feedback=document.createElement("p");feedback.className="answer-feedback";feedback.setAttribute("role","status");feedback.setAttribute("aria-live","polite");q.displayOrder.forEach(originalIndex=>{const answer=q.a[originalIndex];const label=document.createElement("label");label.className="quiz-option";const input=document.createElement("input");input.type="radio";input.name="question-"+i;input.value=String(originalIndex);input.addEventListener("change",()=>{const correct=Number(input.value)===q.correct;feedback.className="answer-feedback "+(correct?"is-correct":"is-wrong");feedback.textContent=correct?"✓ إجابة صحيحة.":"✗ إجابة خاطئة. الإجابة الصحيحة: "+q.a[q.correct];});const span=document.createElement("span");span.textContent=answer;label.append(input,span);group.append(label);});block.append(heading,group,feedback);quizArea.append(block);});
+if(quizArea)questions.forEach((q,i)=>{const block=document.createElement("div");block.className="quiz-question";const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;const group=document.createElement("div");group.className="quiz-options";q.displayOrder.forEach(originalIndex=>{const answer=q.a[originalIndex];const label=document.createElement("label");label.className="quiz-option";const input=document.createElement("input");input.type="radio";input.name="question-"+i;input.value=String(originalIndex);const span=document.createElement("span");span.textContent=answer;label.append(input,span);group.append(label);});block.append(heading,group);quizArea.append(block);});
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
 const finishButton=$("#finish-quiz");
@@ -94,8 +94,16 @@ if(finishButton)finishButton.addEventListener("click",()=>{
     return;
   }
   const score=answers.reduce((sum,a,i)=>sum+(a===questions[i].correct?1:0),0);
-  $("#quiz-result").textContent="نتيجتك: "+score+" من "+questions.length+". يمكنك إعادة التمارين متى شئت.";
-  $("#lesson-message").textContent="لم يتم حفظ إجاباتك أو نتيجتك؛ ابدأ محاولة جديدة عند إعادة تحميل الصفحة.";
+  const wrongAnswers=questions.reduce((items,q,i)=>{
+    if(answers[i]!==q.correct)items.push({question:q.q,selected:q.a[answers[i]],correct:q.a[q.correct]});
+    return items;
+  },[]);
+  try{
+    sessionStorage.setItem("art-of-advertising:attempt-result:v1",JSON.stringify({score,total:questions.length,wrongAnswers}));
+    window.location.assign("./results.html");
+  }catch(_){
+    $("#quiz-result").textContent="تعذر فتح صفحة النتيجة. يرجى السماح بتخزين الجلسة في المتصفح ثم المحاولة مجددًا.";
+  }
 });
 const speedRow=$(".speed-control");if(speedRow)speedRow.append(stop);
 })();
