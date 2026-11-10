@@ -80,6 +80,13 @@ async function main() {
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
+    assert.equal(await page.locator(".answer-feedback").count(), 15);
+    const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
+    assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
+    await page.locator(`input[name="question-0"][value="0"]`).check();
+    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة خاطئة.*الإجابة الصحيحة/);
+    await page.locator(`input[name="question-0"][value="1"]`).check();
+    assert.match(await page.locator(".answer-feedback").first().textContent(), /إجابة صحيحة/);
     assert.equal(await page.locator("#account-panel").count(), 0);
 
     const response = await page.request.get(origin + "/");
@@ -101,7 +108,7 @@ async function main() {
     });
     assert.deepEqual(accessibility, [], `Accessibility violations: ${JSON.stringify(accessibility)}`);
 
-    const answers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const answers = [1, 2, 0, 1, 2, 1, 0, 2, 0, 2, 1, 0, 2, 0, 1];
     for (let i = 0; i < answers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).check();
     }
