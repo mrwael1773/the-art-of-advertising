@@ -57,7 +57,7 @@ async function main() {
     await page.goto(origin + "/audio.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#speech-speed").count(), 1);
     assert.equal(await page.locator("#play-sample").count(), 1);
-    await page.locator("#speech-speed").fill("1.2");
+    await page.locator("#speech-speed").evaluate(el => { el.value = "1.2"; el.dispatchEvent(new Event("input", { bubbles: true })); });
     assert.equal(await page.locator("#speed-value").textContent(), "1.20×");
     assert.equal(await page.locator("#reading-list, #vocabulary-list, #quiz-area").count(), 0);
 
