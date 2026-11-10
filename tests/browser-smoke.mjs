@@ -54,7 +54,9 @@ async function main() {
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
 
+    await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
     await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
+    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
     assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
     assert.equal(await page.locator("#speech-speed").count(), 1);
     await page.locator("#speech-speed").evaluate(el => { el.value = "1.1"; el.dispatchEvent(new Event("input", { bubbles: true })); });
