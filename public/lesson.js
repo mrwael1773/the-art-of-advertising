@@ -63,7 +63,7 @@ const questions = [
 {q:"What does “benefits” mean?",a:["مزايا","مواقف","سلع"],correct:0},
 {q:"What does “discounts” mean?",a:["امتيازات","خصومات","إنفاق"],correct:1}
 ];
-// Distribute the correct answer positions evenly without changing stored answer indexes.
+// Distribute the correct answer positions evenly without changing original answer indexes.
 const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
 questions.forEach((q,i)=>{
   const distractors=q.a.map((_,index)=>index).filter(index=>index!==q.correct);
