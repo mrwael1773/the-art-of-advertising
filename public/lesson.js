@@ -143,6 +143,13 @@ function restoreProgress() {
     $("#progress-label").textContent = "نتيجة الاختبار المحفوظة: " + record.score + "/" + record.total;
     $("#quiz-result").textContent = "آخر نتيجة محفوظة على هذا الجهاز: " + record.score + " من " + record.total + ". يمكنك مراجعة الدرس ثم إعادة الاختبار.";
     $("#progress-fill").setAttribute("data-score", String(record.score));
+    if (Array.isArray(record.answers) && record.answers.length === questions.length) {
+      record.answers.forEach((answer, index) => {
+        if (!Number.isInteger(answer) || answer < 0 || answer >= questions[index].a.length) return;
+        const option = $('input[name="question-' + index + '"][value="' + answer + '"]');
+        if (option) option.checked = true;
+      });
+    }
   }
 }
 $("#finish-quiz").addEventListener("click", () => {
