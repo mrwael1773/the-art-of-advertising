@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -87,6 +87,13 @@ async function main() {
     await page.reload({ waitUntil: "networkidle" });
     assert.match(await page.locator("#progress-label").textContent(), /15\/15/);
     assert.match(await page.locator("#quiz-result").textContent(), /15 من 15/);
+    for (let i = 0; i < answers.length; i++) {
+      assert.equal(
+        await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).isChecked(),
+        true,
+        `Saved answer for question ${i + 1} was not restored`
+      );
+    }
 
     // A separate browser profile must not see this profile's local progress.
     const otherContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -107,7 +114,7 @@ async function main() {
     }
     assert.deepEqual(apiRequests, [], "The page must not send progress or account API requests");
     await context.close();
-    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, quiz save/reload, profile isolation, responsive widths, and no account/progress API calls.");
+    console.log("Local browser checks passed: direct entry, lesson rendering, accessibility, quiz save/reload including selected answers, profile isolation, responsive widths, and no account/progress API calls.");
   } finally {
     await browser.close();
   }
