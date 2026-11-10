@@ -48,14 +48,17 @@ function cookieFrom(response) {
   return raw.split(";", 1)[0];
 }
 
-async function api(path, { method = "GET", body, cookie, ip = "198.51.100.10", requestOrigin = origin } = {}) {
-  const headers = { origin: requestOrigin, "CF-Connecting-IP": ip };
-  if (body !== undefined) headers["content-type"] = "application/json";
+async function api(path, {
+  method = "GET", body, rawBody, contentType = "application/json", cookie,
+  ip = "198.51.100.10", requestOrigin = origin, extraHeaders = {}
+} = {}) {
+  const headers = { origin: requestOrigin, "CF-Connecting-IP": ip, ...extraHeaders };
+  if (body !== undefined || rawBody !== undefined) headers["content-type"] = contentType;
   if (cookie) headers.cookie = cookie;
   return fetch(origin + path, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body)
+    body: rawBody !== undefined ? rawBody : body === undefined ? undefined : JSON.stringify(body)
   });
 }
 
@@ -74,6 +77,30 @@ async function main() {
   server.stdout.on("data", chunk => { serverOutput += chunk.toString(); });
   server.stderr.on("data", chunk => { serverOutput += chunk.toString(); });
   await waitForServer();
+
+  const staticPage = await api("/");
+  assert.equal(staticPage.status, 200, "the lesson page should be served");
+  assert.equal(staticPage.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(staticPage.headers.get("x-frame-options"), "DENY");
+  assert.equal(staticPage.headers.get("referrer-policy"), "no-referrer");
+  assert.equal(staticPage.headers.get("cross-origin-resource-policy"), "same-origin");
+
+  const wrongContentType = await api("/api/login", {
+    method: "POST", rawBody: "{}", contentType: "text/plain"
+  });
+  assert.equal(wrongContentType.status, 415, "non-JSON API bodies must be rejected");
+
+  const oversizedBody = await api("/api/login", {
+    method: "POST",
+    rawBody: JSON.stringify({ username: "oversized", password: "x".repeat(9000) })
+  });
+  assert.equal(oversizedBody.status, 413, "request bodies over 8 KiB must be rejected");
+
+  const fetchMetadataCrossSite = await api("/api/logout", {
+    method: "POST",
+    extraHeaders: { "sec-fetch-site": "cross-site" }
+  });
+  assert.equal(fetchMetadataCrossSite.status, 403, "cross-site Fetch Metadata must be rejected");
 
   const registration = await api("/api/register", {
     method: "POST",
@@ -192,7 +219,41 @@ async function main() {
   });
   assert.equal(throttled.status, 429, "the ninth attempt for the same IP and username must be throttled");
 
-  console.log("Local D1 integration passed: registration, case-insensitive uniqueness, login, same-origin enforcement, progress persistence, account isolation, validation, logout, expired-session rejection, and D1-backed login throttling.");
+  // Verify the separate registration ceiling: five attempts per IP per hour.
+  const registrationLimitIp = "203.0.113.88";
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const allowed = await api("/api/register", {
+      method: "POST",
+      ip: registrationLimitIp,
+      body: { username: "reg_limit_" + attempt, password: "secure-test-password-" + attempt }
+    });
+    assert.equal(allowed.status, 201, `registration attempt ${attempt} should be allowed`);
+  }
+  const blockedRegistration = await api("/api/register", {
+    method: "POST",
+    ip: registrationLimitIp,
+    body: { username: "reg_limit_six", password: "secure-test-password-6" }
+  });
+  assert.equal(blockedRegistration.status, 429, "the sixth registration attempt from one IP must be throttled");
+
+  // Verify the independent 30-attempt IP-wide login ceiling with distinct usernames.
+  const globalLoginLimitIp = "203.0.113.99";
+  for (let attempt = 1; attempt <= 30; attempt++) {
+    const rejected = await api("/api/login", {
+      method: "POST",
+      ip: globalLoginLimitIp,
+      body: { username: "global_limit_" + attempt, password: "incorrect-test-password" }
+    });
+    assert.equal(rejected.status, 401, `IP-wide login attempt ${attempt} should reach credential verification`);
+  }
+  const blockedGlobalLogin = await api("/api/login", {
+    method: "POST",
+    ip: globalLoginLimitIp,
+    body: { username: "global_limit_31", password: "incorrect-test-password" }
+  });
+  assert.equal(blockedGlobalLogin.status, 429, "the 31st login attempt from one IP must be throttled");
+
+  console.log("Local D1 integration passed: security headers, bounded JSON requests, same-origin and Fetch Metadata checks, registration and login throttling, account isolation, progress persistence, logout, and expired-session rejection.");
 }
 
 try {
