@@ -149,7 +149,7 @@ async function restoreProgress() {
           Number.isInteger(record.total) && record.total === questions.length &&
           record.score >= 0 && record.score <= record.total) {
         $("#progress-label").textContent = "نتيجة الاختبار السابقة: " + record.score + "/" + record.total;
-        $("#progress-fill").style.width = Math.round((record.score / record.total) * 100) + "%";
+        $("#progress-fill").setAttribute("data-score", String(record.score));
       }
     }
   } catch (_) {}
@@ -176,7 +176,7 @@ $("#finish-quiz").addEventListener("click", async () => {
     if (!Number.isInteger(result.score) || result.score < 0 || result.score > questions.length || result.total !== questions.length) throw Error("BAD_RESULT");
     $("#quiz-result").textContent = "نتيجتك: " + result.score + " من " + result.total + (result.score === result.total ? " — ممتاز!" : " — يمكنك مراجعة الفقرات والكلمات ثم إعادة المحاولة.");
     $("#progress-label").textContent = "نتيجة الاختبار: " + result.score + "/" + result.total;
-    $("#progress-fill").style.width = Math.round((result.score / result.total) * 100) + "%";
+    $("#progress-fill").setAttribute("data-score", String(result.score));
     $("#lesson-message").textContent = "تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.";
   } catch (_) {
     $("#lesson-message").textContent = "تعذر تصحيح الاختبار أو حفظ النتيجة. تحقق من اتصالك وتسجيل دخولك ثم حاول مجددًا.";
