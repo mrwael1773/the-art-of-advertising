@@ -20,7 +20,7 @@ const paragraphs = [
 ],
 [
 ["The Diner’s Club Card soon became a cultural icon.","سرعان ما أصبحت بطاقة نادي داينرز رمزًا ثقافيًا."],
-["Hollywood cashed in on the “charge-it craze” with the 1962 movie, The Man from the Diner’s Club.","استفادت هوليوود من «هوس الدفع بالبطاقة» من خلال فيلم عام 1962، «الرجل من نادي داينرز»."],
+["Hollywood cashed in on the “charge-it craze” with the 1962 movie, The Man from the Diner’s Club.","استغلت هوليوود رواج «الدفع بالبطاقة» من خلال فيلم عام 1962، «الرجل من نادي داينرز»."],
 ["In it, an employee at Diner’s Club issues a credit card to a well-known gangster and has to get it back in order to keep his job.","في الفيلم، يصدر موظف في نادي داينرز بطاقة ائتمان لرجل عصابات معروف، ويتعين عليه استعادتها حتى يحتفظ بوظيفته."],
 ["The Ideal Toy Corporation joined in the trend when it created a board game called the Diner’s Club Game.","وانضمت شركة إيديل للألعاب إلى هذا الاتجاه عندما ابتكرت لعبة لوحية تُسمّى «لعبة نادي داينرز»."],
 ["The idea of the credit card quickly expanded outside the United States.","وسرعان ما انتشرت فكرة بطاقة الائتمان خارج الولايات المتحدة."],
