@@ -4,10 +4,11 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, store, headers] = await Promise.all([
+const [worker, config, app, lesson, page, store, headers, audioPage, audioScript, styles] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
-  read("../public/progress-store.js"), read("../public/_headers")
+  read("../public/progress-store.js"), read("../public/_headers"),
+  read("../public/audio.html"), read("../public/audio.js"), read("../public/styles.css")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
@@ -36,6 +37,10 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /quiz\.html/);
   assert.match(page, /audio\.html/);
   assert.match(page, /سرعة الصوت/);
+  assert.match(audioPage, /audio.js/);
+  assert.match(audioPage, /speech-speed/);
+  assert.match(audioScript, /utterance.rate=Number\(speed.value\)/);
+  assert.match(styles, /color-scheme:dark/);
   assert.match(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
