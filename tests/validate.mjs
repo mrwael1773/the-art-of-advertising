@@ -49,7 +49,7 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
 });
 
-test("practice answer positions are balanced and preserve saved answer indexes", () => {
+test("practice answer positions are balanced and preserve original answer indexes", () => {
   assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
