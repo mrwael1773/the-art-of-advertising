@@ -189,7 +189,7 @@ async function main() {
     speechCalls = await page.evaluate(() => window.__speechTestCalls);
     assert.equal(speechCalls.spoken.length, 2, "Sentence speech control must issue a new utterance");
     assert.equal(speechCalls.spoken[1].text, "Credit cards have changed the way people pay for goods and services.");
-    await page.getByRole("button", { name: "استمع", exact: true }).first().click();
+    await page.locator("#vocabulary-list .vocab-card").first().getByRole("button", { name: /استمع/ }).click();
     speechCalls = await page.evaluate(() => window.__speechTestCalls);
     assert.equal(speechCalls.spoken.length, 3, "Vocabulary speech control must issue an utterance");
     assert.equal(speechCalls.spoken[2].text, "imagine");
