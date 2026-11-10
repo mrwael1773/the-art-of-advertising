@@ -63,7 +63,7 @@ async function main() {
   // Both commands explicitly use Wrangler's local D1 store and a fresh temporary directory.
   runWrangler([
     "d1", "migrations", "apply", database,
-    "--local", "--config", config, "--persist-to", stateDir, "--yes"
+    "--local", "--config", config, "--persist-to", stateDir
   ]);
 
   server = spawn("npx", [
