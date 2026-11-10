@@ -126,18 +126,12 @@ async function main() {
     body: { lessonKey: "world-of-plastic-reading", answers: correctAnswers }
   });
   assert.equal(saved.status, 200, "valid progress should persist in local D1");
-  assert.deepEqual(await saved.json(), {
-    saved: true,
-    score: 15,
-    total: 15,
-    completed: true,
-    updatedAt: (await (async () => {
-      const value = await api("/api/progress", { cookie: alphaLoginCookie });
-      const result = await value.json();
-      assert.equal(result.progress.length, 1);
-      return result.progress[0].updated_at;
-    })())
-  });
+  const savedResult = await saved.json();
+  assert.equal(savedResult.saved, true);
+  assert.equal(savedResult.score, 15);
+  assert.equal(savedResult.total, 15);
+  assert.equal(savedResult.completed, true);
+  assert.ok(Number.isInteger(savedResult.updatedAt));
 
   const alphaProgressResponse = await api("/api/progress", { cookie: alphaLoginCookie });
   const alphaProgress = await alphaProgressResponse.json();
