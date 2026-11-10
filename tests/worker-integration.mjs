@@ -227,6 +227,7 @@ test("state-changing requests reject cross-origin and cross-site attempts with s
     ["x-frame-options", "DENY"],
     ["referrer-policy", "no-referrer"],
     ["cross-origin-resource-policy", "same-origin"],
+    ["content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"],
     ["cache-control", "no-store"]
   ]) {
     assert.equal(crossOrigin.headers.get(header[0]), header[1], header[0] + " must be present on rejected API responses");
