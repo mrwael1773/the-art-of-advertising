@@ -144,6 +144,15 @@ async function main() {
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
 
+    await page.getByRole("tab", { name: "إنشاء حساب" }).click();
+    await page.locator("#username").fill("browser_alpha");
+    await page.locator("#password").fill("browser-test-password-1");
+    await page.getByRole("button", { name: "إنشاء الحساب" }).click();
+    await page.locator("#account-panel").waitFor({ state: "visible" });
+    await page.getByText("اختر إجابة واحدة لكل سؤال، ثم اضغط على «تحقق من الإجابات» لعرض نتيجتك.").waitFor({ state: "visible" });
+    assert.match(await page.locator("#account-name").textContent(), /browser_alpha/);
+    assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
+
     // Verify that lesson audio controls call the Web Speech API with English text and the selected rate.
     await page.evaluate(() => {
       const calls = { cancel: 0, spoken: [] };
@@ -185,14 +194,6 @@ async function main() {
     assert.equal(speechCalls.spoken.length, 3, "Vocabulary speech control must issue an utterance");
     assert.equal(speechCalls.spoken[2].text, "imagine");
 
-    await page.getByRole("tab", { name: "إنشاء حساب" }).click();
-    await page.locator("#username").fill("browser_alpha");
-    await page.locator("#password").fill("browser-test-password-1");
-    await page.getByRole("button", { name: "إنشاء الحساب" }).click();
-    await page.locator("#account-panel").waitFor({ state: "visible" });
-    await page.getByText("اختر إجابة واحدة لكل سؤال، ثم اضغط على «تحقق من الإجابات» لعرض نتيجتك.").waitFor({ state: "visible" });
-    assert.match(await page.locator("#account-name").textContent(), /browser_alpha/);
-    assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
 
     // An incomplete quiz must not be submitted or create a saved progress result.
     const incompleteQuizState = await page.evaluate(() => {
