@@ -37,3 +37,32 @@
 .menu-arrow{font-size:19px;color:var(--blue)}
 .home-note{margin:18px 0 0;color:var(--muted);font-size:12px}
 @media(max-width:420px){.page-nav{gap:4px}.page-nav a{padding:8px 7px;font-size:12px}.learning-link{padding:12px;gap:9px}}
+
+/* Dark learning theme */
+:root{color-scheme:dark;--navy:#e6efff;--blue:#8db8ff;--ink:#e7edf7;--muted:#a5b2c7;--line:#34445c;--paper:#172338;--bg:#0b1423;--mint:#173c36}
+body{background:radial-gradient(ellipse at 12% 0%,#20395d 0,transparent 38%),radial-gradient(ellipse at 95% 30%,#1a2a43 0,transparent 35%),#0b1423;color:var(--ink)}
+.brand{color:#e6efff}.brand-mark{background:#315b91;color:#fff;box-shadow:0 10px 28px #0005}
+.eyebrow{color:#91baff}.subtitle{color:#a5b2c7}
+.auth-card{background:#172338;border-color:#34445c;box-shadow:0 20px 55px #0004}
+.tabs{background:#101c2e}.tab{color:#b5c2d5}.tab.active{background:#263a57;color:#fff;box-shadow:0 2px 9px #0004}
+input{background:#0f1b2d;border-color:#40516a;color:#edf4ff}
+input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
+.primary{background:#315f96;color:#fff}.secondary,.logout-link{background:#253650;color:#e7edf7}
+.speed-control{background:#101c2e;color:#dce7f7}.speed-control input{background:transparent;accent-color:#8db8ff}
+.reading-card,.vocab-card,.learning-link{background:#1d2b42;border-color:#3a4c66;color:#e7edf7}
+.reading-card-top strong,.section-tag,.menu-number{color:#a9caff}
+.sentence-ar,.vocab-meaning{color:#c1cee0;border-color:#40516a}
+.mini-button,.page-nav{background:#253650;border-color:#40516a;color:#e4edfb}
+.page-nav a{color:#c3d0e3}.page-nav a.current{background:#3b5d88;color:#fff;box-shadow:0 2px 8px #0004}
+.lesson-number{background:#253b5b;color:#a9caff}
+.progress-track{background:#2b3b52}.progress-track span{background:#78aaf0}
+.quiz-option{border-color:#40516a;color:#e7edf7}.quiz-option:has(input:checked){background:#263e5e;border-color:#8db8ff}
+.local-badge{background:#173c36;color:#a9ead4}
+.learning-link:hover{border-color:#8db8ff;background:#233650}
+.learning-link strong{color:#f0f5ff}.learning-link small{color:#aab9cf}
+.menu-arrow{color:#9dc2ff}.home-note,footer,.section-note,.lesson-message{color:#a5b2c7}
+.success-mark{background:#173c36;color:#a9ead4}
+.message.success,.quiz-result{color:#8de0bd}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.audio-next-link{display:block;margin-top:16px;padding:11px 14px;text-align:center;text-decoration:none;border-radius:12px;background:#477fc4;color:#fff;font-weight:800}
