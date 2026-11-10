@@ -224,11 +224,31 @@ async function main() {
     await page.getByText("تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.").waitFor();
     assert.equal(await page.locator("#progress-fill").getAttribute("data-score"), "15", "CSP-safe progress indicator must reflect the saved score");
 
-    // The result must survive a browser refresh and a fresh authenticated page load.
+    // A second attempt must replace the learner's previous saved result.
+    for (let i = 0; i < correctAnswers.length; i++) {
+      await page.locator(`input[name="question-${i}"][value="0"]`).check();
+    }
+    await page.locator("#finish-quiz").click();
+    await page.getByText("نتيجتك: 9 من 15").waitFor();
+    assert.equal(await page.locator("#progress-label").textContent(), "نتيجة الاختبار: 9/15");
+    assert.equal(await page.locator("#progress-fill").getAttribute("data-score"), "9");
+
+    // A failed retry must not present the old score as the new attempt's result.
+    await page.route("**/api/progress", async route => {
+      if (route.request().method() === "PUT") await route.abort();
+      else await route.continue();
+    });
+    await page.locator("#finish-quiz").click();
+    await page.getByText("لم تُحفظ المحاولة الجديدة. بقيت آخر نتيجة محفوظة كما هي.").waitFor();
+    assert.equal(await page.locator("#progress-label").textContent(), "نتيجة الاختبار: 9/15");
+    assert.equal(await page.locator("#progress-fill").getAttribute("data-score"), "9");
+    await page.unroute("**/api/progress");
+
+    // The latest successful result must survive a browser refresh and a fresh authenticated page load.
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.locator("#account-panel").waitFor({ state: "visible" });
-    await page.getByText("نتيجة الاختبار السابقة: 15/15").waitFor();
-    await page.getByText("آخر نتيجة محفوظة: 15 من 15. يمكنك مراجعة الدرس ثم إعادة الاختبار.").waitFor();
+    await page.getByText("نتيجة الاختبار السابقة: 9/15").waitFor();
+    await page.getByText("آخر نتيجة محفوظة: 9 من 15. يمكنك مراجعة الدرس ثم إعادة الاختبار.").waitFor();
 
     await page.locator("#logout-button").click();
     await page.locator("#auth-form").waitFor({ state: "visible" });
@@ -237,7 +257,7 @@ async function main() {
     await page.locator("#password").fill("browser-test-password-1");
     await page.getByRole("button", { name: "دخول" }).click();
     await page.locator("#account-panel").waitFor({ state: "visible" });
-    await page.getByText("نتيجة الاختبار السابقة: 15/15").waitFor();
+    await page.getByText("نتيجة الاختبار السابقة: 9/15").waitFor();
 
     // A second student's account must not display the first student's result.
     await page.locator("#logout-button").click();
