@@ -57,6 +57,30 @@ async function main() {
     const page = await browser.newPage();
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     assert.match(await page.title(), /The Art of Advertising/);
+
+    // Basic semantic accessibility and responsive-layout checks at common viewport widths.
+    assert.equal(await page.locator("html").getAttribute("lang"), "ar");
+    assert.equal(await page.locator("html").getAttribute("dir"), "rtl");
+    assert.equal(await page.locator("main").count(), 1);
+    assert.equal(await page.locator("footer").count(), 1);
+    for (const [control, label] of [["#username", "اسم المستخدم"], ["#password", "كلمة المرور"], ["#speech-speed", "سرعة النطق"]]) {
+      const id = await page.locator(control).getAttribute("id");
+      assert.equal(await page.locator(`label[for="${id}"]`).count(), 1, `${label} must have an associated label`);
+    }
+    assert.equal(await page.locator("button").evaluateAll(buttons =>
+      buttons.every(button => Boolean((button.innerText || "").trim() || button.getAttribute("aria-label")))
+    ), true, "Every button must have an accessible name");
+    const originalViewport = page.viewportSize();
+    for (const width of [320, 360, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(30);
+      const dimensions = await page.evaluate(() => ({
+        client: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth
+      }));
+      assert.ok(dimensions.scroll <= dimensions.client + 1, `Horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
+    }
+    await page.setViewportSize(originalViewport);
     assert.equal(await page.locator("#account-panel").isVisible(), false);
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
     assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
