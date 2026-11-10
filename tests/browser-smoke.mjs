@@ -56,6 +56,12 @@ async function main() {
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   try {
     const page = await browser.newPage();
+    const cspViolations = [];
+    page.on("console", message => {
+      if (message.type() === "error" && /content security policy/i.test(message.text())) {
+        cspViolations.push(message.text());
+      }
+    });
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     assert.match(await page.title(), /The Art of Advertising/);
 
@@ -242,7 +248,8 @@ async function main() {
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
     assert.doesNotMatch(await page.locator("#progress-label").textContent(), /15\/15/);
 
-    console.log("Browser smoke tests passed: rendered lesson, registration, learner controls, quiz submission, persisted result after refresh/login, logout, and second-account progress isolation.");
+    assert.deepEqual(cspViolations, [], `Content Security Policy violations: ${JSON.stringify(cspViolations)}`);
+    console.log("Browser smoke tests passed: rendered lesson, registration, learner controls, quiz submission, persisted result after refresh/login, logout, second-account progress isolation, and CSP compatibility.");
   } finally {
     await browser.close();
   }
