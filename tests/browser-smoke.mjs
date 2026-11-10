@@ -55,7 +55,7 @@ async function main() {
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   try {
     const page = await browser.newPage();
-    await page.goto(origin, { waitUntil: "networkidle" });
+    await page.goto(origin, { waitUntil: "domcontentloaded" });
     assert.match(await page.title(), /The Art of Advertising/);
     assert.equal(await page.locator("#account-panel").isVisible(), false);
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
@@ -89,7 +89,7 @@ async function main() {
     await page.getByText("تم تصحيح إجاباتك وحفظ نتيجتك في حسابك.").waitFor();
 
     // The result must survive a browser refresh and a fresh authenticated page load.
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await page.locator("#account-panel").waitFor({ state: "visible" });
     await page.getByText("نتيجة الاختبار السابقة: 15/15").waitFor();
 
