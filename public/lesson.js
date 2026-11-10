@@ -96,5 +96,5 @@ if(finishButton)finishButton.addEventListener("click",()=>{
   $("#quiz-result").textContent="نتيجتك: "+score+" من "+questions.length+". يمكنك إعادة التمارين متى شئت.";
   $("#lesson-message").textContent="لم يتم حفظ إجاباتك أو نتيجتك؛ ابدأ محاولة جديدة عند إعادة تحميل الصفحة.";
 });
-const speedRow=$(".speed-control");if(speedRow)speedRow.append(stop);restore();
+const speedRow=$(".speed-control");if(speedRow)speedRow.append(stop);
 })();
