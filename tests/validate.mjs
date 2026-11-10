@@ -78,6 +78,19 @@ test("local progress survives a page reload and rejects malformed or impossible 
   assert.equal(data.has("art-of-advertising:student-progress:v1"), false);
 });
 
+test("unavailable browser storage does not crash progress restoration", () => {
+  const window = { localStorage: {
+    getItem() { throw new DOMException("Storage is disabled", "SecurityError"); },
+    setItem() { throw new DOMException("Storage is disabled", "SecurityError"); },
+    removeItem() { throw new DOMException("Storage is disabled", "SecurityError"); }
+  }};
+  vm.runInNewContext(store, { window, Number, JSON, Object, TypeError, Date, DOMException });
+  assert.equal(window.StudentProgressStore.get("world-of-plastic-reading"), null);
+  assert.throws(() => window.StudentProgressStore.save("world-of-plastic-reading", {
+    completed: true, score: 1, total: 15
+  }), error => error.name === "SecurityError");
+});
+
 test("the same browser origin stores no identity fields or account credentials", () => {
   assert.doesNotMatch(store, /username|password|email|studentName/i);
   assert.match(store, /art-of-advertising:student-progress:v1/);
