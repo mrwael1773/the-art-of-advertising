@@ -52,7 +52,7 @@ function setCookie(url, token, age) {
   return cookieName(url) + "=" + token + "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" + age + secure;
 }
 async function body(req) {
-  if (!(req.headers.get("content-type") || "").toLowerCase().includes("application/json")) throw Error("JSON_REQUIRED");
+  if ((req.headers.get("content-type") || "").split(";", 1)[0].trim().toLowerCase() !== "application/json") throw Error("JSON_REQUIRED");
   if (Number(req.headers.get("content-length") || 0) > 8192) throw Error("TOO_LARGE");
   const reader = req.body && req.body.getReader();
   if (!reader) throw Error("BAD_JSON");
