@@ -44,6 +44,8 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(lesson, /if\(quizArea\)questions\.forEach/);
   assert.ok(lesson.includes('window.location.assign("./results.html")'));
   assert.ok(resultPage.includes("النتيجة النهائية"));
+  assert.match(resultPage, /href="\.\/index\.html">العودة إلى القائمة الرئيسية/);
+  assert.doesNotMatch(resultPage, /إعادة التمارين من البداية/);
   assert.ok(resultPage.includes("results.js"));
   assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
 });
