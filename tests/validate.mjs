@@ -31,10 +31,10 @@ test("static assets keep the browser security policy", () => {
 
 test("student page has no registration, login, username, or password controls", () => {
   assert.doesNotMatch(page, /id="auth-form"|id="login-tab"|id="register-tab"|id="username"|id="password"|type="password"/);
-  assert.match(page, /progress-store\.js/);
-  assert.match(page, /حفظ على جهازك/);
+  assert.match(page, /sentences\.html/);\n  assert.match(page, /words\.html/);\n  assert.match(page, /quiz\.html/);
+  assert.match(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
-  assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
+  assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);\n  assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);\n  assert.match(lesson, /if\(vocabularyList\)words\.forEach/);\n  assert.match(lesson, /if\(quizArea\)questions\.forEach/);
 });
 
 test("quiz result persistence validates the record and uses local browser storage", () => {
