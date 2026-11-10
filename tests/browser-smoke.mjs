@@ -88,6 +88,9 @@ async function main() {
     assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
     await page.locator(`input[name="question-0"][value="1"]`).check();
     assert.equal(await page.locator(".answer-feedback").count(), 0);
+    await page.locator("#finish-quiz").click();
+    assert.equal(page.url(), origin + "/quiz.html");
+    assert.match(await page.locator("#quiz-result").textContent(), /أكمل جميع الأسئلة/);
     assert.equal(await page.locator("#account-panel").count(), 0);
 
     const response = await page.request.get(origin + "/");
