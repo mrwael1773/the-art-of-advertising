@@ -18,3 +18,5 @@
 #progress-fill[data-score="13"]{width:87%}
 #progress-fill[data-score="14"]{width:93%}
 #progress-fill[data-score="15"]{width:100%}
+
+.local-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:20px;background:#e9f7f2;color:#176b4b;font-size:11px;font-weight:800;white-space:nowrap}
