@@ -84,6 +84,7 @@ async function main() {
   assert.equal(staticPage.headers.get("x-frame-options"), "DENY");
   assert.equal(staticPage.headers.get("referrer-policy"), "no-referrer");
   assert.equal(staticPage.headers.get("cross-origin-resource-policy"), "same-origin");
+  assert.equal(staticPage.headers.get("content-security-policy"), "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'");
 
   const wrongContentType = await api("/api/login", {
     method: "POST", rawBody: "{}", contentType: "text/plain"
