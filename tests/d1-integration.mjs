@@ -198,6 +198,23 @@ async function main() {
     completed: true, score: 15, total: 15
   });
 
+  // A later attempt must replace the previous saved score for this learner.
+  const retry = await api("/api/progress", {
+    method: "PUT",
+    cookie: alphaLoginCookie,
+    body: { lessonKey: "world-of-plastic-reading", answers: Array(15).fill(0) }
+  });
+  assert.equal(retry.status, 200, "a completed retry should be accepted");
+  const retryResult = await retry.json();
+  assert.equal(retryResult.score, 9, "the server must calculate the retry score");
+  assert.equal(retryResult.total, 15);
+  const latestAlphaProgressResponse = await api("/api/progress", { cookie: alphaLoginCookie });
+  const latestAlphaProgress = await latestAlphaProgressResponse.json();
+  assert.equal(latestAlphaProgress.progress.length, 1, "a retry must update, not duplicate, the lesson record");
+  assert.deepEqual(JSON.parse(latestAlphaProgress.progress[0].progress_json), {
+    completed: true, score: 9, total: 15
+  });
+
   const betaProgressResponse = await api("/api/progress", { cookie: betaCookie });
   assert.deepEqual(await betaProgressResponse.json(), { progress: [] });
 
