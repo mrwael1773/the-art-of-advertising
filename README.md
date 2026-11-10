@@ -16,7 +16,7 @@ An independent learning website for Unit 4 Reading: **The World of Plastic**.
 - D1 schema in `migrations/0001_initial.sql`.
 - Passwords use salted PBKDF2-HMAC-SHA-256 hashes.
 - Random session tokens are stored as hashes in D1 and sent in HttpOnly, SameSite cookies (Secure on HTTPS).
-- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected. API and static asset responses also receive `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Cross-Origin-Resource-Policy: same-origin`.
+- JSON API request bodies are streamed and capped at 8 KiB before full buffering. State-changing API requests require an exact same-origin `Origin` header; cross-site Fetch Metadata requests are rejected. Worker-generated API responses receive `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Cross-Origin-Resource-Policy: same-origin`; `public/_headers` applies the same protections to static assets that Cloudflare serves before invoking the Worker.
 - Login attempts are throttled per IP and per username; registration attempts are throttled per IP.
 - Quiz answers are graded by the Worker against a server-side answer key that is not included in student-facing JavaScript. Results are stored against the authenticated account.
 
@@ -40,7 +40,7 @@ No Cloudflare production resource has been created or deployed.
 
 ## Verification status
 - GitHub Actions validation runs are recorded against the latest branch commit; see the current branch checks before merging.
-- Both runs passed JavaScript syntax checks, all **23 Node structural tests**, the mocked Worker lifecycle tests, the real Worker + isolated local D1 HTTP integration test, and the SQLite schema/isolation checks.
+- The latest automated verification status is determined by the checks on the current `feature/student-auth` head; earlier successful runs do not establish that later commits passed.
 - The local D1 integration test verifies static security headers, non-JSON and oversized request rejection, same-origin and cross-site Fetch Metadata enforcement, registration and case-insensitive username uniqueness, wrong-password rejection, valid login, server-side progress scoring and persistence, cross-account progress isolation, invalid-answer rejection, logout revocation, expired-session rejection, registration throttling, the per-IP login ceiling, and the per-IP+username login threshold.
 - The mocked Worker tests also cover session cookie properties; the SQLite checks exercise the schema, foreign-key cascades, and rate-limit SQL. The D1-backed Worker tests use a separate fresh temporary database and do not modify production data.
 - Local D1 tests use Cloudflare's local simulator/runtime, not a live remote Cloudflare D1 database. They materially improve API/database coverage but do not replace production verification.
