@@ -122,6 +122,7 @@ async function main() {
     await page.reload({ waitUntil: "networkidle" });
     assert.match(await page.locator("#progress-label").textContent(), /15\/15/);
     assert.match(await page.locator("#quiz-result").textContent(), /15 من 15/);
+    assert.equal(await page.locator(".answer-feedback.is-correct").count(), 15);
     for (let i = 0; i < answers.length; i++) {
       assert.equal(
         await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).isChecked(),
