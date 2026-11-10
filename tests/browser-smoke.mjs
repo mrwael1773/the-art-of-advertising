@@ -120,6 +120,17 @@ async function main() {
     await page.locator("#account-panel").waitFor({ state: "visible" });
     assert.match(await page.locator("#account-name").textContent(), /browser_alpha/);
     assert.match(await page.locator("#progress-label").textContent(), /لم يبدأ الدرس بعد/);
+    const authenticatedAccessibility = await page.evaluate(async () => {
+      const result = await axe.run(document, {
+        runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] }
+      });
+      return result.violations.map(item => ({
+        id: item.id,
+        impact: item.impact,
+        nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary }))
+      }));
+    });
+    assert.deepEqual(authenticatedAccessibility, [], `Authenticated accessibility violations: ${JSON.stringify(authenticatedAccessibility)}`);
 
     // Confirm basic learner controls respond in the rendered browser UI.
     await page.locator("#speech-speed").evaluate(element => {
