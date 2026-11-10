@@ -17,10 +17,10 @@
     </header>
     <section class="intro page-intro"><p class="eyebrow">YOUR PRACTICE</p><h2>النتيجة النهائية</h2><p>راجع نتيجتك والإجابات التي تحتاج إلى إعادة التعلّم.</p></section>
     <section class="auth-card lesson-page" aria-live="polite">
-      <p id="result-unavailable" class="lesson-message" hidden>النتيجة غير متاحة. ابدأ محاولة جديدة من صفحة التمارين.</p>
+      <div id="result-unavailable" hidden><p class="lesson-message">النتيجة غير متاحة. ابدأ محاولة جديدة من صفحة التمارين.</p><a class="primary result-retry" href="./quiz.html">العودة إلى التمارين</a></div>
       <div id="result-content" hidden>
         <div class="final-score"><strong id="final-score"></strong><span id="score-caption">إجابتك الصحيحة من إجمالي الأسئلة</span></div>
-        <h3>الإجابات الخاطئة ومراجعتها</h3>
+        <h3 id="wrong-heading">الإجابات الخاطئة ومراجعتها</h3>
         <div id="wrong-answers" class="wrong-list"></div>
         <p id="all-correct" class="result-empty" hidden>ممتاز! جميع إجاباتك صحيحة. 🎉</p>
         <a class="primary result-retry" href="./quiz.html">إعادة التمارين من البداية</a>
