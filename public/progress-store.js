@@ -2,9 +2,9 @@
   "use strict";
   const KEY = "art-of-advertising:student-progress:v1";
   function readAll() {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return {};
     try {
+      const raw = window.localStorage.getItem(KEY);
+      if (!raw) return {};
       const value = JSON.parse(raw);
       return value && typeof value === "object" && !Array.isArray(value) ? value : {};
     } catch (_) { return {}; }
