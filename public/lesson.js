@@ -77,8 +77,8 @@ questions.forEach((q,i)=>{
   q.displayOrder.splice(correctPositions[i],0,q.correct);
 });
 const $ = s => document.querySelector(s);
-const readingList=$("#reading-list"), vocabularyList=$("#vocabulary-list"), quizArea=$("#quiz-area");
-if(!readingList&&!vocabularyList&&!quizArea)return;
+const readingList=$("#reading-list"), vocabularyList=$("#vocabulary-list"), quizArea=$("#quiz-area"), textbookPage=$("#textbook-page");
+if(!readingList&&!vocabularyList&&!quizArea&&!textbookPage)return;
 function say(text){if(!("speechSynthesis"in window)){ $("#lesson-message").textContent="النطق غير مدعوم في هذا المتصفح أو الجهاز.";return;}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=Number($("#speech-speed")?.value||0.85);window.speechSynthesis.speak(u);}
 function button(label,fn){const b=document.createElement("button");b.type="button";b.className="mini-button";b.textContent=label;b.addEventListener("click",fn);return b;}
 const wordMeanings=new Map(words.map(([word,meaning])=>[word.toLowerCase(),meaning]));
@@ -98,6 +98,22 @@ function makeClickableSentence(text,target){
     }else target.append(document.createTextNode(part));
   });
 }
+if(textbookPage)paragraphs.forEach((sentences,i)=>{
+  const block=document.createElement("section");block.className="textbook-paragraph";
+  const number=document.createElement("span");number.className="textbook-paragraph-number";number.textContent=String(i+1);
+  const content=document.createElement("div");content.className="textbook-paragraph-content";
+  sentences.forEach(([en,ar])=>{
+    const row=document.createElement("div");row.className="sentence-row";
+    const english=document.createElement("p");english.className="sentence-en";makeClickableSentence(en,english);
+    const actions=document.createElement("div");actions.className="mini-actions";
+    actions.append(button("🔊 استمع",()=>say(en)));
+    const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;
+    const reveal=button("ترجمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء":"ترجمة";reveal.setAttribute("aria-expanded",String(show));});
+    reveal.setAttribute("aria-expanded","false");actions.append(reveal);
+    row.append(english,actions,translation);content.append(row);
+  });
+  block.append(number,content);textbookPage.append(block);
+});
 if(readingList)paragraphs.forEach((sentences,i)=>{const card=document.createElement("article");card.className="reading-card";const top=document.createElement("div");top.className="reading-card-top";const title=document.createElement("strong");title.textContent="الفقرة "+(i+1);const listen=button("🔊 استمع للفقرة",()=>say(sentences.map(x=>x[0]).join(" ")));top.append(title,listen);card.append(top);sentences.forEach(([en,ar])=>{const row=document.createElement("div");row.className="sentence-row";const english=document.createElement("p");english.className="sentence-en";makeClickableSentence(en,english);const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع للجملة",()=>say(en)));const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;const reveal=button("إظهار ترجمة الجملة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"إظهار ترجمة الجملة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);row.append(english,actions,translation);card.append(row);});readingList.append(card);});
 if(vocabularyList)words.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="vocab-card";const title=document.createElement("p");title.className="vocab-word";title.textContent=word;const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع",()=>say(word)));const translation=document.createElement("p");translation.className="vocab-meaning";translation.hidden=true;translation.textContent=meaning;const reveal=button("ترجمة الكلمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"ترجمة الكلمة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);card.append(title,actions,translation);vocabularyList.append(card);});
 if(quizArea){
