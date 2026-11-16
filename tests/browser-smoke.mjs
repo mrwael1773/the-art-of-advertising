@@ -71,13 +71,19 @@ async function main() {
     assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
     await page.evaluate(() => {
       window.__spoken = [];
-      window.SpeechSynthesisUtterance = class {
-        constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
-      };
-      window.speechSynthesis = {
-        cancel() {},
-        speak(utterance) { window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate }); }
-      };
+      Object.defineProperty(window, "SpeechSynthesisUtterance", {
+        configurable: true,
+        value: class {
+          constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+        }
+      });
+      Object.defineProperty(window, "speechSynthesis", {
+        configurable: true,
+        value: {
+          cancel() {},
+          speak(utterance) { window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate }); }
+        }
+      });
     });
     await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").first().click();
     let spoken = await page.evaluate(() => window.__spoken.at(-1));
