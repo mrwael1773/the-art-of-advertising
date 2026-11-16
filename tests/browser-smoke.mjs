@@ -59,17 +59,42 @@ async function main() {
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
     await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
-    const originalPageFrame = page.locator(".textbook-source-frame iframe");
-    assert.equal(await originalPageFrame.count(), 1, "The original textbook page must be embedded");
-    assert.match(await originalPageFrame.getAttribute("src"), /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
+    assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
+    assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
+    assert.equal(await page.locator(".textbook-paper").count(), 1);
+    assert.equal(await page.locator(".textbook-card-stack svg").count(), 1);
+    assert.equal(await page.locator(".textbook-payment-art svg").count(), 1);
+    assert.equal(await page.locator(".textbook-column-left .textbook-paragraph").count(), 3);
+    assert.equal(await page.locator(".textbook-column-right .textbook-paragraph").count(), 3);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
-    assert.match(textbookResponse.headers()["content-security-policy"], /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
+    assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
     assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
     assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
     assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
+    await page.evaluate(() => {
+      window.__spoken = [];
+      Object.defineProperty(window, "SpeechSynthesisUtterance", {
+        configurable: true,
+        value: class {
+          constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+        }
+      });
+      Object.defineProperty(window, "speechSynthesis", {
+        configurable: true,
+        value: {
+          cancel() {},
+          speak(utterance) { window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate }); }
+        }
+      });
+    });
+    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").first().click();
+    let spoken = await page.evaluate(() => window.__spoken.at(-1));
+    assert.equal(spoken.lang, "en-US");
+    assert.equal(spoken.rate, 0.25);
+    assert.match(spoken.text, /^Can you imagine/);
     assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
     assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
     assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
@@ -79,12 +104,16 @@ async function main() {
     } else {
       assert.ok(firstTextbookRow.actions.top >= firstTextbookRow.sentence.bottom - 1, "Mobile sentence controls should appear below the sentence");
     }
-    await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
+    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
     const firstWord = page.locator("#textbook-page .word-token").first();
     await firstWord.click();
     assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
     assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
+    await firstWord.locator("xpath=../..").locator(".word-action-panel button").first().click();
+    spoken = await page.evaluate(() => window.__spoken.at(-1));
+    assert.equal(spoken.text, "Can");
+    assert.equal(spoken.rate, 0.25);
     const firstWordPanel = page.locator("#textbook-page .word-action-panel").first();
     assert.equal(await firstWordPanel.isVisible(), true);
     await firstWordPanel.getByRole("button", { name: "ترجمة الكلمة" }).click();

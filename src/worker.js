@@ -4,7 +4,7 @@ function secureResponse(response) {
   headers.set("x-frame-options", "DENY");
   headers.set("referrer-policy", "no-referrer");
   headers.set("cross-origin-resource-policy", "same-origin");
-  headers.set("content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self' https://online.fliphtml5.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'");
+  headers.set("content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'");
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 export default {

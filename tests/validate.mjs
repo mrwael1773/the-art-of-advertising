@@ -27,8 +27,6 @@ test("static assets keep the browser security policy", () => {
   assert.match(headers, /Referrer-Policy: no-referrer/);
   assert.match(headers, /Cross-Origin-Resource-Policy: same-origin/);
   assert.match(headers, /Content-Security-Policy:/);
-  assert.match(headers, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
-  assert.match(worker, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
 });
 
 test("student page has no registration, login, username, or password controls", () => {
@@ -36,15 +34,17 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /textbook\.html/);
   assert.match(textbook, /id="textbook-page"/);
   assert.match(textbook, /The World of Plastic/);
-  assert.match(textbook, /رقمها المطبوع 60/);
-  assert.match(textbook, /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
-  assert.match(textbook, /class="textbook-source-frame"/);
+  assert.match(textbook, /الصفحة 60/);
+  assert.doesNotMatch(textbook, /fliphtml5|<iframe|textbook-source-frame/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
   assert.match(textbook, /max="1"/);
   assert.match(textbook, /lesson\.js/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
-  assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);
+  assert.match(lesson, /if\(textbookPage\)\{/);
+  assert.match(lesson, /textbook-card-stack/);
+  assert.match(lesson, /textbook-payment-art/);
+  assert.match(textbook, /class="textbook-paper"/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
