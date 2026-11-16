@@ -64,6 +64,25 @@ async function main() {
     assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Textbook sentence controls should be on the left");
     await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
+    const wordTranslationChecks = await page.locator("#textbook-page .word-token").evaluateAll(nodes => {
+      const seen = new Set();
+      const checks = [];
+      for (const node of nodes) {
+        const word = node.textContent.trim();
+        const key = word.toLowerCase().replace(/[’']s$/, "");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        node.click();
+        checks.push({ word, message: document.querySelector("#lesson-message").textContent });
+      }
+      return checks;
+    });
+    assert.ok(wordTranslationChecks.length >= 200, "The textbook should expose translations for its full word set");
+    assert.deepEqual(
+      wordTranslationChecks.filter(item => item.message.startsWith("استمع إلى نطق:")).map(item => item.word),
+      [],
+      "Every clickable textbook word must show an Arabic meaning"
+    );
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
