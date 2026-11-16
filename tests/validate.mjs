@@ -56,11 +56,17 @@ test("practice answers and results are not persisted between visits", () => {
   assert.match(lesson, /localStorage\.removeItem/);
   assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
   assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
-  assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
+  assert.equal([...lesson.matchAll(/type:"(?:choice|fill|match|truefalse)"/g)].length, 20);
+  assert.equal([...lesson.matchAll(/type:"choice"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
+  assert.ok(lesson.includes("function makeClickableSentence"));
+  assert.ok(lesson.includes("className=\"word-token\""));
 });
 
 test("practice answer positions are balanced and preserve original answer indexes", () => {
-  assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
+  assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2, 2,0,1,2,0, 3,1,4,0,2, 1,0,1,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
   assert.ok(lesson.includes("window.location.assign"));
