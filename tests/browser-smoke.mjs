@@ -124,7 +124,7 @@ async function main() {
     assert.match(await page.locator("h2").textContent(), /النتيجة النهائية/);
     assert.match(await page.locator("#final-score").textContent(), /18\s*\/\s*20/);
     assert.equal(await page.locator(".wrong-answer").count(), 2);
-    assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara forget his wallet\?/);
+    assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara first forget his wallet/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /الإجابة الصحيحة/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /1949/);
     assert.equal(await page.evaluate(() => sessionStorage.getItem("art-of-advertising:attempt-result:v1")), null);
