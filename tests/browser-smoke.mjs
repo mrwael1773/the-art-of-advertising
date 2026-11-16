@@ -115,6 +115,10 @@ async function main() {
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
+    await page.locator('input[name="question-10"][value="0"]').check();
+    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), true, "A matching number must not be reusable");
+    await page.locator('input[name="question-10"][value="1"]').check();
+    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), false, "Changing a match must release its previous number");
     assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
     assert.equal(await page.locator(".answer-feedback").count(), 0);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
