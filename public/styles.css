@@ -157,45 +157,50 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 }
 
 
-/* Sentence-first layout: keep text full width and place controls underneath */
+/* Keep sentence controls in a dedicated left column beside each sentence. */
 .textbook-paragraph .sentence-row{
-  display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  gap:6px;
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  grid-template-rows:auto auto auto;
+  column-gap:12px;
+  row-gap:6px;
+  align-items:start;
   padding:10px 0 12px;
   margin:0 0 5px;
   border-bottom:1px solid #e5e8ed;
-  direction:rtl;
+  direction:ltr;
 }
 .textbook-paragraph .sentence-row .sentence-en{
-  order:1;
+  grid-column:2;
+  grid-row:1;
   width:100%;
   margin:0;
   font-size:15px;
   line-height:1.75;
   overflow-wrap:break-word;
+  direction:ltr;
 }
 .textbook-paragraph .sentence-row .mini-actions{
-  order:2;
+  grid-column:1;
+  grid-row:1;
   display:flex;
-  flex-direction:row;
+  flex-direction:column;
   flex-wrap:wrap;
   justify-content:flex-start;
-  align-items:center;
+  align-items:stretch;
   gap:6px;
   padding:0;
+  direction:rtl;
 }
 .textbook-paragraph .sentence-row .mini-actions .mini-button{
   min-height:30px;
-  padding:5px 10px;
+  padding:5px 8px;
   font-size:11px;
 }
-.textbook-paragraph .sentence-row .word-action-panel{
-  order:3;
-}
+.textbook-paragraph .sentence-row .word-action-panel{grid-column:2;grid-row:2}
 .textbook-paragraph .sentence-row .sentence-ar{
-  order:4;
+  grid-column:2;
+  grid-row:3;
   width:100%;
   margin:0;
   padding:5px 8px;
@@ -204,9 +209,19 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
   background:#f5f8fd;
   font-size:13px;
   line-height:1.7;
+  direction:rtl;
 }
 @media(max-width:700px){
-  .textbook-paragraph .sentence-row{padding:11px 0 13px;gap:8px}
-  .textbook-paragraph .sentence-row .sentence-en{font-size:16px;line-height:1.8}
-  .textbook-paragraph .sentence-row .mini-actions{gap:7px}
+  .textbook-paragraph .sentence-row{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto auto;
+    row-gap:8px;
+    padding:11px 0 13px;
+  }
+  .textbook-paragraph .sentence-row .sentence-en{grid-column:1;grid-row:1;font-size:16px;line-height:1.8}
+  .textbook-paragraph .sentence-row .mini-actions{
+    grid-column:1;grid-row:2;flex-direction:row;align-items:center;flex-wrap:wrap;gap:7px;
+  }
+  .textbook-paragraph .sentence-row .word-action-panel{grid-column:1;grid-row:3}
+  .textbook-paragraph .sentence-row .sentence-ar{grid-column:1;grid-row:4}
 }
