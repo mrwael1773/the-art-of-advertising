@@ -72,6 +72,14 @@ async function main() {
     assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Textbook sentence controls should be on the left");
     await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
+    const firstWord = page.locator("#textbook-page .word-token").first();
+    await firstWord.click();
+    assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
+    assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
+    const firstWordPanel = page.locator("#textbook-page .word-action-panel").first();
+    assert.equal(await firstWordPanel.isVisible(), true);
+    await firstWordPanel.getByRole("button", { name: "ترجمة الكلمة" }).click();
+    assert.match(await firstWordPanel.locator(".selected-word-meaning").textContent(), /Can = يستطيع/);
     const wordTranslationChecks = await page.locator("#textbook-page .word-token").evaluateAll(nodes => {
       const seen = new Set();
       const checks = [];
@@ -81,13 +89,15 @@ async function main() {
         if (seen.has(key)) continue;
         seen.add(key);
         node.click();
-        checks.push({ word, message: document.querySelector("#lesson-message").textContent });
+        const panel = node.closest(".sentence-row").querySelector(".word-action-panel");
+        panel.querySelector('button:nth-child(2)').click();
+        checks.push({ word, message: panel.querySelector(".selected-word-meaning").textContent });
       }
       return checks;
     });
     assert.ok(wordTranslationChecks.length >= 200, "The textbook should expose translations for its full word set");
     assert.deepEqual(
-      wordTranslationChecks.filter(item => item.message.startsWith("استمع إلى نطق:")).map(item => item.word),
+      wordTranslationChecks.filter(item => item.message.startsWith("لا تتوفر ترجمة")).map(item => item.word),
       [],
       "Every clickable textbook word must show an Arabic meaning"
     );
