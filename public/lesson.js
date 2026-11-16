@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-try{window.localStorage.removeItem("art-of-advertising:student-progress:v1");}catch(_){}
+// Preserve locally stored student progress when opening the lesson.
 const paragraphs = [
 [
 ["Can you imagine a world without credit cards?","هل يمكنك تخيّل عالمٍ بلا بطاقات ائتمان؟"],
