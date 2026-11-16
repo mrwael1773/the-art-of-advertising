@@ -31,7 +31,12 @@ test("static assets keep the browser security policy", () => {
 
 test("student page has no registration, login, username, or password controls", () => {
   assert.doesNotMatch(page, /id="auth-form"|id="login-tab"|id="register-tab"|id="username"|id="password"|type="password"/);
-  assert.match(page, /textbook\.html/);\n  assert.match(textbook, /id="textbook-page"/);\n  assert.match(textbook, /Before Reading/);\n  assert.match(textbook, /صفحة 60/);\n  assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);\n  assert.match(page, /sentences\.html/);
+  assert.match(page, /textbook\.html/);
+  assert.match(textbook, /id="textbook-page"/);
+  assert.match(textbook, /Before Reading/);
+  assert.match(textbook, /صفحة 60/);
+  assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);
+  assert.match(page, /sentences\.html/);
   assert.match(page, /words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
