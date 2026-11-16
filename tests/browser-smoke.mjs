@@ -69,6 +69,21 @@ async function main() {
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
     assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
+    await page.evaluate(() => {
+      window.__spoken = [];
+      window.SpeechSynthesisUtterance = class {
+        constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+      };
+      window.speechSynthesis = {
+        cancel() {},
+        speak(utterance) { window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate }); }
+      };
+    });
+    await page.locator("#textbook-page .sentence-row .mini-button").first().click();
+    let spoken = await page.evaluate(() => window.__spoken.at(-1));
+    assert.equal(spoken.lang, "en-US");
+    assert.equal(spoken.rate, 0.25);
+    assert.match(spoken.text, /^Can you imagine/);
     assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
     assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
     assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
@@ -84,6 +99,10 @@ async function main() {
     await firstWord.click();
     assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
     assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
+    await firstWord.locator("xpath=..").locator(".word-action-panel button").first().click();
+    spoken = await page.evaluate(() => window.__spoken.at(-1));
+    assert.equal(spoken.text, "Can");
+    assert.equal(spoken.rate, 0.25);
     const firstWordPanel = page.locator("#textbook-page .word-action-panel").first();
     assert.equal(await firstWordPanel.isVisible(), true);
     await firstWordPanel.getByRole("button", { name: "ترجمة الكلمة" }).click();
