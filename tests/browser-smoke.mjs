@@ -62,6 +62,9 @@ async function main() {
     assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
     assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
     assert.equal(await page.locator(".textbook-paper").count(), 1);
+    assert.equal(await page.locator("#before-reading-content .sentence-row").count(), 2);
+    assert.equal(await page.locator("#textbook-timeline .timeline-event").count(), 3);
+    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null, "Legacy progress data must be cleared for the no-tracking practice site");
     assert.equal(await page.locator(".textbook-card-stack svg").count(), 1);
     assert.equal(await page.locator(".textbook-payment-art svg").count(), 1);
     assert.equal(await page.locator(".textbook-column-left .textbook-paragraph").count(), 3);
