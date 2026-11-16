@@ -90,7 +90,7 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .textbook-paragraph{position:relative;break-inside:avoid-column;display:flex;gap:7px;margin:0 0 8px;direction:ltr}
 .textbook-paragraph-number{flex:0 0 13px;color:#b45d62;font:14px Georgia,serif}
 .textbook-paragraph-content{min-width:0;flex:1}
-.textbook-paragraph .sentence-row{grid-template-columns:minmax(0,1fr) 74px;gap:6px;border-bottom:1px dotted #eee}
+.textbook-paragraph .sentence-row{direction:rtl;grid-template-columns:minmax(0,1fr) 74px;gap:6px;border-bottom:1px dotted #eee}
 .textbook-paragraph .sentence-en{font:14px/1.38 Georgia,"Times New Roman",serif;color:#252525;margin:3px 0;overflow-wrap:anywhere}
 .textbook-paragraph .mini-actions{display:grid;grid-column:2;grid-row:1;align-content:start;gap:4px}
 .textbook-paragraph .mini-button{padding:3px 4px;font:10px Tahoma,sans-serif;white-space:nowrap;background:#f2f4f8;color:#23364f;border-color:#d5dbe4}
@@ -100,4 +100,4 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .timeline-years{display:flex;justify-content:space-between;border-top:2px solid #c9a777;padding-top:7px;font:13px Georgia,serif;direction:ltr}
 .textbook-timeline p{margin:10px 0 0;font:bold italic 15px Georgia,serif;direction:ltr;text-align:left}
 .textbook-footer{display:flex;justify-content:space-between;color:#68778d;font-size:12px;margin-top:12px}
-@media(max-width:700px){.textbook-paper{padding:16px 12px 14px 20px}.textbook-columns{columns:1}.textbook-title{display:block}.textbook-title small{display:block;margin-top:4px}.textbook-paragraph .sentence-row{grid-template-columns:minmax(0,1fr) 70px}.textbook-paragraph .sentence-en{font-size:15px}}
+@media(max-width:700px){.textbook-paper{padding:16px 12px 14px 20px}.textbook-columns{columns:1}.textbook-title{display:block}.textbook-title small{display:block;margin-top:4px}.textbook-paragraph .sentence-row{direction:rtl;grid-template-columns:minmax(0,1fr) 70px}.textbook-paragraph .sentence-en{font-size:15px}}
