@@ -62,10 +62,11 @@ async function main() {
     assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
     assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
     assert.equal(await page.locator(".textbook-paper").count(), 1);
-    assert.equal(await page.locator(".textbook-card-stack svg").count(), 1);
-    assert.equal(await page.locator(".textbook-payment-art svg").count(), 1);
+    assert.equal(await page.locator(".textbook-art").count(), 0, "The original textbook passage page has no added credit-card illustrations");
     assert.equal(await page.locator(".textbook-column-left .textbook-paragraph").count(), 3);
-    assert.equal(await page.locator(".textbook-column-right .textbook-paragraph").count(), 3);
+    assert.equal(await page.locator(".textbook-column-right .textbook-paragraph").count(), 4);
+    assert.match(await page.locator(".textbook-column-left").textContent(), /The Diner’s Club Card soon became a cultural icon\./);
+    assert.match(await page.locator(".textbook-column-right").textContent(), /Hollywood cashed in on the “charge-it craze”/);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
     assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
@@ -95,7 +96,7 @@ async function main() {
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
     assert.match(spoken.text, /^Can you imagine/);
-    assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
+    assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 7, "Paragraph 3 is split across columns as in the printed page");
     assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
     assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
     const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect(), viewportWidth: window.innerWidth }));
