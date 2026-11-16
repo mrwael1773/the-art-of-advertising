@@ -159,6 +159,21 @@ if(quizArea){
     });
     block.append(heading,group);quizArea.append(block);
   });
+  // Matching questions form one-to-one pairs: a numbered Arabic meaning can be used once.
+  const matchingInputs=[...quizArea.querySelectorAll('input[name^="question-"]')]
+    .filter(input=>questions[Number(input.name.split("-")[1])]?.type==="match");
+  const refreshMatchingOptions=()=>{
+    const selectedByQuestion=new Map();
+    matchingInputs.forEach(input=>{
+      if(input.checked)selectedByQuestion.set(input.name,input.value);
+    });
+    matchingInputs.forEach(input=>{
+      const usedElsewhere=[...selectedByQuestion.entries()]
+        .some(([question,value])=>question!==input.name&&value===input.value);
+      input.disabled=usedElsewhere;
+    });
+  };
+  matchingInputs.forEach(input=>input.addEventListener("change",refreshMatchingOptions));
 }
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
