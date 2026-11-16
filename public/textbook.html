@@ -3,20 +3,25 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10233f">
-<meta name="description" content="صفحة تفاعلية لدرس The World of Plastic من كتاب The Art of Advertising">
-<title>The World of Plastic | صفحة القراءة</title>
+<meta name="description" content="قطعة The World of Plastic التفاعلية">
+<title>القطعة | The World of Plastic</title>
 <link rel="stylesheet" href="./styles.css?v=7">
 <style>
 .textbook-shell{width:min(100% - 16px,1040px);padding-top:8px}
 .textbook-paper{margin-top:8px}
 .textbook-title{justify-content:flex-start}
 .textbook-title small{display:none}
+.textbook-nav{display:flex;gap:8px;justify-content:space-between;align-items:center;margin:0 auto 10px;width:min(100% - 16px,1040px)}
+.textbook-nav a{color:#29496f;text-decoration:none;font:700 13px Tahoma,sans-serif;padding:8px 12px;border:1px solid #cbd5e1;border-radius:9px;background:#fff}
+.textbook-section-label{width:min(100% - 16px,1040px);margin:0 auto 8px;color:#243d5e;font:800 18px Tahoma,sans-serif}
 </style>
 <script src="./lesson.js?v=4" defer></script>
 </head>
 <body class="textbook-body">
+<nav class="textbook-nav" aria-label="التنقل بين قسمي الدرس"><a href="./index.html">الرئيسية</a><a href="./quiz.html">الانتقال إلى التمارين ←</a></nav>
+<h1 class="textbook-section-label">قسم القطعة</h1>
 <main class="textbook-shell">
-<article class="textbook-paper" aria-label="قطعة The World of Plastic مع عنوانها ورسوماتها، الصفحة 60">
+<article class="textbook-paper" aria-label="قطعة The World of Plastic التفاعلية">
 <div class="textbook-title"><span>The World of Plastic</span></div>
 <div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="0.85"><output id="speed-value">0.85×</output></div>
 <div id="textbook-page" class="textbook-columns"></div>
