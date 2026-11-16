@@ -61,9 +61,9 @@ async function main() {
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     const originalPageFrame = page.locator(".textbook-source-frame iframe");
     assert.equal(await originalPageFrame.count(), 1, "The original textbook page must be embedded");
-    assert.match(await originalPageFrame.getAttribute("src"), /wajibati\\.net\\/wp-content\\/uploads\\/2025\\/08\\/ki-angz1sf1_1_4iv79cpphs\\.pdf#page=65/);
+    assert.match(await originalPageFrame.getAttribute("src"), /wajibati\.net\/wp-content\/uploads\/2025\/08\/ki-angz1sf1_1_4iv79cpphs\.pdf#page=65/);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
-    assert.match(textbookResponse.headers()["content-security-policy"], /frame-src 'self' https:\\/\\/www\\.wajibati\\.net/);
+    assert.match(textbookResponse.headers()["content-security-policy"], /frame-src 'self' https:\/\/www\.wajibati\.net/);
     assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
     assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
