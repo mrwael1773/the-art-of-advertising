@@ -90,17 +90,34 @@ if(!readingList&&!vocabularyList&&!quizArea&&!textbookPage)return;
 function say(text){if(!("speechSynthesis"in window)){ $("#lesson-message").textContent="النطق غير مدعوم في هذا المتصفح أو الجهاز.";return;}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=Number($("#speech-speed")?.value||0.85);window.speechSynthesis.speak(u);}
 function button(label,fn){const b=document.createElement("button");b.type="button";b.className="mini-button";b.textContent=label;b.addEventListener("click",fn);return b;}
 const wordMeanings=new Map([...words,...extraWordMeanings].map(([word,meaning])=>[word.toLowerCase(),meaning]));
-function makeClickableSentence(text,target){
+function makeClickableSentence(text,target,wordTools){
   const parts=text.match(/[\p{L}\p{N}’']+|[^\p{L}\p{N}’']+/gu)||[text];
+  let selectedWord="";
+  const meaningOutput=document.createElement("span");
+  meaningOutput.className="selected-word-meaning";
+  meaningOutput.hidden=true;
+  const listenWord=button("🔊 استمع للكلمة",()=>{if(selectedWord)say(selectedWord);});
+  const translateWord=button("ترجمة الكلمة",()=>{
+    if(!selectedWord)return;
+    const meaning=wordMeanings.get(selectedWord.toLowerCase().replace(/[’']s$/,""));
+    meaningOutput.textContent=meaning?selectedWord+" = "+meaning:"لا تتوفر ترجمة لهذه الكلمة حاليًا.";
+    meaningOutput.hidden=false;
+  });
+  wordTools.append(listenWord,translateWord,meaningOutput);
   parts.forEach(part=>{
     if(/^\p{L}[\p{L}\p{N}’']*$/u.test(part)){
       const token=document.createElement("button");
       token.type="button";token.className="word-token";token.textContent=part;
-      token.setAttribute("aria-label","استمع إلى كلمة "+part);
+      token.setAttribute("aria-label","تحديد كلمة "+part);
+      token.setAttribute("aria-pressed","false");
       token.addEventListener("click",()=>{
-        say(part);
-        const meaning=wordMeanings.get(part.toLowerCase().replace(/[’']s$/,""));
-        $("#lesson-message").textContent=meaning?part+" = "+meaning:"استمع إلى نطق: "+part;
+        target.querySelectorAll(".word-token.selected").forEach(active=>{
+          active.classList.remove("selected");active.setAttribute("aria-pressed","false");
+        });
+        selectedWord=part;
+        token.classList.add("selected");token.setAttribute("aria-pressed","true");
+        wordTools.hidden=false;
+        meaningOutput.hidden=true;meaningOutput.textContent="";
       });
       target.append(token);
     }else target.append(document.createTextNode(part));
@@ -112,13 +129,15 @@ if(textbookPage)paragraphs.forEach((sentences,i)=>{
   const content=document.createElement("div");content.className="textbook-paragraph-content";
   sentences.forEach(([en,ar])=>{
     const row=document.createElement("div");row.className="sentence-row";
-    const english=document.createElement("p");english.className="sentence-en";makeClickableSentence(en,english);
+    const english=document.createElement("p");english.className="sentence-en";
+    const wordTools=document.createElement("div");wordTools.className="word-action-panel";wordTools.hidden=true;
+    makeClickableSentence(en,english,wordTools);
     const actions=document.createElement("div");actions.className="mini-actions";
     actions.append(button("🔊 استمع",()=>say(en)));
     const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;
     const reveal=button("ترجمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء":"ترجمة";reveal.setAttribute("aria-expanded",String(show));});
     reveal.setAttribute("aria-expanded","false");actions.append(reveal);
-    row.append(english,actions,translation);content.append(row);
+    row.append(english,actions,wordTools,translation);content.append(row);
   });
   block.append(number,content);textbookPage.append(block);
 });
