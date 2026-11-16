@@ -27,8 +27,8 @@ test("static assets keep the browser security policy", () => {
   assert.match(headers, /Referrer-Policy: no-referrer/);
   assert.match(headers, /Cross-Origin-Resource-Policy: same-origin/);
   assert.match(headers, /Content-Security-Policy:/);
-  assert.match(headers, /frame-src 'self' https:\/\/www\.wajibati\.net/);
-  assert.match(worker, /frame-src 'self' https:\/\/www\.wajibati\.net/);
+  assert.match(headers, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
+  assert.match(worker, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
 });
 
 test("student page has no registration, login, username, or password controls", () => {
@@ -37,7 +37,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /id="textbook-page"/);
   assert.match(textbook, /The World of Plastic/);
   assert.match(textbook, /رقمها المطبوع 60/);
-  assert.match(textbook, /wajibati\.net\/wp-content\/uploads\/2025\/08\/ki-angz1sf1_1_4iv79cpphs\.pdf#page=65/);
+  assert.match(textbook, /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
   assert.match(textbook, /class="textbook-source-frame"/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
