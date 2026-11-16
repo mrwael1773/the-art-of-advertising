@@ -55,3 +55,9 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 /* Clear navigation from final results */
 .result-home{display:grid;place-items:center;text-decoration:none;text-align:center;padding:14px 16px;min-height:56px;font-size:16px;font-weight:900;letter-spacing:.1px;box-shadow:0 6px 18px #0003;border:2px solid #8db8ff}
 .result-home:focus-visible{outline:3px solid #a9caff;outline-offset:4px}
+
+/* Interactive word pronunciation and four practice formats */
+.word-token{display:inline;border:0;padding:0 1px;margin:0;background:transparent;color:inherit;font:inherit;line-height:inherit;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:#8db8ff;text-underline-offset:3px;cursor:pointer;border-radius:3px}
+.word-token:hover,.word-token:focus-visible{background:#315f9630;outline:2px solid #8db8ff;outline-offset:2px}
+.quiz-section-title{margin:24px 0 8px;padding:10px 12px;border-right:4px solid #8db8ff;border-radius:8px;background:#253650;color:#f0f5ff;font-size:15px}
+.quiz-question{scroll-margin-top:16px}
