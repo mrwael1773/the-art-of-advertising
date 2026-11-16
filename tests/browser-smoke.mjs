@@ -99,7 +99,7 @@ async function main() {
     await firstWord.click();
     assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
     assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
-    await firstWord.locator("xpath=..").locator(".word-action-panel button").first().click();
+    await firstWord.locator("xpath=../..").locator(".word-action-panel button").first().click();
     spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.text, "Can");
     assert.equal(spoken.rate, 0.25);
