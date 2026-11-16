@@ -41,7 +41,10 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /max="1"/);
   assert.match(textbook, /lesson\.js/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
-  assert.match(lesson, /if\(textbookPage\)\{/);\n  assert.match(lesson, /textbook-card-stack/);\n  assert.match(lesson, /textbook-payment-art/);\n  assert.match(textbook, /class="textbook-paper"/);
+  assert.match(lesson, /if\(textbookPage\)\{/);
+  assert.match(lesson, /textbook-card-stack/);
+  assert.match(lesson, /textbook-payment-art/);
+  assert.match(textbook, /class="textbook-paper"/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
