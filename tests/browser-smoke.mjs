@@ -63,6 +63,9 @@ async function main() {
     assert.equal(await page.locator("#speed-value").textContent(), "1.10×");
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
     assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
+    assert.ok(await page.locator("#reading-list .sentence-en .word-token").count() > 0);
+    await page.locator("#reading-list .sentence-en .word-token").first().click();
+    assert.match(await page.locator("#lesson-message").textContent(), /استمع إلى نطق/);
     assert.equal(await page.locator("#reading-list .sentence-ar[hidden]").count(), 29);
     await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
     assert.equal(await page.locator(".sentence-ar").first().isVisible(), true);
