@@ -61,3 +61,10 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .word-token:hover,.word-token:focus-visible{background:#315f9630;outline:2px solid #8db8ff;outline-offset:2px}
 .quiz-section-title{margin:24px 0 8px;padding:10px 12px;border-right:4px solid #8db8ff;border-radius:8px;background:#253650;color:#f0f5ff;font-size:15px}
 .quiz-question{scroll-margin-top:16px}
+
+/* Keep sentence actions on the left side of each English sentence */
+.sentence-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:5px 0}
+.sentence-row .sentence-en{grid-column:1;grid-row:1;min-width:0;margin:9px 0}
+.sentence-row .mini-actions{grid-column:2;grid-row:1;display:grid;justify-items:stretch;gap:6px;padding-top:5px}
+.sentence-row .sentence-ar{grid-column:1/-1;grid-row:2;margin-top:0}
+@media(max-width:380px){.sentence-row{gap:6px}.sentence-row .mini-button{padding:6px 7px;font-size:10px}}
