@@ -61,6 +61,11 @@ async function main() {
     await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
     assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
     assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
+    assert.equal(await page.locator(".textbook-paper").count(), 1);
+    assert.equal(await page.locator(".textbook-card-stack svg").count(), 1);
+    assert.equal(await page.locator(".textbook-payment-art svg").count(), 1);
+    assert.equal(await page.locator(".textbook-column-left .textbook-paragraph").count(), 3);
+    assert.equal(await page.locator(".textbook-column-right .textbook-paragraph").count(), 3);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
     assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
