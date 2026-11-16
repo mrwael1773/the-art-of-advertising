@@ -113,6 +113,9 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 844 });
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
+    assert.equal(await page.locator('.page-nav a[href="./sentences.html"]').count(), 0);
+    assert.equal(await page.locator('.page-nav a[href="./words.html"]').count(), 0);
+    assert.match(await page.locator(".page-intro .eyebrow").textContent(), /STEP 2/);
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
     await page.locator('input[name="question-10"][value="0"]').check();
