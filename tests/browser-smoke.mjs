@@ -63,6 +63,10 @@ async function main() {
     assert.equal(await page.locator("#speed-value").textContent(), "1.10×");
     assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
     assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
+    assert.equal(await page.locator(".sentence-row").count(), 29);
+    assert.equal(await page.locator(".sentence-row").first().evaluate(el => getComputedStyle(el).display), "grid");
+    const sentenceLayout = await page.locator(".sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect() }));
+    assert.ok(sentenceLayout.actions.left < sentenceLayout.sentence.left, "Sentence actions should appear to the left of the English sentence");
     assert.ok(await page.locator("#reading-list .sentence-en .word-token").count() > 0);
     await page.locator("#reading-list .sentence-en .word-token").first().click();
     assert.match(await page.locator("#lesson-message").textContent(), /استمع إلى نطق/);
