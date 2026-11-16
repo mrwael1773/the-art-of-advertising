@@ -59,6 +59,8 @@ async function main() {
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
+    assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
