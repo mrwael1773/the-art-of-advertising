@@ -59,11 +59,10 @@ async function main() {
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
     await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
-    const originalPageFrame = page.locator(".textbook-source-frame iframe");
-    assert.equal(await originalPageFrame.count(), 1, "The original textbook page must be embedded");
-    assert.match(await originalPageFrame.getAttribute("src"), /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
+    assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
+    assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
-    assert.match(textbookResponse.headers()["content-security-policy"], /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
+    assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
     assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
     assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
