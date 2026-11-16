@@ -49,7 +49,9 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator(".learning-link").count(), 4);
+    assert.equal(await page.locator(".learning-link").count(), 2);
+    assert.equal(await page.locator(".learning-link[href=\"./sentences.html\"]").count(), 0);
+    assert.equal(await page.locator(".learning-link[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 0);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
