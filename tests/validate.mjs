@@ -36,6 +36,11 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /قسم القطعة/);
   assert.match(textbook, /The World of Plastic/);
   assert.match(textbook, /صفحة 60/);
+  assert.match(textbook, /class="textbook-visuals"/);
+  assert.match(textbook, /aria-label="بطاقات ائتمان متراكبة"/);
+  assert.match(textbook, /aria-label="بطاقة ائتمان مع شريحة دفع"/);
+  assert.match(textbook, /class="textbook-timeline"/);
+  assert.match(textbook, /1949: Frank couldn.t pay for dinner/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
   assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
