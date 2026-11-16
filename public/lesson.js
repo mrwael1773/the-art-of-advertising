@@ -124,6 +124,33 @@ function makeClickableSentence(text,target,wordTools){
   });
 }
 if(textbookPage){
+  const beforeReading=$("#before-reading-content"),timeline=$("#textbook-timeline");
+  const addInteractiveLine=(host,en,ar)=>{
+    const row=document.createElement("div");row.className="sentence-row textbook-extra-row";
+    const english=document.createElement("p");english.className="sentence-en";
+    const wordTools=document.createElement("div");wordTools.className="word-action-panel";wordTools.hidden=true;
+    makeClickableSentence(en,english,wordTools);
+    const actions=document.createElement("div");actions.className="mini-actions";
+    actions.append(button("🔊 استمع",()=>say(en)));
+    const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;
+    const reveal=button("ترجمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء":"ترجمة";reveal.setAttribute("aria-expanded",String(show));});
+    reveal.setAttribute("aria-expanded","false");actions.append(reveal);
+    row.append(english,actions,wordTools,translation);host.append(row);
+  };
+  if(beforeReading){
+    addInteractiveLine(beforeReading,"1. What words do you think of when you read the words “credit card”?","١. ما الكلمات التي تخطر ببالك عندما تقرأ عبارة «بطاقة ائتمان»؟");
+    addInteractiveLine(beforeReading,"2. Read the text and write sentences to show the history of the credit card. Use the timeline below.","٢. اقرأ النص واكتب جملًا توضّح تاريخ بطاقة الائتمان. استخدم الخط الزمني أدناه.");
+  }
+  if(timeline){
+    [["1949","Frank couldn’t pay for dinner because he forgot his wallet.","لم يستطع فرانك دفع ثمن العشاء لأنه نسي محفظته."],
+     ["1950","Frank returned to the restaurant and paid with a Diner’s Club Card.","عاد فرانك إلى المطعم ودفع باستخدام بطاقة نادي داينرز."],
+     ["1952","The Diner’s Club Card was accepted by thousands of businesses.","قُبلت بطاقة نادي داينرز لدى آلاف الشركات."]]
+      .forEach(([year,en,ar])=>{
+        const event=document.createElement("section");event.className="timeline-event";
+        const date=document.createElement("h4");date.textContent=year;event.append(date);
+        addInteractiveLine(event,en,ar);timeline.append(event);
+      });
+  }
   const leftColumn=document.createElement("div");leftColumn.className="textbook-column textbook-column-left";
   const rightColumn=document.createElement("div");rightColumn.className="textbook-column textbook-column-right";
   const cardStack=document.createElement("figure");cardStack.className="textbook-art textbook-card-stack";cardStack.setAttribute("aria-label","Illustration of plastic credit cards");
