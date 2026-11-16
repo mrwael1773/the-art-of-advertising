@@ -81,11 +81,11 @@ async function main() {
     assert.equal(await page.locator(".vocab-meaning").first().isVisible(), true);
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
+    assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
+    assert.equal(await page.locator(".quiz-section-title").count(), 4);
     assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
     assert.equal(await page.locator(".answer-feedback").count(), 0);
-    const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
-    assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
+    assert.equal(await page.locator(".quiz-section-title").count(), 4);
     await page.locator(`input[name="question-0"][value="1"]`).check();
     assert.equal(await page.locator(".answer-feedback").count(), 0);
     await page.locator("#finish-quiz").click();
@@ -112,14 +112,14 @@ async function main() {
     });
     assert.deepEqual(accessibility, [], `Accessibility violations: ${JSON.stringify(accessibility)}`);
 
-    const answers = [1, 0, 1, 1, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const answers = [1, 0, 0, 2, 0, 0, 1, 2, 0, 1, 0, 1, 2, 3, 4, 0, 0, 1, 0, 0];
     for (let i = 0; i < answers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
     await page.waitForURL("**/results");
     assert.match(await page.locator("h2").textContent(), /النتيجة النهائية/);
-    assert.match(await page.locator("#final-score").textContent(), /13\s*\/\s*15/);
+    assert.match(await page.locator("#final-score").textContent(), /18\s*\/\s*20/);
     assert.equal(await page.locator(".wrong-answer").count(), 2);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara forget his wallet\?/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /الإجابة الصحيحة/);
@@ -138,13 +138,13 @@ async function main() {
     assert.match(await page.locator("#result-unavailable").textContent(), /غير متاحة/);
     assert.equal(await page.locator(".wrong-answer").count(), 0);
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
-    const allCorrectAnswers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const allCorrectAnswers = [0, 1, 0, 2, 0, 0, 1, 2, 0, 1, 0, 1, 2, 3, 4, 0, 0, 1, 0, 0];
     for (let i = 0; i < allCorrectAnswers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${allCorrectAnswers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
     await page.waitForURL("**/results");
-    assert.match(await page.locator("#final-score").textContent(), /15\s*\/\s*15/);
+    assert.match(await page.locator("#final-score").textContent(), /20\s*\/\s*20/);
     assert.equal(await page.locator(".wrong-answer").count(), 0);
     assert.equal(await page.locator("#all-correct").isVisible(), true);
     assert.equal(await page.locator("#wrong-heading").isVisible(), false);
