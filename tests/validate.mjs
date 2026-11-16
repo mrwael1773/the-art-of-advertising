@@ -41,7 +41,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
   assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);
   assert.match(lesson, /if\(vocabularyList\)words\.forEach/);
-  assert.match(lesson, /if\(quizArea\)questions\.forEach/);
+  assert.match(lesson, /if\(quizArea\)\{/);\n  assert.match(lesson, /questions\.forEach\(\(q,i\)=>/);
   assert.ok(lesson.includes('window.location.assign("./results.html")'));
   assert.ok(resultPage.includes("النتيجة النهائية"));
   assert.match(resultPage, /href="\.\/index\.html">العودة إلى القائمة الرئيسية/);
