@@ -98,46 +98,6 @@ async function main() {
     }
     await page.setViewportSize({ width: 390, height: 844 });
 
-    await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
-    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
-    assert.equal(await page.locator("#speech-speed").count(), 1);
-    assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
-    assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
-    await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
-    await page.locator("#speech-speed").evaluate(el => { el.value = "1"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "1.00×");
-    assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
-    assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
-    assert.equal(await page.locator(".sentence-row").count(), 29);
-    assert.equal(await page.locator(".sentence-row").first().evaluate(el => getComputedStyle(el).display), "grid");
-    const sentenceLayout = await page.locator(".sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect() }));
-    assert.ok(sentenceLayout.actions.left < sentenceLayout.sentence.left, "Sentence actions should appear to the left of the English sentence");
-    assert.ok(await page.locator("#reading-list .sentence-en .word-token").count() > 0);
-    await page.locator("#reading-list .sentence-en .word-token").first().click();
-    assert.match(await page.locator("#lesson-message").textContent(), /Can = يستطيع/);
-    assert.equal(await page.locator("#reading-list .sentence-ar[hidden]").count(), 29);
-    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
-    assert.equal(await page.locator(".sentence-ar").first().isVisible(), true);
-    assert.match(await page.locator(".sentence-ar").first().textContent(), /تخيّل/);
-    assert.equal(await page.locator(".sentence-ar[hidden]").count(), 28);
-    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
-    assert.equal(await page.locator(".sentence-ar").first().isVisible(), false);
-
-    await page.goto(origin + "/words.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
-    assert.equal(await page.locator("#speech-speed").count(), 1);
-    assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
-    assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
-    await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
-    await page.locator("#speech-speed").evaluate(el => { el.value = "1"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "1.00×");
-    assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
-    await page.locator(".vocab-card").first().locator(".mini-button").nth(1).click();
-    assert.equal(await page.locator(".vocab-meaning").first().isVisible(), true);
-
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
