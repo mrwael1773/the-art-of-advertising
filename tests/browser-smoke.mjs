@@ -58,7 +58,7 @@ async function main() {
 
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
-    await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
     const originalPageFrame = page.locator(".textbook-source-frame iframe");
     assert.equal(await originalPageFrame.count(), 1, "The original textbook page must be embedded");
     assert.match(await originalPageFrame.getAttribute("src"), /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
