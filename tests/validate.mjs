@@ -64,6 +64,8 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
+  assert.match(lesson, /Matching questions form one-to-one pairs/);
+  assert.match(lesson, /input\.disabled=usedElsewhere/);
   assert.ok(lesson.includes("function makeClickableSentence"));
   assert.ok(lesson.includes("className=\"word-token\""));
 });
