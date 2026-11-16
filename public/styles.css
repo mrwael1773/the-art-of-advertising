@@ -259,9 +259,12 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
  .textbook-paper-header h2{font-size:clamp(21px,6vw,30px)}
  .textbook-columns{grid-template-columns:1fr;gap:12px}
  .textbook-column{gap:9px}
- .textbook-paragraph .sentence-row{grid-template-columns:65px minmax(0,1fr);gap:6px}
- .textbook-paragraph .sentence-en{font-size:14px;line-height:1.55}
- .textbook-paragraph .mini-button{font-size:9px;padding:5px 2px}
+ .textbook-paragraph .sentence-row{grid-template-columns:minmax(0,1fr);gap:6px}
+ .textbook-paragraph .sentence-en{grid-column:1;grid-row:1;font-size:14px;line-height:1.55}
+ .textbook-paragraph .mini-actions{grid-column:1;grid-row:2;display:flex;flex-wrap:wrap}
+ .textbook-paragraph .word-action-panel{grid-column:1;grid-row:3}
+ .textbook-paragraph .sentence-ar{grid-column:1;grid-row:4}
+ .textbook-paragraph .mini-button{font-size:9px;padding:5px 7px}
  .textbook-art svg{max-height:160px}
  .textbook-payment-art svg{max-height:150px}
  .textbook-paper-footer{margin-top:12px}
