@@ -10,7 +10,7 @@ try{
 }catch(_){}
 let result=null;
 try{result=raw?JSON.parse(raw):null;}catch(_){}
-const valid=result&&Number.isInteger(result.score)&&Number.isInteger(result.total)&&result.total===15&&result.score>=0&&result.score<=result.total&&Array.isArray(result.wrongAnswers)&&result.wrongAnswers.length===result.total-result.score&&result.wrongAnswers.every(item=>item&&typeof item.question==="string"&&typeof item.selected==="string"&&typeof item.correct==="string");
+const valid=result&&Number.isInteger(result.score)&&Number.isInteger(result.total)&&result.total===20&&result.score>=0&&result.score<=result.total&&Array.isArray(result.wrongAnswers)&&result.wrongAnswers.length===result.total-result.score&&result.wrongAnswers.every(item=>item&&typeof item.question==="string"&&typeof item.selected==="string"&&typeof item.correct==="string");
 if(!valid){unavailable.hidden=false;unavailable.textContent="النتيجة غير متاحة. ابدأ محاولة جديدة من صفحة التمارين.";return;}
 content.hidden=false;
 document.querySelector("#final-score").textContent=result.score+" / "+result.total;
