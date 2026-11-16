@@ -52,7 +52,8 @@ const words = [
 // Kept separate from the 43-item vocabulary lesson so its scope does not change.
 const extraWordMeanings = [
 ["a","أداة تنكير"],["able","قادر على"],["accept","يقبل"],["across","عبر / في أنحاء"],["aimed","موجّه"],["airlines","شركات الطيران"],["all","كل"],["american","أمريكي"],["an","أداة تنكير"],["and","و"],["are","يكونون / تكون"],["around","حول"],["as","كما / بصفته"],["asked","سأل"],["at","في"],["back","إلى الخلف / يستعيد"],["bank","بنك"],["be","يكون"],["became","أصبح"],["been","كان"],["before","قبل"],["beijing","بكين"],["being","كونه"],["board","لوحية"],["businesses","شركات"],["businessman","رجل أعمال"],["but","لكن"],["by","بحلول / بواسطة"],["called","يُسمّى"],["came","جاءت"],["can","يستطيع"],["canada","كندا"],["cards","بطاقات"],["carried","حمل"],["carrying","يحمل"],["cashed","استغلّ"],["changed","غيّر"],["charge","الدفع / يحمّل على الحساب"],["charging","الدفع بالبطاقة"],["check","الفاتورة"],["club","نادي"],["corporation","شركة"],["craze","رواج / هوس"],["created","أُنشئ"],["cuba","كوبا"],["department","قسم"],["diner","داينرز"],["dinner","عشاء"],["employee","موظف"],["entirely","بالكامل"],["event","حدث"],["ever","منذ ذلك الحين"],["every","كل"],["express","إكسبريس"],["famous","مشهور"],["first","أول"],["for","لـ / من أجل"],["forgot","نسي"],["form","شكل / طريقة"],["forth","وما إلى ذلك"],["france","فرنسا"],["frank","فرانك"],["free","مجاني"],["from","من"],["game","لعبة"],["gangster","رجل عصابات"],["gave","قدّم"],["get","يحصل على / يستعيد"],["had","كان لديه"],["has","لديه"],["have","لديه / يملك"],["he","هو"],["himself","نفسه"],["his","ـه / الخاص به"],["hollywood","هوليوود"],["hundreds","مئات"],["idea","فكرة"],["ideal","إيديل"],["in","في"],["instead","بدلًا من"],["is","يكون"],["issues","يُصدر"],["it","هو / ذلك"],["its","ـه / الخاص به"],["job","وظيفة"],["joined","انضمّ"],["keep","يحتفظ"],["known","معروف"],["later","لاحقًا"],["left","ترك"],["local","محلي"],["man","رجل"],["many","كثير"],["mastercard","ماستركارد"],["mcnamara","ماكنمارا"],["members","أعضاء"],["miles","أميال"],["mostly","في الغالب"],["movie","فيلم"],["new","جديد"],["night","ليلة"],["now","الآن"],["of","من / لـ"],["offer","تقدّم"],["on","على"],["or","أو"],["order","لكي / ترتيب"],["other","آخر / أخرى"],["outside","خارج"],["paid","دفع"],["pay","يدفع"],["people","الناس"],["picked","تبنّى"],["plastic","بلاستيك"],["presented","قدّم"],["products","منتجات"],["program","برنامج"],["programs","برامج"],["quickly","بسرعة"],["realized","أدرك"],["revolutionized","أحدث تحولًا جذريًا"],["reward","مكافأة"],["same","نفسه"],["should","ينبغي"],["simply","ببساطة"],["since","منذ"],["small","صغير"],["so","لذلك"],["solved","حُلّ"],["soon","سرعان ما"],["special","خاص"],["spend","ينفق"],["started","بدأ"],["states","الولايات"],["store","متجر"],["such","مثل"],["suit","بدلة"],["suits","بدلات"],["supermarket","متجر كبير"],["supper","عشاء"],["ten","عشرة"],["that","ذلك / الذي"],["the","أداة التعريف (الـ)"],["there","هناك"],["they","هم"],["this","هذا"],["those","أولئك"],["thousands","آلاف"],["to","إلى / أن"],["today","اليوم"],["toy","لعبة"],["travelers","مسافرون"],["united","المتحدة"],["universe","عالم"],["until","حتى"],["up","إلى / للأعلى"],["use","يستخدم"],["used","استخدم / استُخدم"],["users","مستخدمون"],["valuable","قيّم"],["visa","فيزا"],["waiter","نادل"],["was","كان"],["way","طريقة"],["well","جيدًا"],["western","ويسترن"],["what","ماذا / ما"],["when","عندما"],["whether","سواء"],["who","من"],["why","لماذا"],["with","مع"],["without","بدون"],["world","العالم"],["would","قد / سوف"],["year","عام"],["years","أعوام"],["york","يورك"],["you","أنت"],
-["credit","ائتمان"],["card","بطاقة"],["status","مكانة"],["symbol","رمز"],["cultural","ثقافي"],["icon","رمز"],["car","سيارة"],["rentals","تأجير"]
+["credit","ائتمان"],["card","بطاقة"],["status","مكانة"],["symbol","رمز"],["cultural","ثقافي"],["icon","رمز"],["car","سيارة"],["rentals","تأجير"],
+["couldn’t","لم يستطع"],["because","لأن"],["words","كلمات"],["do","تفعل / تقوم بـ"],["think","تفكّر"],["read","يقرأ"],["text","النص"],["write","يكتب"],["sentences","جمل"],["show","تُظهر"],["history","تاريخ"],["timeline","خط زمني"],["below","أدناه"]
 ];
 
 const questions = [
@@ -124,6 +125,33 @@ function makeClickableSentence(text,target,wordTools){
   });
 }
 if(textbookPage){
+  const beforeReading=$("#before-reading-content"),timeline=$("#textbook-timeline");
+  const addInteractiveLine=(host,en,ar)=>{
+    const row=document.createElement("div");row.className="sentence-row textbook-extra-row";
+    const english=document.createElement("p");english.className="sentence-en";
+    const wordTools=document.createElement("div");wordTools.className="word-action-panel";wordTools.hidden=true;
+    makeClickableSentence(en,english,wordTools);
+    const actions=document.createElement("div");actions.className="mini-actions";
+    actions.append(button("🔊 استمع",()=>say(en)));
+    const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;
+    const reveal=button("ترجمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء":"ترجمة";reveal.setAttribute("aria-expanded",String(show));});
+    reveal.setAttribute("aria-expanded","false");actions.append(reveal);
+    row.append(english,actions,wordTools,translation);host.append(row);
+  };
+  if(beforeReading){
+    addInteractiveLine(beforeReading,"1. What words do you think of when you read the words “credit card”?","١. ما الكلمات التي تخطر ببالك عندما تقرأ عبارة «بطاقة ائتمان»؟");
+    addInteractiveLine(beforeReading,"2. Read the text and write sentences to show the history of the credit card. Use the timeline below.","٢. اقرأ النص واكتب جملًا توضّح تاريخ بطاقة الائتمان. استخدم الخط الزمني أدناه.");
+  }
+  if(timeline){
+    [["1949","Frank couldn’t pay for dinner because he forgot his wallet.","لم يستطع فرانك دفع ثمن العشاء لأنه نسي محفظته."],
+     ["1950","Frank returned to the restaurant and paid with a Diner’s Club Card.","عاد فرانك إلى المطعم ودفع باستخدام بطاقة نادي داينرز."],
+     ["1952","The Diner’s Club Card was accepted by thousands of businesses.","قُبلت بطاقة نادي داينرز لدى آلاف الشركات."]]
+      .forEach(([year,en,ar])=>{
+        const event=document.createElement("section");event.className="timeline-event";
+        const date=document.createElement("h4");date.textContent=year;event.append(date);
+        addInteractiveLine(event,en,ar);timeline.append(event);
+      });
+  }
   const leftColumn=document.createElement("div");leftColumn.className="textbook-column textbook-column-left";
   const rightColumn=document.createElement("div");rightColumn.className="textbook-column textbook-column-right";
   const cardStack=document.createElement("figure");cardStack.className="textbook-art textbook-card-stack";cardStack.setAttribute("aria-label","Illustration of plastic credit cards");

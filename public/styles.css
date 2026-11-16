@@ -269,3 +269,21 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
  .textbook-payment-art svg{max-height:150px}
  .textbook-paper-footer{margin-top:12px}
 }
+
+
+/* Complete textbook page: pre-reading prompts and historical timeline */
+.textbook-before-reading{margin:18px 0 14px;padding:16px 20px;background:#fff;color:#252525;border:1px solid #d4d9e2;border-right:5px solid #a85b9e;border-radius:8px;box-shadow:0 3px 10px #142d4d12}
+.textbook-before-reading h2{margin:0 0 10px;color:#38a96f;font-size:19px}
+.textbook-before-reading .sentence-en,.textbook-timeline .sentence-en{font-size:14px;line-height:1.55}
+.textbook-before-reading .sentence-row,.textbook-timeline .sentence-row{grid-template-columns:minmax(0,1fr) auto}
+.textbook-before-reading .mini-actions,.textbook-timeline .mini-actions{display:flex;flex-direction:column}
+.textbook-extra-row{margin:8px 0}
+.textbook-timeline{margin:24px 0 4px;padding:18px 10px 8px;border-top:2px solid #a85b9e;color:#252525}
+.textbook-timeline h3{margin:0 0 16px;text-align:center;font-size:19px;color:#a75f69}
+#textbook-timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;position:relative}
+.timeline-event{min-width:0;padding:10px;border:1px solid #d9dfe8;border-radius:10px;background:#f8f9fb}
+.timeline-event h4{margin:0 0 6px;text-align:center;color:#a85b9e;font:800 22px Arial,sans-serif}
+.timeline-event .sentence-en{margin:4px 0;text-align:left;direction:ltr}
+.timeline-event .sentence-ar{color:#47556a}
+.textbook-paper-footer{margin-top:14px;padding-top:10px;border-top:1px solid #ddd;text-align:center;color:#737373;font-size:10px;letter-spacing:1px}
+@media(max-width:620px){#textbook-timeline{grid-template-columns:1fr}.textbook-before-reading{padding:12px}.textbook-before-reading .sentence-row,.textbook-timeline .sentence-row{grid-template-columns:minmax(0,1fr)}.textbook-before-reading .mini-actions,.textbook-timeline .mini-actions{flex-direction:row}.textbook-timeline{padding-inline:0}}
