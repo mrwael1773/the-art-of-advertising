@@ -64,6 +64,12 @@ async function main() {
     assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Textbook sentence controls should be on the left");
     await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
+    for (const width of [320, 360, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const dimensions = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+      assert.ok(dimensions.scroll <= dimensions.client + 1, `Textbook horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
 
     await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
     assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
