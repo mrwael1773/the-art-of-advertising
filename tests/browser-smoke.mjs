@@ -68,8 +68,12 @@ async function main() {
     assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
     assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
     assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
-    const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect() }));
-    assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Textbook sentence controls should be on the left");
+    const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect(), viewportWidth: window.innerWidth }));
+    if (firstTextbookRow.viewportWidth > 700) {
+      assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Desktop sentence controls should be on the left");
+    } else {
+      assert.ok(firstTextbookRow.actions.top >= firstTextbookRow.sentence.bottom - 1, "Mobile sentence controls should appear below the sentence");
+    }
     await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
     const firstWord = page.locator("#textbook-page .word-token").first();
