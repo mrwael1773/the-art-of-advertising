@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles] = await Promise.all([
+const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
   read("../public/results.html"), read("../public/results.js"),
-  read("../public/_headers"), read("../public/styles.css")
+  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
@@ -27,21 +27,33 @@ test("static assets keep the browser security policy", () => {
   assert.match(headers, /Referrer-Policy: no-referrer/);
   assert.match(headers, /Cross-Origin-Resource-Policy: same-origin/);
   assert.match(headers, /Content-Security-Policy:/);
+  assert.match(headers, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
+  assert.match(worker, /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
 });
 
 test("student page has no registration, login, username, or password controls", () => {
   assert.doesNotMatch(page, /id="auth-form"|id="login-tab"|id="register-tab"|id="username"|id="password"|type="password"/);
-  assert.match(page, /sentences\.html/);
-  assert.match(page, /words\.html/);
+  assert.match(page, /textbook\.html/);
+  assert.match(textbook, /id="textbook-page"/);
+  assert.match(textbook, /The World of Plastic/);
+  assert.match(textbook, /رقمها المطبوع 60/);
+  assert.match(textbook, /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
+  assert.match(textbook, /class="textbook-source-frame"/);
+  assert.match(textbook, /id="speech-speed"/);
+  assert.match(textbook, /min="0\.25"/);
+  assert.match(textbook, /max="1"/);
+  assert.match(textbook, /lesson\.js/);
+  assert.doesNotMatch(textbook, /Before Reading|After Reading/);
+  assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);
+  assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
   assert.match(styles, /color-scheme:dark/);
   assert.doesNotMatch(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
-  assert.match(lesson, /if\(readingList\)paragraphs\.forEach/);
-  assert.match(lesson, /if\(vocabularyList\)words\.forEach/);
-  assert.match(lesson, /if\(quizArea\)questions\.forEach/);
+  assert.match(lesson, /if\(quizArea\)\{/);
+  assert.match(lesson, /questions\.forEach\(\(q,i\)=>/);
   assert.ok(lesson.includes('window.location.assign("./results.html")'));
   assert.ok(resultPage.includes("النتيجة النهائية"));
   assert.match(resultPage, /href="\.\/index\.html">العودة إلى القائمة الرئيسية/);
@@ -56,11 +68,19 @@ test("practice answers and results are not persisted between visits", () => {
   assert.match(lesson, /localStorage\.removeItem/);
   assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
   assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
-  assert.equal([...lesson.matchAll(/correct:\s*[0-2]/g)].length, 15);
+  assert.equal([...lesson.matchAll(/type:"(?:choice|fill|match|truefalse)"/g)].length, 20);
+  assert.equal([...lesson.matchAll(/type:"choice"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
+  assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
+  assert.match(lesson, /Matching questions form one-to-one pairs/);
+  assert.match(lesson, /input\.disabled=usedElsewhere/);
+  assert.ok(lesson.includes("function makeClickableSentence"));
+  assert.ok(lesson.includes("className=\"word-token\""));
 });
 
 test("practice answer positions are balanced and preserve original answer indexes", () => {
-  assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1]"));
+  assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2, 2,0,1,2,0, 3,1,4,0,2, 1,0,1,0,1]"));
   assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
   assert.ok(lesson.includes("input.value=String(originalIndex)"));
   assert.ok(lesson.includes("window.location.assign"));

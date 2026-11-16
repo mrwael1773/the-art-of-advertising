@@ -55,3 +55,173 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 /* Clear navigation from final results */
 .result-home{display:grid;place-items:center;text-decoration:none;text-align:center;padding:14px 16px;min-height:56px;font-size:16px;font-weight:900;letter-spacing:.1px;box-shadow:0 6px 18px #0003;border:2px solid #8db8ff}
 .result-home:focus-visible{outline:3px solid #a9caff;outline-offset:4px}
+
+/* Interactive word pronunciation and four practice formats */
+.word-token{display:inline;border:0;padding:0 1px;margin:0;background:transparent;color:inherit;font:inherit;line-height:inherit;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:#8db8ff;text-underline-offset:3px;cursor:pointer;border-radius:3px}
+.word-token:hover,.word-token:focus-visible{background:#315f9630;outline:2px solid #8db8ff;outline-offset:2px}
+.quiz-section-title{margin:24px 0 8px;padding:10px 12px;border-right:4px solid #8db8ff;border-radius:8px;background:#253650;color:#f0f5ff;font-size:15px}
+.quiz-question{scroll-margin-top:16px}
+
+/* Keep sentence actions on the left side of each English sentence */
+.sentence-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:5px 0}
+.sentence-row .sentence-en{grid-column:1;grid-row:1;min-width:0;margin:9px 0}
+.sentence-row .mini-actions{grid-column:2;grid-row:1;display:grid;justify-items:stretch;gap:6px;padding-top:5px}
+.sentence-row .sentence-ar{grid-column:1/-1;grid-row:2;margin-top:0}
+@media(max-width:380px){.sentence-row{gap:6px}.sentence-row .mini-button{padding:6px 7px;font-size:10px}}
+
+
+/* Interactive textbook page 60 recreation based on the supplied source page */
+.textbook-body{background:#e7eaf0;color:#292b31}
+.textbook-shell{width:min(100% - 24px,1040px);margin:0 auto;padding:18px 0 32px}
+.textbook-top{margin-top:18px;background:#a85b9e;color:#fff}
+.textbook-unit{padding:12px 24px;font:22px Georgia,serif;letter-spacing:.2px}
+.textbook-unit span{margin-inline-start:16px}
+.textbook-reading{display:flex;align-items:center;gap:12px;padding:14px 24px;background:#fff;color:#222;font-size:27px;font-weight:800}
+.textbook-reading strong{font-size:38px;color:#39aa70}
+.textbook-before{padding:14px 24px;background:#fff;color:#333}
+.textbook-before h2{color:#38a96f;font-size:19px;margin:0 0 8px}
+.textbook-before p{margin:5px 0;font:14px Arial,sans-serif;direction:ltr;text-align:left}
+.textbook-before b{display:inline-block;margin-right:8px}
+.textbook-paper{position:relative;margin:0 auto;background:#fff;color:#252525;border:1px solid #c9c9c9;box-shadow:0 5px 12px #0002;padding:24px 28px 18px 54px}
+.textbook-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid #e3e3e3}
+.textbook-title span{font:bold clamp(28px,5vw,48px) Arial,sans-serif;letter-spacing:-1.5px;color:#a75f69;text-shadow:2px 3px 2px #bbb}
+.textbook-title small{font:11px Tahoma,sans-serif;color:#666;white-space:nowrap}
+.textbook-columns{position:relative;columns:2;column-gap:30px;column-rule:1px solid #ddd;direction:ltr}
+.textbook-paragraph{position:relative;break-inside:avoid-column;display:flex;gap:7px;margin:0 0 8px;direction:ltr}
+.textbook-paragraph-number{flex:0 0 13px;color:#b45d62;font:14px Georgia,serif}
+.textbook-paragraph-content{min-width:0;flex:1}
+.textbook-paragraph .sentence-row{direction:rtl;grid-template-columns:minmax(0,1fr) 74px;gap:6px;border-bottom:1px dotted #eee}
+.textbook-paragraph .sentence-en{font:14px/1.38 Georgia,"Times New Roman",serif;color:#252525;margin:3px 0;overflow-wrap:anywhere}
+.textbook-paragraph .mini-actions{display:grid;grid-column:2;grid-row:1;align-content:start;gap:4px}
+.textbook-paragraph .mini-button{padding:3px 4px;font:10px Tahoma,sans-serif;white-space:nowrap;background:#f2f4f8;color:#23364f;border-color:#d5dbe4}
+.textbook-paragraph .sentence-ar{grid-column:1/-1;grid-row:2;font:12px/1.55 Tahoma,sans-serif;color:#34465f;margin:0;padding:5px 0}
+.textbook-paragraph .word-token{color:inherit;text-decoration-color:#9aabbf}
+.textbook-timeline{margin:18px 0 0;padding:12px 18px;background:#ffedcf;color:#332b26;border:1px solid #e8d6b4}
+.timeline-years{display:flex;justify-content:space-between;border-top:2px solid #c9a777;padding-top:7px;font:13px Georgia,serif;direction:ltr}
+.textbook-timeline p{margin:10px 0 0;font:bold italic 15px Georgia,serif;direction:ltr;text-align:left}
+.textbook-footer{display:flex;justify-content:space-between;color:#68778d;font-size:12px;margin-top:12px}
+@media(max-width:700px){.textbook-paper{padding:16px 12px 14px 20px}.textbook-columns{columns:1}.textbook-title{display:block}.textbook-title small{display:block;margin-top:4px}.textbook-paragraph .sentence-row{direction:rtl;grid-template-columns:minmax(0,1fr) 70px}.textbook-paragraph .sentence-en{font-size:15px}}
+
+
+/* More readable textbook lines and contextual word tools */
+.textbook-paragraph .sentence-row{
+  row-gap:7px;
+  padding:9px 0 11px;
+  margin:0 0 5px;
+  border-bottom:1px solid #e5e8ed;
+}
+.textbook-paragraph .sentence-en{
+  line-height:1.78;
+  letter-spacing:.08px;
+}
+.textbook-paragraph .mini-actions{padding-top:8px}
+.textbook-paragraph .word-action-panel{
+  grid-column:1/-1;
+  grid-row:2;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  padding:7px 9px;
+  border:1px solid #cbd9ec;
+  border-radius:9px;
+  background:#edf4ff;
+  direction:rtl;
+}
+.textbook-paragraph .word-action-panel[hidden]{display:none}
+.textbook-paragraph .word-action-panel .mini-button{
+  min-height:30px;
+  padding:5px 9px;
+  font-size:11px;
+  background:#fff;
+  border-color:#b8cbe4;
+}
+.textbook-paragraph .selected-word-meaning{
+  flex-basis:100%;
+  color:#243d5e;
+  font:12px/1.7 Tahoma,sans-serif;
+}
+.textbook-paragraph .word-token.selected{
+  background:#ffe08a;
+  color:#30220a;
+  outline:2px solid #e3b84f;
+  outline-offset:1px;
+  border-radius:3px;
+  text-decoration:none;
+}
+.textbook-paragraph .sentence-ar{grid-row:3}
+@media(max-width:700px){
+  .textbook-paragraph .sentence-row{padding:11px 0 13px;row-gap:9px}
+  .textbook-paragraph .sentence-en{font-size:16px;line-height:1.85}
+  .textbook-paragraph .mini-actions{gap:6px}
+}
+
+
+/* Keep sentence controls in a dedicated left column beside each sentence. */
+.textbook-paragraph .sentence-row{
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  grid-template-rows:auto auto auto;
+  column-gap:12px;
+  row-gap:6px;
+  align-items:start;
+  padding:10px 0 12px;
+  margin:0 0 5px;
+  border-bottom:1px solid #e5e8ed;
+  direction:ltr;
+}
+.textbook-paragraph .sentence-row .sentence-en{
+  grid-column:2;
+  grid-row:1;
+  width:100%;
+  margin:0;
+  font-size:15px;
+  line-height:1.75;
+  overflow-wrap:break-word;
+  direction:ltr;
+}
+.textbook-paragraph .sentence-row .mini-actions{
+  grid-column:1;
+  grid-row:1;
+  display:flex;
+  flex-direction:column;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  align-items:stretch;
+  gap:6px;
+  padding:0;
+  direction:rtl;
+}
+.textbook-paragraph .sentence-row .mini-actions .mini-button{
+  min-height:30px;
+  padding:5px 8px;
+  font-size:11px;
+}
+.textbook-paragraph .sentence-row .word-action-panel{grid-column:2;grid-row:2}
+.textbook-paragraph .sentence-row .sentence-ar{
+  grid-column:2;
+  grid-row:3;
+  width:100%;
+  margin:0;
+  padding:5px 8px;
+  border-right:3px solid #8db8ff;
+  border-radius:4px;
+  background:#f5f8fd;
+  font-size:13px;
+  line-height:1.7;
+  direction:rtl;
+}
+@media(max-width:700px){
+  .textbook-paragraph .sentence-row{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto auto;
+    row-gap:8px;
+    padding:11px 0 13px;
+  }
+  .textbook-paragraph .sentence-row .sentence-en{grid-column:1;grid-row:1;font-size:16px;line-height:1.8}
+  .textbook-paragraph .sentence-row .mini-actions{
+    grid-column:1;grid-row:2;flex-direction:row;align-items:center;flex-wrap:wrap;gap:7px;
+  }
+  .textbook-paragraph .sentence-row .word-action-panel{grid-column:1;grid-row:3}
+  .textbook-paragraph .sentence-row .sentence-ar{grid-column:1;grid-row:4}
+}

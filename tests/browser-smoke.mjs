@@ -49,43 +49,87 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator(".learning-link").count(), 3);
+    assert.equal(await page.locator(".learning-link").count(), 2);
+    assert.equal(await page.locator(".learning-link[href=\"./sentences.html\"]").count(), 0);
+    assert.equal(await page.locator(".learning-link[href=\"./words.html\"]").count(), 0);
     assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 0);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
 
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
-    await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
-    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
-    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
-    assert.equal(await page.locator("#speech-speed").count(), 1);
-    await page.locator("#speech-speed").evaluate(el => { el.value = "1.1"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "1.10×");
-    assert.equal(await page.locator("#reading-list .reading-card").count(), 6);
-    assert.equal(await page.locator("#reading-list .sentence-en").count(), 29);
-    assert.equal(await page.locator("#reading-list .sentence-ar[hidden]").count(), 29);
-    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
-    assert.equal(await page.locator(".sentence-ar").first().isVisible(), true);
-    assert.match(await page.locator(".sentence-ar").first().textContent(), /تخيّل/);
-    assert.equal(await page.locator(".sentence-ar[hidden]").count(), 28);
-    await page.locator(".reading-card").first().locator(".mini-button").nth(2).click();
-    assert.equal(await page.locator(".sentence-ar").first().isVisible(), false);
 
-    await page.goto(origin + "/words.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
-    assert.equal(await page.locator("#speech-speed").count(), 1);
-    await page.locator("#speech-speed").evaluate(el => { el.value = "1.15"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-    assert.equal(await page.locator("#speed-value").textContent(), "1.15×");
-    assert.equal(await page.locator("#vocabulary-list .vocab-card").count(), 43);
-    await page.locator(".vocab-card").first().locator(".mini-button").nth(1).click();
-    assert.equal(await page.locator(".vocab-meaning").first().isVisible(), true);
+    await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
+    const originalPageFrame = page.locator(".textbook-source-frame iframe");
+    assert.equal(await originalPageFrame.count(), 1, "The original textbook page must be embedded");
+    assert.match(await originalPageFrame.getAttribute("src"), /online\.fliphtml5\.com\/jamlp\/zhkk\/#p=64/);
+    const textbookResponse = await page.request.get(origin + "/textbook.html");
+    assert.match(textbookResponse.headers()["content-security-policy"], /frame-src 'self' https:\/\/online\.fliphtml5\.com/);
+    assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
+    assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
+    assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
+    assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
+    await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
+    assert.equal(await page.locator("#speed-value").textContent(), "0.25×");
+    assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
+    assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
+    assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
+    const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect(), viewportWidth: window.innerWidth }));
+    if (firstTextbookRow.viewportWidth > 700) {
+      assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Desktop sentence controls should be on the left");
+    } else {
+      assert.ok(firstTextbookRow.actions.top >= firstTextbookRow.sentence.bottom - 1, "Mobile sentence controls should appear below the sentence");
+    }
+    await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
+    assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
+    const firstWord = page.locator("#textbook-page .word-token").first();
+    await firstWord.click();
+    assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
+    assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
+    const firstWordPanel = page.locator("#textbook-page .word-action-panel").first();
+    assert.equal(await firstWordPanel.isVisible(), true);
+    await firstWordPanel.getByRole("button", { name: "ترجمة الكلمة" }).click();
+    assert.match(await firstWordPanel.locator(".selected-word-meaning").textContent(), /Can = يستطيع/);
+    const wordTranslationChecks = await page.locator("#textbook-page .word-token").evaluateAll(nodes => {
+      const seen = new Set();
+      const checks = [];
+      for (const node of nodes) {
+        const word = node.textContent.trim();
+        const key = word.toLowerCase().replace(/[’']s$/, "");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        node.click();
+        const panel = node.closest(".sentence-row").querySelector(".word-action-panel");
+        panel.querySelector('button:nth-child(2)').click();
+        checks.push({ word, message: panel.querySelector(".selected-word-meaning").textContent });
+      }
+      return checks;
+    });
+    assert.ok(wordTranslationChecks.length >= 200, "The textbook should expose translations for its full word set");
+    assert.deepEqual(
+      wordTranslationChecks.filter(item => item.message.startsWith("لا تتوفر ترجمة")).map(item => item.word),
+      [],
+      "Every clickable textbook word must show an Arabic meaning"
+    );
+    for (const width of [320, 360, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const dimensions = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+      assert.ok(dimensions.scroll <= dimensions.client + 1, `Textbook horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
-    assert.equal(await page.locator("#quiz-area .quiz-question").count(), 15);
+    assert.equal(await page.locator('.page-nav a[href="./sentences.html"]').count(), 0);
+    assert.equal(await page.locator('.page-nav a[href="./words.html"]').count(), 0);
+    assert.match(await page.locator(".page-intro .eyebrow").textContent(), /STEP 2/);
+    assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
+    assert.equal(await page.locator(".quiz-section-title").count(), 4);
+    await page.locator('input[name="question-10"][value="0"]').check();
+    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), true, "A matching number must not be reusable");
+    await page.locator('input[name="question-10"][value="1"]').check();
+    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), false, "Changing a match must release its previous number");
     assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
     assert.equal(await page.locator(".answer-feedback").count(), 0);
-    const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
-    assert.deepEqual(correctPositions.reduce((counts, value) => { counts[value]++; return counts; }, [0,0,0]), [5,5,5]);
+    assert.equal(await page.locator(".quiz-section-title").count(), 4);
     await page.locator(`input[name="question-0"][value="1"]`).check();
     assert.equal(await page.locator(".answer-feedback").count(), 0);
     await page.locator("#finish-quiz").click();
@@ -112,16 +156,16 @@ async function main() {
     });
     assert.deepEqual(accessibility, [], `Accessibility violations: ${JSON.stringify(accessibility)}`);
 
-    const answers = [1, 0, 1, 1, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const answers = [1, 0, 0, 2, 0, 0, 1, 2, 0, 1, 0, 1, 2, 3, 4, 0, 0, 1, 0, 0];
     for (let i = 0; i < answers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${answers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
     await page.waitForURL("**/results");
     assert.match(await page.locator("h2").textContent(), /النتيجة النهائية/);
-    assert.match(await page.locator("#final-score").textContent(), /13\s*\/\s*15/);
+    assert.match(await page.locator("#final-score").textContent(), /18\s*\/\s*20/);
     assert.equal(await page.locator(".wrong-answer").count(), 2);
-    assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara forget his wallet\?/);
+    assert.match(await page.locator(".wrong-answer").first().textContent(), /When did Frank McNamara first forget his wallet/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /الإجابة الصحيحة/);
     assert.match(await page.locator(".wrong-answer").first().textContent(), /1949/);
     assert.equal(await page.evaluate(() => sessionStorage.getItem("art-of-advertising:attempt-result:v1")), null);
@@ -138,13 +182,13 @@ async function main() {
     assert.match(await page.locator("#result-unavailable").textContent(), /غير متاحة/);
     assert.equal(await page.locator(".wrong-answer").count(), 0);
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
-    const allCorrectAnswers = [0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 0, 0, 1, 0, 1];
+    const allCorrectAnswers = [0, 1, 0, 2, 0, 0, 1, 2, 0, 1, 0, 1, 2, 3, 4, 0, 0, 1, 0, 0];
     for (let i = 0; i < allCorrectAnswers.length; i++) {
       await page.locator(`input[name="question-${i}"][value="${allCorrectAnswers[i]}"]`).check();
     }
     await page.locator("#finish-quiz").click();
     await page.waitForURL("**/results");
-    assert.match(await page.locator("#final-score").textContent(), /15\s*\/\s*15/);
+    assert.match(await page.locator("#final-score").textContent(), /20\s*\/\s*20/);
     assert.equal(await page.locator(".wrong-answer").count(), 0);
     assert.equal(await page.locator("#all-correct").isVisible(), true);
     assert.equal(await page.locator("#wrong-heading").isVisible(), false);
