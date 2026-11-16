@@ -101,3 +101,57 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .textbook-timeline p{margin:10px 0 0;font:bold italic 15px Georgia,serif;direction:ltr;text-align:left}
 .textbook-footer{display:flex;justify-content:space-between;color:#68778d;font-size:12px;margin-top:12px}
 @media(max-width:700px){.textbook-paper{padding:16px 12px 14px 20px}.textbook-columns{columns:1}.textbook-title{display:block}.textbook-title small{display:block;margin-top:4px}.textbook-paragraph .sentence-row{direction:rtl;grid-template-columns:minmax(0,1fr) 70px}.textbook-paragraph .sentence-en{font-size:15px}}
+
+
+/* More readable textbook lines and contextual word tools */
+.textbook-paragraph .sentence-row{
+  row-gap:7px;
+  padding:9px 0 11px;
+  margin:0 0 5px;
+  border-bottom:1px solid #e5e8ed;
+}
+.textbook-paragraph .sentence-en{
+  line-height:1.78;
+  letter-spacing:.08px;
+}
+.textbook-paragraph .mini-actions{padding-top:8px}
+.textbook-paragraph .word-action-panel{
+  grid-column:1/-1;
+  grid-row:2;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  padding:7px 9px;
+  border:1px solid #cbd9ec;
+  border-radius:9px;
+  background:#edf4ff;
+  direction:rtl;
+}
+.textbook-paragraph .word-action-panel[hidden]{display:none}
+.textbook-paragraph .word-action-panel .mini-button{
+  min-height:30px;
+  padding:5px 9px;
+  font-size:11px;
+  background:#fff;
+  border-color:#b8cbe4;
+}
+.textbook-paragraph .selected-word-meaning{
+  flex-basis:100%;
+  color:#243d5e;
+  font:12px/1.7 Tahoma,sans-serif;
+}
+.textbook-paragraph .word-token.selected{
+  background:#ffe08a;
+  color:#30220a;
+  outline:2px solid #e3b84f;
+  outline-offset:1px;
+  border-radius:3px;
+  text-decoration:none;
+}
+.textbook-paragraph .sentence-ar{grid-row:3}
+@media(max-width:700px){
+  .textbook-paragraph .sentence-row{padding:11px 0 13px;row-gap:9px}
+  .textbook-paragraph .sentence-en{font-size:16px;line-height:1.85}
+  .textbook-paragraph .mini-actions{gap:6px}
+}
