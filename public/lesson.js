@@ -91,9 +91,9 @@ function say(text){if(!("speechSynthesis"in window)){ $("#lesson-message").textC
 function button(label,fn){const b=document.createElement("button");b.type="button";b.className="mini-button";b.textContent=label;b.addEventListener("click",fn);return b;}
 const wordMeanings=new Map([...words,...extraWordMeanings].map(([word,meaning])=>[word.toLowerCase(),meaning]));
 function makeClickableSentence(text,target){
-  const parts=text.match(/[\p{L}’']+|[^\p{L}’']+/gu)||[text];
+  const parts=text.match(/[\p{L}\p{N}’']+|[^\p{L}\p{N}’']+/gu)||[text];
   parts.forEach(part=>{
-    if(/^[\p{L}’']+$/u.test(part)){
+    if(/^\p{L}[\p{L}\p{N}’']*$/u.test(part)){
       const token=document.createElement("button");
       token.type="button";token.className="word-token";token.textContent=part;
       token.setAttribute("aria-label","استمع إلى كلمة "+part);
