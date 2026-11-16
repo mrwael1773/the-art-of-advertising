@@ -79,7 +79,7 @@ async function main() {
         speak(utterance) { window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate }); }
       };
     });
-    await page.locator("#textbook-page .sentence-row .mini-button").first().click();
+    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").first().click();
     let spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
@@ -93,7 +93,7 @@ async function main() {
     } else {
       assert.ok(firstTextbookRow.actions.top >= firstTextbookRow.sentence.bottom - 1, "Mobile sentence controls should appear below the sentence");
     }
-    await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
+    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").nth(1).click();
     assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
     const firstWord = page.locator("#textbook-page .word-token").first();
     await firstWord.click();
