@@ -49,12 +49,22 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator(".learning-link").count(), 3);
+    assert.equal(await page.locator(".learning-link").count(), 4);
     assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 0);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
 
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
+
+    await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
+    assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
+    assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
+    const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect() }));
+    assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Textbook sentence controls should be on the left");
+    await page.locator("#textbook-page .sentence-row .mini-button").nth(1).click();
+    assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
+
     await page.goto(origin + "/sentences.html", { waitUntil: "networkidle" });
     assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), null);
     assert.equal(await page.locator(".page-nav a[href=\"./audio.html\"]").count(), 0);
