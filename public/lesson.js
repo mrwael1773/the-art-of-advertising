@@ -48,24 +48,29 @@ const words = [
 ["imagine","يتخيّل"],["credit card","بطاقة ائتمان"],["cash","نقد"],["inconceivable","لا يمكن تصوّره"],["economic","اقتصادي"],["impractical","غير عملي"],["business","عمل / أعمال"],["leisure","وقت الفراغ"],["goods","سلع"],["services","خدمات"],["scheduled","حدّد موعدًا"],["restaurant","مطعم"],["wallet","محفظة"],["embarrassing","مُحرج"],["situation","موقف"],["limited","محدود"],["spending","إنفاق"],["afford","يستطيع تحمّل التكلفة"],["returned","عاد"],["handed","ناول"],["cardboard","ورق مقوّى"],["signed","وقّع"],["meal","وجبة"],["industry","صناعة"],["concept","مفهوم"],["merchants","تجّار"],["alternative","بديل"],["payment","دفع"],["accepted","قُبلت"],["status symbol","رمز للمكانة الاجتماعية"],["cultural icon","رمز ثقافي"],["trend","اتجاه"],["expanded","توسّع"],["international","دولي"],["franchises","امتيازات تجارية"],["airline","شركة طيران"],["hotels","فنادق"],["car rentals","تأجير السيارات"],["rewards","مكافآت"],["benefits","مزايا"],["privileges","امتيازات"],["discounts","خصومات"],["loyal","وفيّ"]
 ];
 const questions = [
-{q:"When did Frank McNamara forget his wallet?",a:["1949","1952","1984"],correct:0},
-{q:"Where was the restaurant in Frank’s story?",a:["New York","Cuba","Beijing"],correct:0},
-{q:"What card did Frank use a year later?",a:["Visa","Diner’s Club Card","MasterCard"],correct:1},
-{q:"By 1952, how widely was the Diner’s Club Card accepted in the United States?",a:["By thousands of businesses","By every airline in the United States","By hotels and car rentals"],correct:0},
-{q:"Which countries received Diner’s Club franchises in 1952?",a:["Canada, France, and Cuba","Canada, France, and the United States","France, Cuba, and the United States"],correct:0},
-{q:"Which airline became the first to accept the card in 1955?",a:["Western Airlines","Diner’s Club","American Express"],correct:0},
-{q:"When was the first card-members rewards program created?",a:["1949","1955","1984"],correct:2},
-{q:"What does “cash” mean?",a:["نقد","محفظة","مطعم"],correct:0},
-{q:"What does “wallet” mean?",a:["وجبة","محفظة","خدمات"],correct:1},
-{q:"What does “merchants” mean?",a:["مسافرون","تجّار","فنادق"],correct:1},
-{q:"What does “alternative” mean?",a:["بديل","محدود","دولي"],correct:0},
-{q:"What does “airline” mean?",a:["شركة طيران","متجر","بنك"],correct:0},
-{q:"What does “rewards” mean?",a:["خصومات","مكافآت","نقد"],correct:1},
-{q:"What does “benefits” mean?",a:["مزايا","مواقف","سلع"],correct:0},
-{q:"What does “discounts” mean?",a:["امتيازات","خصومات","إنفاق"],correct:1}
+{type:"choice",q:"When did Frank McNamara first forget his wallet before the business dinner?",a:["1949","1952","1984"],correct:0},
+{type:"choice",q:"Where did Frank have the business dinner?",a:["Beijing","New York","Cuba"],correct:1},
+{type:"choice",q:"What did Frank hand the waiter when he returned a year later?",a:["A Diner’s Club Card","A bank note","An airline ticket"],correct:0},
+{type:"choice",q:"What happened to the Diner’s Club Card by 1952?",a:["It was accepted by every airline","It was used only in hotels","Thousands of US businesses accepted it"],correct:2},
+{type:"choice",q:"Which airline first accepted the Diner’s Club Card in 1955?",a:["Western Airlines","American Express","Visa"],correct:0},
+{type:"fill",q:"It all started in ____ when Frank McNamara scheduled a business dinner.",a:["1949","1955","1984"],correct:0},
+{type:"fill",q:"Frank realized that he had left his ____ in the other suit.",a:["cardboard card","wallet","ticket"],correct:1},
+{type:"fill",q:"Frank handed the waiter a small ____ card.",a:["plastic","paper","cardboard"],correct:2},
+{type:"fill",q:"By 1952, the card was accepted by ____ of businesses across the United States.",a:["thousands","two","every airline"],correct:0},
+{type:"fill",q:"The first card-members rewards program was created in ____.",a:["1949","1984","1952"],correct:1},
+{type:"match",q:"Match the word “cash” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:0},
+{type:"match",q:"Match the word “wallet” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:1},
+{type:"match",q:"Match the word “merchants” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:2},
+{type:"match",q:"Match the word “discounts” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:3},
+{type:"match",q:"Match the word “rewards” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:4},
+{type:"truefalse",q:"The Diner’s Club Card became the first international charge card in 1952.",a:["صح","خطأ"],correct:0},
+{type:"truefalse",q:"Western Airlines was the first airline to accept the card in 1955.",a:["صح","خطأ"],correct:0},
+{type:"truefalse",q:"The card was accepted by every airline in the United States in 1955.",a:["صح","خطأ"],correct:1},
+{type:"truefalse",q:"The first card-members rewards program was created in 1984.",a:["صح","خطأ"],correct:0},
+{type:"truefalse",q:"The text says reward programs may offer airline miles and hotel discounts.",a:["صح","خطأ"],correct:0}
 ];
-// Distribute the correct answer positions evenly without changing original answer indexes.
-const correctPositions = [1,2,0,1,2,1,0,2,0,2,1,0,2,0,1];
+// Correct-answer positions are deliberately varied; original indexes remain the scoring source.
+const correctPositions = [1,2,0,1,2, 2,0,1,2,0, 3,1,4,0,2, 1,0,1,0,1];
 questions.forEach((q,i)=>{
   const distractors=q.a.map((_,index)=>index).filter(index=>index!==q.correct);
   q.displayOrder=[...distractors];
@@ -76,9 +81,42 @@ const readingList=$("#reading-list"), vocabularyList=$("#vocabulary-list"), quiz
 if(!readingList&&!vocabularyList&&!quizArea)return;
 function say(text){if(!("speechSynthesis"in window)){ $("#lesson-message").textContent="النطق غير مدعوم في هذا المتصفح أو الجهاز.";return;}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=Number($("#speech-speed")?.value||0.85);window.speechSynthesis.speak(u);}
 function button(label,fn){const b=document.createElement("button");b.type="button";b.className="mini-button";b.textContent=label;b.addEventListener("click",fn);return b;}
-if(readingList)paragraphs.forEach((sentences,i)=>{const card=document.createElement("article");card.className="reading-card";const top=document.createElement("div");top.className="reading-card-top";const title=document.createElement("strong");title.textContent="الفقرة "+(i+1);const listen=button("🔊 استمع للفقرة",()=>say(sentences.map(x=>x[0]).join(" ")));top.append(title,listen);card.append(top);sentences.forEach(([en,ar],j)=>{const row=document.createElement("div");const english=document.createElement("p");english.className="sentence-en";english.textContent=en;const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع للجملة",()=>say(en)));const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;const reveal=button("إظهار ترجمة الجملة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"إظهار ترجمة الجملة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);row.append(english,actions,translation);card.append(row);});readingList.append(card);});
+const wordMeanings=new Map(words.map(([word,meaning])=>[word.toLowerCase(),meaning]));
+function makeClickableSentence(text,target){
+  const parts=text.match(/[\\p{L}’']+|[^\\p{L}’']+/gu)||[text];
+  parts.forEach(part=>{
+    if(/^[\\p{L}’']+$/u.test(part)){
+      const token=document.createElement("button");
+      token.type="button";token.className="word-token";token.textContent=part;
+      token.setAttribute("aria-label","استمع إلى كلمة "+part);
+      token.addEventListener("click",()=>{
+        say(part);
+        const meaning=wordMeanings.get(part.toLowerCase().replace(/[’']s$/,""));
+        $("#lesson-message").textContent=meaning?part+" = "+meaning:"استمع إلى نطق: "+part;
+      });
+      target.append(token);
+    }else target.append(document.createTextNode(part));
+  });
+}
+if(readingList)paragraphs.forEach((sentences,i)=>{const card=document.createElement("article");card.className="reading-card";const top=document.createElement("div");top.className="reading-card-top";const title=document.createElement("strong");title.textContent="الفقرة "+(i+1);const listen=button("🔊 استمع للفقرة",()=>say(sentences.map(x=>x[0]).join(" ")));top.append(title,listen);card.append(top);sentences.forEach(([en,ar])=>{const row=document.createElement("div");const english=document.createElement("p");english.className="sentence-en";makeClickableSentence(en,english);const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع للجملة",()=>say(en)));const translation=document.createElement("p");translation.className="sentence-ar";translation.hidden=true;translation.textContent=ar;const reveal=button("إظهار ترجمة الجملة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"إظهار ترجمة الجملة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);row.append(english,actions,translation);card.append(row);});readingList.append(card);});
 if(vocabularyList)words.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="vocab-card";const title=document.createElement("p");title.className="vocab-word";title.textContent=word;const actions=document.createElement("div");actions.className="mini-actions";actions.append(button("🔊 استمع",()=>say(word)));const translation=document.createElement("p");translation.className="vocab-meaning";translation.hidden=true;translation.textContent=meaning;const reveal=button("ترجمة الكلمة",()=>{const show=translation.hidden;translation.hidden=!show;reveal.textContent=show?"إخفاء الترجمة":"ترجمة الكلمة";reveal.setAttribute("aria-expanded",String(show));});reveal.setAttribute("aria-expanded","false");actions.append(reveal);card.append(title,actions,translation);vocabularyList.append(card);});
-if(quizArea)questions.forEach((q,i)=>{const block=document.createElement("div");block.className="quiz-question";const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;const group=document.createElement("div");group.className="quiz-options";q.displayOrder.forEach(originalIndex=>{const answer=q.a[originalIndex];const label=document.createElement("label");label.className="quiz-option";const input=document.createElement("input");input.type="radio";input.name="question-"+i;input.value=String(originalIndex);const span=document.createElement("span");span.textContent=answer;label.append(input,span);group.append(label);});block.append(heading,group);quizArea.append(block);});
+if(quizArea){
+  const sectionNames={choice:"أولًا: اختيار من متعدد (1–5)",fill:"ثانيًا: أكمل الفراغ مع الخيارات (6–10)",match:"ثالثًا: التوصيل بالأرقام (11–15)",truefalse:"رابعًا: صح أم خطأ (16–20)"};
+  let previousType="";
+  questions.forEach((q,i)=>{
+    if(q.type!==previousType){const section=document.createElement("h3");section.className="quiz-section-title";section.textContent=sectionNames[q.type];quizArea.append(section);previousType=q.type;}
+    const block=document.createElement("div");block.className="quiz-question";
+    const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;
+    const group=document.createElement("div");group.className="quiz-options";
+    q.displayOrder.forEach(originalIndex=>{
+      const label=document.createElement("label");label.className="quiz-option";
+      const input=document.createElement("input");input.type="radio";input.name="question-"+i;input.value=String(originalIndex);
+      const span=document.createElement("span");span.textContent=q.a[originalIndex];
+      label.append(input,span);group.append(label);
+    });
+    block.append(heading,group);quizArea.append(block);
+  });
+}
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
 const finishButton=$("#finish-quiz");
