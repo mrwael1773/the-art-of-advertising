@@ -27,6 +27,8 @@ test("static assets keep the browser security policy", () => {
   assert.match(headers, /Referrer-Policy: no-referrer/);
   assert.match(headers, /Cross-Origin-Resource-Policy: same-origin/);
   assert.match(headers, /Content-Security-Policy:/);
+  assert.match(headers, /frame-src 'self' https:\/\/www\.wajibati\.net/);
+  assert.match(worker, /frame-src 'self' https:\/\/www\.wajibati\.net/);
 });
 
 test("student page has no registration, login, username, or password controls", () => {
@@ -41,7 +43,6 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /min="0\.25"/);
   assert.match(textbook, /max="1"/);
   assert.match(textbook, /lesson\.js/);
-  assert.match(textbook, /frame-src 'self' https:\/\/www\.wajibati\.net/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
   assert.match(lesson, /if\(textbookPage\)paragraphs\.forEach/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
