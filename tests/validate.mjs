@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook, quiz] = await Promise.all([
+const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook, quiz, hotspotsSource] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
   read("../public/results.html"), read("../public/results.js"),
-  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html"), read("../public/quiz.html")
+  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html"), read("../public/quiz.html"), read("../public/page60-hotspots.js")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
@@ -108,3 +108,16 @@ test("practice answer positions are balanced and preserve original answer indexe
   assert.ok(lesson.includes("window.location.assign"));
 });
 
+
+test("credit-card sentence word hotspots stay on their own text rows", () => {
+  const match = hotspotsSource.match(/window\.PAGE60_WORD_HOTSPOTS\s*=\s*(\[[\s\S]*\]);/);
+  assert.ok(match, "page-60 hotspot data should be a JavaScript array");
+  const hotspots = JSON.parse(match[1]);
+  const target = hotspots.filter(([sentenceIndex]) => sentenceIndex === 17);
+  assert.equal(target.length, 12, "the target sentence should have 12 word hotspots");
+  for (const [sentenceIndex, wordIndex, , y, , height] of target) {
+    assert.equal(sentenceIndex, 17);
+    assert.equal(y, wordIndex <= 7 ? 244 : 259, `word ${wordIndex} should align with its printed row`);
+    assert.ok(height <= 13, `word ${wordIndex} should not extend into adjacent rows`);
+  }
+});
