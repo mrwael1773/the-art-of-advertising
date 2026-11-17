@@ -34,7 +34,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /textbook\.html/);
   assert.match(textbook, /id="textbook-page"/);
   assert.match(textbook, /The World of Plastic/);
-  assert.match(textbook, /الصفحة 60/);
+  assert.match(textbook, /الصفحة 60|صفحة 60/);
   assert.doesNotMatch(textbook, /fliphtml5|<iframe|textbook-source-frame/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
@@ -42,9 +42,14 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /lesson\.js/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
   assert.match(lesson, /if\(textbookPage\)\{/);
-  assert.match(lesson, /textbook-card-stack/);
-  assert.match(lesson, /textbook-payment-art/);
-  assert.match(textbook, /class="textbook-paper"/);
+  assert.match(textbook, /page60-hotspots\.js/);
+  assert.match(textbook, /id="textbook-listen"/);
+  assert.match(textbook, /id="textbook-translate"/);
+  assert.match(lesson, /sentence-highlight/);
+  assert.match(lesson, /word-highlight/);
+  assert.match(lesson, /selectSentence\(sentenceIndex\)/);
+  assert.match(lesson, /selectWord\(sentenceIndex,wordIndex\)/);
+  assert.match(lesson, /PAGE60_WORD_HOTSPOTS/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
