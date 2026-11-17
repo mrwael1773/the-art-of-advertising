@@ -110,7 +110,7 @@ test("practice answer positions are balanced and preserve original answer indexe
 
 
 test("credit-card sentence word hotspots stay on their own text rows", () => {
-  const match = hotspotsSource.match(/window\\.PAGE60_WORD_HOTSPOTS\\s*=\\s*(\\[[\\s\\S]*\\]);/);
+  const match = hotspotsSource.match(/window\.PAGE60_WORD_HOTSPOTS\s*=\s*(\[[\s\S]*\]);/);
   assert.ok(match, "page-60 hotspot data should be a JavaScript array");
   const hotspots = JSON.parse(match[1]);
   const target = hotspots.filter(([sentenceIndex]) => sentenceIndex === 17);
