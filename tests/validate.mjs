@@ -53,7 +53,7 @@ test("student page has no registration, login, username, or password controls", 
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
-  assert.match(styles, /color-scheme:dark/);
+  assert.match(styles, /color-scheme:light/);
   assert.doesNotMatch(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
