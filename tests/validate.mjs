@@ -82,7 +82,7 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
-  assert.match(lesson, /Matching questions form one-to-one pairs/);
+  assert.doesNotMatch(lesson, /Matching questions form one-to-one pairs|input\\.disabled=usedElsewhere/);
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
   assert.match(quiz, /المعنى/);
   assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
