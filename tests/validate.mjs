@@ -83,10 +83,11 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
   assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
-  assert.ok(lesson.includes("Matching is one-to-one"));
-  assert.ok(lesson.includes("input.disabled=usedElsewhere"));
-  assert.ok(lesson.includes("كل معنى يُستخدم مرة واحدة فقط"));
-  assert.ok(lesson.includes("label.classList.toggle(\"unavailable\",usedElsewhere)"));
+  assert.ok(lesson.includes("Keep every meaning option clickable"));
+  assert.ok(lesson.includes("other.checked=false"));
+  assert.ok(lesson.includes("كل معنى يُستخدم في سؤال واحد فقط"));
+  assert.doesNotMatch(lesson, /input\\.disabled\\s*=/);
+  assert.doesNotMatch(lesson, /classList\\.toggle\\(["']unavailable/);
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
   assert.match(quiz, /المعنى/);
   assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
