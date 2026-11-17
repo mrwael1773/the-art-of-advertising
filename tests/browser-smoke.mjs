@@ -49,23 +49,28 @@ async function main() {
     });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The World of Plastic/);
-    assert.equal(await page.locator("#textbook-page").count(), 1);
-    assert.equal(await page.locator(".learning-link").count(), 0);
+    assert.equal(await page.locator(".home-choice").count(), 2);
+    assert.equal(await page.locator('.home-choice[href="./textbook.html"]').count(), 1);
+    assert.equal(await page.locator('.home-choice[href="./quiz.html"]').count(), 1);
+    assert.match(await page.locator(".home-choice").nth(0).textContent(), /القطعة/);
+    assert.match(await page.locator(".home-choice").nth(1).textContent(), /التمارين/);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    assert.notEqual(homeTheme, "rgb(255, 255, 255)");
+    assert.equal(homeTheme, "rgb(244, 247, 251)");
 
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
-    await page.goto(origin + "/", { waitUntil: "domcontentloaded" });
+    await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), "legacy-progress", "Opening the reading page must preserve existing student progress");
     assert.equal(await page.locator("iframe").count(), 0);
-    assert.equal(await page.locator(".page-intro").count(), 0, "The homepage must be the standalone textbook, without an introductory landing page.");
+    assert.equal(await page.locator(".page-intro").count(), 1, "The textbook page keeps its reading instructions.");
+    const textbookTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    assert.equal(textbookTheme, "rgb(255, 255, 255)", "The textbook page background must be white.");
     assert.equal(await page.locator("#textbook-source-image").count(), 1);
     assert.equal(await page.locator("#textbook-hotspots .sentence-hit").count(), 78);
     assert.equal(await page.locator("#textbook-hotspots .word-hit").count(), 478);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
-    assert.equal(await page.locator(".standalone-practice-link a[href=\"./quiz.html\"]").count(), 1);
+    assert.equal(await page.locator(".textbook-page-footer a[href=\"./quiz.html\"]").count(), 1);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
