@@ -65,11 +65,11 @@ const questions = [
 {type:"fill",q:"Frank handed the waiter a small ____ card.",a:["plastic","paper","cardboard"],correct:2},
 {type:"fill",q:"By 1952, the card was accepted by ____ of businesses across the United States.",a:["thousands","two","every airline"],correct:0},
 {type:"fill",q:"The first card-members rewards program was created in ____.",a:["1949","1984","1952"],correct:1},
-{type:"match",q:"Match the word “cash” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:0},
-{type:"match",q:"Match the word “wallet” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:1},
-{type:"match",q:"Match the word “merchants” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:2},
-{type:"match",q:"Match the word “discounts” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:3},
-{type:"match",q:"Match the word “rewards” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:4},
+{type:"match",q:"Match the word “cash” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:0},
+{type:"match",q:"Match the word “wallet” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:1},
+{type:"match",q:"Match the word “merchants” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:2},
+{type:"match",q:"Match the word “discounts” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:3},
+{type:"match",q:"Match the word “rewards” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:4},
 {type:"truefalse",q:"The Diner’s Club Card became the first international charge card in 1952.",a:["صح","خطأ"],correct:0},
 {type:"truefalse",q:"Western Airlines was the first airline to accept the card in 1955.",a:["صح","خطأ"],correct:0},
 {type:"truefalse",q:"The card was accepted by every airline in the United States in 1955.",a:["صح","خطأ"],correct:1},
@@ -351,21 +351,7 @@ if(quizArea){
     });
     block.append(heading,group);quizArea.append(block);
   });
-  // Matching questions form one-to-one pairs: a numbered Arabic meaning can be used once.
-  const matchingInputs=[...quizArea.querySelectorAll('input[name^="question-"]')]
-    .filter(input=>questions[Number(input.name.split("-")[1])]?.type==="match");
-  const refreshMatchingOptions=()=>{
-    const selectedByQuestion=new Map();
-    matchingInputs.forEach(input=>{
-      if(input.checked)selectedByQuestion.set(input.name,input.value);
-    });
-    matchingInputs.forEach(input=>{
-      const usedElsewhere=[...selectedByQuestion.entries()]
-        .some(([question,value])=>question!==input.name&&value===input.value);
-      input.disabled=usedElsewhere;
-    });
-  };
-  matchingInputs.forEach(input=>input.addEventListener("change",refreshMatchingOptions));
+  // Meaning questions are independent; options remain available in every question.
 }
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
