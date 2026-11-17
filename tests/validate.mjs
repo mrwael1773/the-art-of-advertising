@@ -89,7 +89,7 @@ test("practice answers and results are not persisted between visits", () => {
   assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
   assert.match(page, /styles\.css\?v=11/);
   assert.match(quiz, /styles\.css\?v=6/);
-  assert.match(quiz, /lesson\\.js\\?v=6/);
+  assert.ok(quiz.includes('lesson.js?v=6'));
   assert.ok(lesson.includes('a:["نقد","محفظة","تجّار","خصومات","مكافآت"]'));
   assert.ok(!lesson.includes("1. نقد") && !lesson.includes("2. محفظة") && !lesson.includes("3. تجّار") && !lesson.includes("4. خصومات") && !lesson.includes("5. مكافآت"));
   assert.ok(lesson.includes("function makeClickableSentence"));
