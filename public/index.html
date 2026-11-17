@@ -1,6 +1,37 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10233f"><meta name="description" content="The Art of Advertising — The World of Plastic"><title>The Art of Advertising | مساحة التعلم</title><link rel="stylesheet" href="./styles.css?v=9"><script src="./app.js" defer></script></head>
-<body><main class="shell"><header class="brand"><div class="brand-mark" aria-hidden="true">A</div><div><p class="eyebrow">UNIT 4 · READING</p><h1>The Art of Advertising</h1><p class="subtitle">The World of Plastic</p></div></header>
-<section class="intro"><p class="eyebrow">مساحة التعلم</p><h2>اختر القسم الذي تريد البدء به</h2><p>الصف الأول الثانوي: اقرأ صورة القطعة الأصلية، واضغط مرة لتظليل الجملة ثم مرة ثانية لتظليل الكلمة، واختر سماع أو ترجمة.</p></section>
-<section class="auth-card home-card" aria-label="أقسام الدرس"><div class="account-top"><div><p class="eyebrow">UNIT 4 · READING 9</p><h2>The World of Plastic</h2></div></div>
-<nav class="learning-menu" aria-label="أقسام الدرس"><a class="learning-link" href="./textbook.html"><span class="menu-number">01</span><span><strong>القطعة</strong><small>اضغط مرة لتظليل الجملة، ثم اضغط على الكلمة لتظليلها وحدها، واختر سماع أو ترجمة</small></span><span class="menu-arrow" aria-hidden="true">←</span></a><a class="learning-link" href="./quiz.html"><span class="menu-number">02</span><span><strong>التمارين</strong><small>تدرّب على فهم القطعة وأكمل الأسئلة ثم شاهد نتيجتك</small></span><span class="menu-arrow" aria-hidden="true">←</span></a></nav><p class="home-note">كل أدوات القراءة والاستماع والترجمة موجودة داخل قسم القطعة، والتمارين في قسم مستقل.</p></section><footer><p>موقع تعليمي مستقل · لا نطلب بيانات شخصية غير ضرورية.</p></footer></main></body></html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#edf2f7">
+  <meta name="description" content="صفحة The World of Plastic الأصلية مع تظليل الجمل والكلمات والاستماع والترجمة.">
+  <title>The World of Plastic | صفحة القراءة</title>
+  <link rel="stylesheet" href="./styles.css?v=10">
+</head>
+<body class="textbook-body">
+  <main class="shell textbook-shell standalone-page">
+    <section class="textbook-interaction" aria-label="صفحة القراءة التفاعلية">
+      <div class="speed-control">
+        <label for="speech-speed">سرعة النطق</label>
+        <input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="0.85">
+        <output id="speed-value" for="speech-speed">0.85×</output>
+      </div>
+      <p id="lesson-message" class="message" role="status" aria-live="polite"></p>
+      <div id="textbook-page" class="textbook-image-stage" aria-label="صفحة الكتاب The World of Plastic"></div>
+      <section id="textbook-selection" class="textbook-selection" aria-live="polite" hidden>
+        <p id="textbook-selection-label" class="textbook-selection-label"></p>
+        <div class="textbook-action-buttons">
+          <button id="textbook-listen" class="mini-button" type="button">سماع</button>
+          <button id="textbook-translate" class="mini-button" type="button">ترجمة</button>
+        </div>
+        <p id="textbook-translation" class="textbook-translation" hidden></p>
+      </section>
+    </section>
+    <nav class="standalone-practice-link" aria-label="التمارين">
+      <a href="./quiz.html">الانتقال إلى التمارين</a>
+    </nav>
+  </main>
+  <script src="./page60-hotspots.js?v=10" defer></script>
+  <script src="./lesson.js?v=10" defer></script>
+</body>
+</html>
