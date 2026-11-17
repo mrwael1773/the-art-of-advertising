@@ -112,3 +112,7 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
  .textbook-selection{padding:12px}
  .textbook-selection .mini-button{flex:1;min-width:0}
 }
+
+.quiz-section-note{margin:0 0 10px;color:#b9c8dc;font-size:12px;line-height:1.6}
+.quiz-option.unavailable{opacity:.42;cursor:not-allowed;background:#17283f;border-style:dashed}
+.quiz-option.unavailable input{cursor:not-allowed}

@@ -65,11 +65,11 @@ const questions = [
 {type:"fill",q:"Frank handed the waiter a small ____ card.",a:["plastic","paper","cardboard"],correct:2},
 {type:"fill",q:"By 1952, the card was accepted by ____ of businesses across the United States.",a:["thousands","two","every airline"],correct:0},
 {type:"fill",q:"The first card-members rewards program was created in ____.",a:["1949","1984","1952"],correct:1},
-{type:"match",q:"Match the word “cash” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:0},
-{type:"match",q:"Match the word “wallet” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:1},
-{type:"match",q:"Match the word “merchants” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:2},
-{type:"match",q:"Match the word “discounts” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:3},
-{type:"match",q:"Match the word “rewards” with its Arabic meaning.",a:["1. نقد","2. محفظة","3. تجّار","4. خصومات","5. مكافآت"],correct:4},
+{type:"match",q:"Match the word “cash” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:0},
+{type:"match",q:"Match the word “wallet” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:1},
+{type:"match",q:"Match the word “merchants” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:2},
+{type:"match",q:"Match the word “discounts” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:3},
+{type:"match",q:"Match the word “rewards” with its Arabic meaning.",a:["نقد","محفظة","تجّار","خصومات","مكافآت"],correct:4},
 {type:"truefalse",q:"The Diner’s Club Card became the first international charge card in 1952.",a:["صح","خطأ"],correct:0},
 {type:"truefalse",q:"Western Airlines was the first airline to accept the card in 1955.",a:["صح","خطأ"],correct:0},
 {type:"truefalse",q:"The card was accepted by every airline in the United States in 1955.",a:["صح","خطأ"],correct:1},
@@ -339,7 +339,7 @@ if(quizArea){
   const sectionNames={choice:"أولًا: اختيار من متعدد (1–5)",fill:"ثانيًا: أكمل الفراغ مع الخيارات (6–10)",match:"ثالثًا: المعنى (11–15)",truefalse:"رابعًا: صح أم خطأ (16–20)"};
   let previousType="";
   questions.forEach((q,i)=>{
-    if(q.type!==previousType){const section=document.createElement("h3");section.className="quiz-section-title";section.textContent=sectionNames[q.type];quizArea.append(section);previousType=q.type;}
+    if(q.type!==previousType){const section=document.createElement("h3");section.className="quiz-section-title";section.textContent=sectionNames[q.type];quizArea.append(section);if(q.type==="match"){const note=document.createElement("p");note.className="quiz-section-note";note.textContent="كل معنى يُستخدم مرة واحدة فقط، ويمكنك تغيير اختيارك في أي سؤال.";quizArea.append(note);}previousType=q.type;}
     const block=document.createElement("div");block.className="quiz-question";
     const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;
     const group=document.createElement("div");group.className="quiz-options";
@@ -351,7 +351,8 @@ if(quizArea){
     });
     block.append(heading,group);quizArea.append(block);
   });
-  // Matching questions form one-to-one pairs: a numbered Arabic meaning can be used once.
+  // Matching is one-to-one, but disabled meanings are clearly marked and
+  // become available again when the student changes the earlier answer.
   const matchingInputs=[...quizArea.querySelectorAll('input[name^="question-"]')]
     .filter(input=>questions[Number(input.name.split("-")[1])]?.type==="match");
   const refreshMatchingOptions=()=>{
@@ -363,6 +364,11 @@ if(quizArea){
       const usedElsewhere=[...selectedByQuestion.entries()]
         .some(([question,value])=>question!==input.name&&value===input.value);
       input.disabled=usedElsewhere;
+      const label=input.closest("label");
+      if(label){
+        label.classList.toggle("unavailable",usedElsewhere);
+        label.setAttribute("aria-disabled",String(usedElsewhere));
+      }
     });
   };
   matchingInputs.forEach(input=>input.addEventListener("change",refreshMatchingOptions));
