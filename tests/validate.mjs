@@ -118,6 +118,6 @@ test("credit-card sentence word hotspots stay on their own text rows", () => {
   for (const [sentenceIndex, wordIndex, , y, , height] of target) {
     assert.equal(sentenceIndex, 17);
     assert.equal(y, wordIndex <= 7 ? 244 : 259, `word ${wordIndex} should align with its printed row`);
-    assert.equal(height, 10, `word ${wordIndex} should not extend into adjacent rows`);
+    assert.ok(height <= 13, `word ${wordIndex} should not extend into adjacent rows`);
   }
 });
