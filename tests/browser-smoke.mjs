@@ -122,9 +122,14 @@ async function main() {
     assert.equal(await page.locator("#quiz-area .quiz-question").count(), 20);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
     await page.locator('input[name="question-10"][value="0"]').check();
-    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), true, "A matching number must not be reusable");
+    const reusedMeaning = page.locator('input[name="question-11"][value="0"]');
+    assert.equal(await reusedMeaning.isDisabled(), false, "Every meaning option must remain clickable");
+    await reusedMeaning.check();
+    assert.equal(await reusedMeaning.isChecked(), true, "The newly selected meaning should be checked");
+    assert.equal(await page.locator('input[name="question-10"][value="0"]').isChecked(), false, "The previous matching selection should move away");
     await page.locator('input[name="question-10"][value="1"]').check();
-    assert.equal(await page.locator('input[name="question-11"][value="0"]').isDisabled(), false, "Changing a match must release its previous number");
+    assert.equal(await reusedMeaning.isDisabled(), false, "Changing a match must not disable any meaning option");
+    assert.equal(await reusedMeaning.isChecked(), true, "An unrelated answer should remain selected");
     assert.equal(await page.locator("h2").filter({ hasText: "التمارين" }).count(), 1);
     assert.equal(await page.locator(".answer-feedback").count(), 0);
     assert.equal(await page.locator(".quiz-section-title").count(), 4);
