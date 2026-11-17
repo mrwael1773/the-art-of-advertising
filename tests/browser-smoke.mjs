@@ -59,6 +59,7 @@ async function main() {
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
     await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
+    assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), "legacy-progress", "Opening the reading page must preserve existing student progress");
     assert.equal(await page.locator("iframe").count(), 0);
     assert.match(await page.locator(".page-intro").textContent(), /اضغط مرة على الجملة/);
     assert.equal(await page.locator("#textbook-source-image").count(), 1);
