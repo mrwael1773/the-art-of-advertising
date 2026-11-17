@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook] = await Promise.all([
+const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook, quiz] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
   read("../public/results.html"), read("../public/results.js"),
-  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html")
+  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html"), read("../public/quiz.html")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
