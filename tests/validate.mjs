@@ -90,8 +90,8 @@ test("practice answers and results are not persisted between visits", () => {
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
   assert.match(quiz, /المعنى/);
   assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
-  assert.match(page, /styles\\.css\\?v=12/);
-  assert.match(textbook, /styles\\.css\\?v=12/);
+  assert.ok(page.includes("styles.css?v=12"));
+  assert.ok(textbook.includes("styles.css?v=12"));
   assert.ok(styles.includes(".textbook-body{color-scheme:light;background:#fff;color:#17263c}"));
   assert.ok(quiz.includes("styles.css?v=7"));
   assert.ok(quiz.includes('lesson.js?v=6'));
