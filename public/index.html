@@ -3,35 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0b1423">
-  <meta name="description" content="صفحة The World of Plastic الأصلية مع تظليل الجمل والكلمات والاستماع والترجمة.">
-  <title>The World of Plastic | صفحة القراءة</title>
-  <link rel="stylesheet" href="./styles.css?v=11">
+  <meta name="theme-color" content="#f4f7fb">
+  <meta name="description" content="اختر القطعة التفاعلية أو تمارين The World of Plastic للصف الأول الثانوي.">
+  <title>The World of Plastic | الرئيسية</title>
+  <link rel="stylesheet" href="./styles.css?v=12">
 </head>
-<body class="textbook-body">
-  <main class="shell textbook-shell standalone-page">
-    <section class="textbook-interaction" aria-label="صفحة القراءة التفاعلية">
-      <div class="speed-control">
-        <label for="speech-speed">سرعة النطق</label>
-        <input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="0.85">
-        <output id="speed-value" for="speech-speed">0.85×</output>
-      </div>
-      <p id="lesson-message" class="message" role="status" aria-live="polite"></p>
-      <div id="textbook-page" class="textbook-image-stage" aria-label="صفحة الكتاب The World of Plastic"></div>
-      <section id="textbook-selection" class="textbook-selection" aria-live="polite" hidden>
-        <p id="textbook-selection-label" class="textbook-selection-label"></p>
-        <div class="textbook-action-buttons">
-          <button id="textbook-listen" class="mini-button" type="button">سماع</button>
-          <button id="textbook-translate" class="mini-button" type="button">ترجمة</button>
-        </div>
-        <p id="textbook-translation" class="textbook-translation" hidden></p>
-      </section>
-    </section>
-    <nav class="standalone-practice-link" aria-label="التمارين">
-      <a href="./quiz.html">الانتقال إلى التمارين</a>
+<body class="home-body">
+  <main class="shell home-shell">
+    <header class="home-heading">
+      <p class="eyebrow">الصف الأول الثانوي · UNIT 4</p>
+      <h1>THE WORLD OF PLASTIC</h1>
+      <p>اختر القسم الذي تريد البدء به</p>
+    </header>
+    <nav class="home-choices" aria-label="أقسام التعلم">
+      <a class="home-choice" href="./textbook.html">
+        <span class="home-choice-number" aria-hidden="true">01</span>
+        <span class="home-choice-copy">
+          <strong>القطعة</strong>
+          <small>اقرأ القطعة، وظلّل الجمل والكلمات، واستمع للنطق وشاهد الترجمة.</small>
+        </span>
+        <span class="home-choice-arrow" aria-hidden="true">←</span>
+      </a>
+      <a class="home-choice" href="./quiz.html">
+        <span class="home-choice-number" aria-hidden="true">02</span>
+        <span class="home-choice-copy">
+          <strong>التمارين</strong>
+          <small>تدرّب على الأسئلة ثم شاهد نتيجتك النهائية.</small>
+        </span>
+        <span class="home-choice-arrow" aria-hidden="true">←</span>
+      </a>
     </nav>
   </main>
-  <script src="./page60-hotspots.js?v=11" defer></script>
-  <script src="./lesson.js?v=11" defer></script>
 </body>
 </html>
