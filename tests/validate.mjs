@@ -84,6 +84,11 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
   assert.match(lesson, /Matching questions form one-to-one pairs/);
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
+  assert.match(quiz, /المعنى/);
+  assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
+  assert.match(page, /styles\.css\?v=11/);
+  assert.match(quiz, /styles\.css\?v=6/);
+  assert.match(quiz, /lesson\.js\?v=5/);
   assert.match(lesson, /input\.disabled=usedElsewhere/);
   assert.ok(lesson.includes("function makeClickableSentence"));
   assert.ok(lesson.includes("className=\"word-token\""));
