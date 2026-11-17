@@ -339,7 +339,7 @@ if(quizArea){
   const sectionNames={choice:"أولًا: اختيار من متعدد (1–5)",fill:"ثانيًا: أكمل الفراغ مع الخيارات (6–10)",match:"ثالثًا: المعنى (11–15)",truefalse:"رابعًا: صح أم خطأ (16–20)"};
   let previousType="";
   questions.forEach((q,i)=>{
-    if(q.type!==previousType){const section=document.createElement("h3");section.className="quiz-section-title";section.textContent=sectionNames[q.type];quizArea.append(section);previousType=q.type;}
+    if(q.type!==previousType){const section=document.createElement("h3");section.className="quiz-section-title";section.textContent=sectionNames[q.type];quizArea.append(section);if(q.type==="match"){const note=document.createElement("p");note.className="quiz-section-note";note.textContent="كل معنى يُستخدم مرة واحدة فقط، ويمكنك تغيير اختيارك في أي سؤال.";quizArea.append(note);}previousType=q.type;}
     const block=document.createElement("div");block.className="quiz-question";
     const heading=document.createElement("p");heading.textContent=(i+1)+". "+q.q;
     const group=document.createElement("div");group.className="quiz-options";
@@ -351,7 +351,27 @@ if(quizArea){
     });
     block.append(heading,group);quizArea.append(block);
   });
-  // Meaning questions are independent; options remain available in every question.
+  // Matching is one-to-one, but disabled meanings are clearly marked and
+  // become available again when the student changes the earlier answer.
+  const matchingInputs=[...quizArea.querySelectorAll('input[name^="question-"]')]
+    .filter(input=>questions[Number(input.name.split("-")[1])]?.type==="match");
+  const refreshMatchingOptions=()=>{
+    const selectedByQuestion=new Map();
+    matchingInputs.forEach(input=>{
+      if(input.checked)selectedByQuestion.set(input.name,input.value);
+    });
+    matchingInputs.forEach(input=>{
+      const usedElsewhere=[...selectedByQuestion.entries()]
+        .some(([question,value])=>question!==input.name&&value===input.value);
+      input.disabled=usedElsewhere;
+      const label=input.closest("label");
+      if(label){
+        label.classList.toggle("unavailable",usedElsewhere);
+        label.setAttribute("aria-disabled",String(usedElsewhere));
+      }
+    });
+  };
+  matchingInputs.forEach(input=>input.addEventListener("change",refreshMatchingOptions));
 }
 const stop=button("■ إيقاف النطق",()=>{if("speechSynthesis"in window)window.speechSynthesis.cancel();});stop.classList.add("stop-speech");
 const speedInput=$("#speech-speed");if(speedInput)speedInput.addEventListener("input",e=>{$("#speed-value").textContent=Number(e.target.value).toFixed(2)+"×";});
