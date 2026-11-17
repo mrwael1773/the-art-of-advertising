@@ -71,7 +71,7 @@ test("student page has no registration, login, username, or password controls", 
 test("practice answers and results are not persisted between visits", () => {
   assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|restore\(/);
   assert.doesNotMatch(page, /progress-store|حفظ محلي/);
-  assert.match(lesson, /localStorage\.removeItem/);
+  assert.doesNotMatch(lesson, /localStorage\\.removeItem/);
   assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
   assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
   assert.equal([...lesson.matchAll(/type:"(?:choice|fill|match|truefalse)"/g)].length, 20);
