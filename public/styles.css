@@ -71,7 +71,7 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 
 
 /* Original textbook page image and two-step sentence/word selection */
-.textbook-body{color-scheme:light;background:#edf2f7;color:#17263c}
+.textbook-body{color-scheme:light;background:radial-gradient(ellipse at 12% 0%,#20395d 0,transparent 38%),radial-gradient(ellipse at 95% 30%,#1a2a43 0,transparent 35%),#0b1423;color:#17263c}
 .textbook-shell{width:min(100% - 24px,1040px);margin:0 auto;padding:20px 0 34px}
 .textbook-nav{display:flex;align-items:center;gap:10px;margin:0 0 18px;color:#64748b;font-size:13px}
 .textbook-nav a,.textbook-page-footer a{color:#2457a6;text-decoration:none;font-weight:700}
