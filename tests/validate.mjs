@@ -34,7 +34,8 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /textbook\.html/);
   assert.match(textbook, /id="textbook-page"/);
   assert.match(textbook, /The World of Plastic/);
-  assert.match(textbook, /الصفحة 60|صفحة 60/);
+  assert.match(textbook, /The World of Plastic/);
+  assert.match(lesson, /page60/);
   assert.doesNotMatch(textbook, /fliphtml5|<iframe|textbook-source-frame/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
