@@ -34,7 +34,8 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(page, /textbook\.html/);
   assert.match(textbook, /id="textbook-page"/);
   assert.match(textbook, /The World of Plastic/);
-  assert.match(textbook, /الصفحة 60/);
+  assert.match(textbook, /The World of Plastic/);
+  assert.match(lesson, /page60/);
   assert.doesNotMatch(textbook, /fliphtml5|<iframe|textbook-source-frame/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
@@ -42,13 +43,18 @@ test("student page has no registration, login, username, or password controls", 
   assert.match(textbook, /lesson\.js/);
   assert.doesNotMatch(textbook, /Before Reading|After Reading/);
   assert.match(lesson, /if\(textbookPage\)\{/);
-  assert.match(lesson, /textbook-card-stack/);
-  assert.match(lesson, /textbook-payment-art/);
-  assert.match(textbook, /class="textbook-paper"/);
+  assert.match(textbook, /page60-hotspots\.js/);
+  assert.match(textbook, /id="textbook-listen"/);
+  assert.match(textbook, /id="textbook-translate"/);
+  assert.match(lesson, /sentence-highlight/);
+  assert.match(lesson, /word-highlight/);
+  assert.match(lesson, /selectSentence\(sentenceIndex\)/);
+  assert.match(lesson, /selectWord\(sentenceIndex,wordIndex\)/);
+  assert.match(lesson, /PAGE60_WORD_HOTSPOTS/);
   assert.doesNotMatch(page, /sentences\.html|words\.html/);
   assert.match(page, /quiz\.html/);
   assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
-  assert.match(styles, /color-scheme:dark/);
+  assert.match(styles, /color-scheme:light/);
   assert.doesNotMatch(page, /حفظ محلي/);
   assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
   assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
@@ -65,7 +71,7 @@ test("student page has no registration, login, username, or password controls", 
 test("practice answers and results are not persisted between visits", () => {
   assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|restore\(/);
   assert.doesNotMatch(page, /progress-store|حفظ محلي/);
-  assert.match(lesson, /localStorage\.removeItem/);
+  assert.doesNotMatch(lesson, /localStorage\\.removeItem/);
   assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
   assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
   assert.equal([...lesson.matchAll(/type:"(?:choice|fill|match|truefalse)"/g)].length, 20);
