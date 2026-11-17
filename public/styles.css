@@ -71,7 +71,7 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 
 
 /* Original textbook page image and two-step sentence/word selection */
-.textbook-body{color-scheme:light;background:radial-gradient(ellipse at 12% 0%,#20395d 0,transparent 38%),radial-gradient(ellipse at 95% 30%,#1a2a43 0,transparent 35%),#0b1423;color:#17263c}
+.textbook-body{color-scheme:light;background:#fff;color:#17263c}
 .textbook-shell{width:min(100% - 24px,1040px);margin:0 auto;padding:20px 0 34px}
 .textbook-nav{display:flex;align-items:center;gap:10px;margin:0 0 18px;color:#64748b;font-size:13px}
 .textbook-nav a,.textbook-page-footer a{color:#2457a6;text-decoration:none;font-weight:700}
@@ -116,3 +116,22 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .quiz-section-note{margin:0 0 10px;color:#b9c8dc;font-size:12px;line-height:1.6}
 .quiz-option.unavailable{opacity:.42;cursor:not-allowed;background:#17283f;border-style:dashed}
 .quiz-option.unavailable input{cursor:not-allowed}
+
+
+/* Homepage: two clear entry points */
+.home-body{color-scheme:light;background:#f4f7fb;color:#17263c}
+.home-shell{width:min(100% - 32px,760px);min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.home-heading{margin:0 0 26px}
+.home-heading .eyebrow{color:#2457a6}
+.home-heading h1{direction:ltr;text-align:right;color:#10233f;font-size:clamp(22px,5vw,32px);letter-spacing:.3px;margin:4px 0 8px}
+.home-heading>p:last-child{margin:0;color:#68778d;font-size:14px}
+.home-choices{display:grid;gap:14px}
+.home-choice{display:flex;align-items:center;gap:14px;min-height:108px;padding:20px;border:1px solid #dce4ef;border-radius:18px;background:#fff;color:#17263c;text-decoration:none;box-shadow:0 8px 24px #19365d0a;transition:transform .15s,border-color .15s,box-shadow .15s}
+.home-choice:hover{transform:translateY(-2px);border-color:#9db5d8;box-shadow:0 12px 28px #19365d12}
+.home-choice:focus-visible{outline:3px solid #7da6e8;outline-offset:3px}
+.home-choice-number{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:14px;background:#edf3fc;color:#2457a6;font-size:14px;font-weight:900;direction:ltr}
+.home-choice-copy{display:grid;gap:4px;flex:1}
+.home-choice-copy strong{color:#10233f;font-size:19px}
+.home-choice-copy small{margin:0;color:#68778d;font-size:12px;line-height:1.7}
+.home-choice-arrow{color:#2457a6;font-size:22px;font-weight:800}
+@media(max-width:420px){.home-shell{padding:30px 0}.home-heading{margin-bottom:20px}.home-choice{min-height:100px;padding:15px;gap:11px}.home-choice-number{flex-basis:42px;height:42px}.home-choice-copy strong{font-size:17px}.home-choice-copy small{font-size:11px}}
