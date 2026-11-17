@@ -62,7 +62,7 @@ async function main() {
     assert.equal(await page.locator("iframe").count(), 0);
     assert.match(await page.locator(".page-intro").textContent(), /اضغط مرة على الجملة/);
     assert.equal(await page.locator("#textbook-source-image").count(), 1);
-    assert.equal(await page.locator("#textbook-hotspots .sentence-hit").count(), 29);
+    assert.equal(await page.locator("#textbook-hotspots .sentence-hit").count(), 78);
     assert.equal(await page.locator("#textbook-hotspots .word-hit").count(), 478);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
