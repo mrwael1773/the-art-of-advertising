@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook] = await Promise.all([
+const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook, quiz] = await Promise.all([
   read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
   read("../public/lesson.js"), read("../public/index.html"),
   read("../public/results.html"), read("../public/results.js"),
-  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html")
+  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html"), read("../public/quiz.html")
 ]);
 
 test("Worker only serves static assets and retains security headers", () => {
@@ -84,6 +84,11 @@ test("practice answers and results are not persisted between visits", () => {
   assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
   assert.match(lesson, /Matching questions form one-to-one pairs/);
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
+  assert.match(quiz, /المعنى/);
+  assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
+  assert.match(page, /styles\.css\?v=11/);
+  assert.match(quiz, /styles\.css\?v=6/);
+  assert.match(quiz, /lesson\.js\?v=5/);
   assert.match(lesson, /input\.disabled=usedElsewhere/);
   assert.ok(lesson.includes("function makeClickableSentence"));
   assert.ok(lesson.includes("className=\"word-token\""));
