@@ -86,8 +86,8 @@ test("practice answers and results are not persisted between visits", () => {
   assert.ok(lesson.includes("Keep every meaning option clickable"));
   assert.ok(lesson.includes("other.checked=false"));
   assert.ok(lesson.includes("كل معنى يُستخدم في سؤال واحد فقط"));
-  assert.doesNotMatch(lesson, /input\\.disabled\\s*=/);
-  assert.doesNotMatch(lesson, /classList\\.toggle\\(["']unavailable/);
+  assert.doesNotMatch(lesson, /input\.disabled\s*=/);
+  assert.doesNotMatch(lesson, /classList\.toggle\(["']unavailable/);
   assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
   assert.match(quiz, /المعنى/);
   assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
@@ -95,7 +95,7 @@ test("practice answers and results are not persisted between visits", () => {
   assert.ok(textbook.includes("styles.css?v=12"));
   assert.ok(styles.includes(".textbook-body{color-scheme:light;background:#fff;color:#17263c}"));
   assert.ok(quiz.includes("styles.css?v=7"));
-  assert.ok(quiz.includes('lesson.js?v=6'));
+  assert.ok(quiz.includes('lesson.js?v=7'));
   assert.ok(lesson.includes('a:["نقد","محفظة","تجّار","خصومات","مكافآت"]'));
   assert.ok(!lesson.includes("1. نقد") && !lesson.includes("2. محفظة") && !lesson.includes("3. تجّار") && !lesson.includes("4. خصومات") && !lesson.includes("5. مكافآت"));
   assert.ok(lesson.includes("function makeClickableSentence"));
