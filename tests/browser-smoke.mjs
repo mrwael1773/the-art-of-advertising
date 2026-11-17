@@ -48,26 +48,24 @@ async function main() {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
     });
     await page.goto(origin, { waitUntil: "networkidle" });
-    assert.match(await page.title(), /The Art of Advertising/);
-    assert.equal(await page.locator(".learning-link").count(), 2);
-    assert.equal(await page.locator(".learning-link[href=\"./sentences.html\"]").count(), 0);
-    assert.equal(await page.locator(".learning-link[href=\"./words.html\"]").count(), 0);
-    assert.equal(await page.locator(".learning-link[href=\"./audio.html\"]").count(), 0);
+    assert.match(await page.title(), /The World of Plastic/);
+    assert.equal(await page.locator("#textbook-page").count(), 1);
+    assert.equal(await page.locator(".learning-link").count(), 0);
     const homeTheme = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(homeTheme, "rgb(255, 255, 255)");
 
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
-    await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
+    await page.goto(origin + "/", { waitUntil: "domcontentloaded" });
     assert.equal(await page.evaluate(() => localStorage.getItem("art-of-advertising:student-progress:v1")), "legacy-progress", "Opening the reading page must preserve existing student progress");
     assert.equal(await page.locator("iframe").count(), 0);
-    assert.match(await page.locator(".page-intro").textContent(), /اضغط مرة على الجملة/);
+    assert.equal(await page.locator(".page-intro").count(), 0, "The homepage must be the standalone textbook, without an introductory landing page.");
     assert.equal(await page.locator("#textbook-source-image").count(), 1);
     assert.equal(await page.locator("#textbook-hotspots .sentence-hit").count(), 78);
     assert.equal(await page.locator("#textbook-hotspots .word-hit").count(), 478);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
-    assert.equal(await page.locator(".textbook-nav a[href=\"./quiz.html\"]").count(), 1);
+    assert.equal(await page.locator(".standalone-practice-link a[href=\"./quiz.html\"]").count(), 1);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
