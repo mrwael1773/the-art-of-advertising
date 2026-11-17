@@ -59,17 +59,14 @@ async function main() {
     await page.evaluate(() => localStorage.setItem("art-of-advertising:student-progress:v1", "legacy-progress"));
 
     await page.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
-    assert.equal(await page.locator("iframe").count(), 0, "The lesson must show the page itself, not the full external book");
-    assert.match(await page.locator(".page-intro").textContent(), /الصفحة 60/);
-    assert.equal(await page.locator(".textbook-paper").count(), 1);
-    assert.equal(await page.locator(".textbook-card-stack svg").count(), 1);
-    assert.equal(await page.locator(".textbook-payment-art svg").count(), 1);
-    assert.equal(await page.locator(".textbook-column-left .textbook-paragraph").count(), 3);
-    assert.equal(await page.locator(".textbook-column-right .textbook-paragraph").count(), 3);
+    assert.equal(await page.locator("iframe").count(), 0);
+    assert.match(await page.locator(".page-intro").textContent(), /صفحة 60/);
+    assert.equal(await page.locator("#textbook-source-image").count(), 1);
+    assert.equal(await page.locator("#textbook-hotspots .sentence-hit").count(), 29);
+    assert.equal(await page.locator("#textbook-hotspots .word-hit").count(), 478);
     const textbookResponse = await page.request.get(origin + "/textbook.html");
     assert.doesNotMatch(textbookResponse.headers()["content-security-policy"], /fliphtml5/);
-    assert.equal(await page.locator(".page-nav a[href=\"./sentences.html\"]").count(), 0);
-    assert.equal(await page.locator(".page-nav a[href=\"./words.html\"]").count(), 0);
+    assert.equal(await page.locator(".textbook-nav a[href=\"./quiz.html\"]").count(), 1);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
     await page.locator("#speech-speed").evaluate(el => { el.value = "0.25"; el.dispatchEvent(new Event("input", { bubbles: true })); });
@@ -90,55 +87,23 @@ async function main() {
         }
       });
     });
-    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").first().click();
+    const firstWord = page.locator("#textbook-hotspots .word-hit").first();
+    await firstWord.click();
+    assert.equal(await page.locator("#textbook-selection").isVisible(), true);
+    assert.match(await page.locator("#textbook-selection-label").textContent(), /الجملة/);
+    assert.equal(await page.locator("#textbook-hotspots .sentence-highlight").count(), 1);
+    await firstWord.click();
+    assert.match(await page.locator("#textbook-selection-label").textContent(), /الكلمة/);
+    assert.equal(await page.locator("#textbook-hotspots .word-highlight").count(), 1);
+    await page.locator("#textbook-listen").click();
     let spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
-    assert.match(spoken.text, /^Can you imagine/);
-    assert.equal(await page.locator("#textbook-page .textbook-paragraph").count(), 6);
-    assert.equal(await page.locator("#textbook-page .sentence-en").count(), 29);
-    assert.ok(await page.locator("#textbook-page .word-token").count() > 0);
-    const firstTextbookRow = await page.locator("#textbook-page .sentence-row").first().evaluate(el => ({ sentence: el.querySelector(".sentence-en").getBoundingClientRect(), actions: el.querySelector(".mini-actions").getBoundingClientRect(), viewportWidth: window.innerWidth }));
-    if (firstTextbookRow.viewportWidth > 700) {
-      assert.ok(firstTextbookRow.actions.left < firstTextbookRow.sentence.left, "Desktop sentence controls should be on the left");
-    } else {
-      assert.ok(firstTextbookRow.actions.top >= firstTextbookRow.sentence.bottom - 1, "Mobile sentence controls should appear below the sentence");
-    }
-    await page.locator("#textbook-page .sentence-row .mini-actions .mini-button").nth(1).click();
-    assert.equal(await page.locator("#textbook-page .sentence-ar").first().isVisible(), true);
-    const firstWord = page.locator("#textbook-page .word-token").first();
-    await firstWord.click();
-    assert.equal(await firstWord.getAttribute("aria-pressed"), "true");
-    assert.equal(await firstWord.evaluate(el => el.classList.contains("selected")), true);
-    await firstWord.locator("xpath=../..").locator(".word-action-panel button").first().click();
-    spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.text, "Can");
-    assert.equal(spoken.rate, 0.25);
-    const firstWordPanel = page.locator("#textbook-page .word-action-panel").first();
-    assert.equal(await firstWordPanel.isVisible(), true);
-    await firstWordPanel.getByRole("button", { name: "ترجمة الكلمة" }).click();
-    assert.match(await firstWordPanel.locator(".selected-word-meaning").textContent(), /Can = يستطيع/);
-    const wordTranslationChecks = await page.locator("#textbook-page .word-token").evaluateAll(nodes => {
-      const seen = new Set();
-      const checks = [];
-      for (const node of nodes) {
-        const word = node.textContent.trim();
-        const key = word.toLowerCase().replace(/[’']s$/, "");
-        if (seen.has(key)) continue;
-        seen.add(key);
-        node.click();
-        const panel = node.closest(".sentence-row").querySelector(".word-action-panel");
-        panel.querySelector('button:nth-child(2)').click();
-        checks.push({ word, message: panel.querySelector(".selected-word-meaning").textContent });
-      }
-      return checks;
-    });
-    assert.ok(wordTranslationChecks.length >= 200, "The textbook should expose translations for its full word set");
-    assert.deepEqual(
-      wordTranslationChecks.filter(item => item.message.startsWith("لا تتوفر ترجمة")).map(item => item.word),
-      [],
-      "Every clickable textbook word must show an Arabic meaning"
-    );
+    await page.locator("#textbook-translate").click();
+    assert.match(await page.locator("#textbook-translation").textContent(), /يستطيع/);
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("#textbook-selection").isVisible(), false);
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
