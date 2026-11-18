@@ -28,7 +28,7 @@ window.ART_AD_CONFIG = {
     },
     {
       "id": "henk-3",
-      "text": "It is designed to feel extremely light, even when it is packed with heavy items."
+      "text": "It is designed to feel as light as pulling no more than 25 grams, even when packed with heavy items."
     },
     {
       "id": "henk-4",
