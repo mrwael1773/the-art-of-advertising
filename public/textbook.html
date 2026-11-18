@@ -1,55 +1,38 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="القطعة الأصلية The World of Plastic للصف الأول الثانوي مع تظليل الجمل والكلمات والترجمة والنطق.">
-  <title>القطعة | الصف الأول الثانوي | The World of Plastic</title>
-  <link rel="stylesheet" href="./styles.css?v=12">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1423">
+<title>القراءة والاستماع | The Art of Advertising</title>
+<link rel="stylesheet" href="./styles.css?v=13">
+<link rel="stylesheet" href="./art-advertising.css?v=2">
 </head>
-<body class="textbook-body">
-  <main class="shell textbook-shell">
-    <nav class="textbook-nav" aria-label="التنقل">
-      <a href="./index.html">الرئيسية</a>
-      <span aria-hidden="true">/</span>
-      <span>القطعة</span>
-      <a href="./quiz.html">التمارين</a>
-    </nav>
-
-    <header class="page-intro textbook-intro">
-      <p class="eyebrow">الصف الأول الثانوي · UNIT 4 · READING</p>
-      <h1>القطعة</h1>
-      <p>هذه صورة الصفحة الأصلية من الكتاب. اضغط مرة على الجملة لتظليلها، ثم اضغط على الكلمة داخلها لتظليل الكلمة وحدها. بعد التحديد اختر «سماع» أو «ترجمة».</p>
-    </header>
-
-    <section class="textbook-interaction" aria-label="القطعة التفاعلية">
-      <div class="speed-control">
-        <label for="speech-speed">سرعة النطق</label>
-        <input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="0.85">
-        <output id="speed-value" for="speech-speed">0.85×</output>
-      </div>
-
-      <p id="lesson-message" class="message" role="status" aria-live="polite"></p>
-
-      <div id="textbook-page" class="textbook-image-stage" aria-label="صورة القطعة الأصلية The World of Plastic"></div>
-
-      <section id="textbook-selection" class="textbook-selection" aria-live="polite" hidden>
-        <p id="textbook-selection-label" class="textbook-selection-label"></p>
-        <div class="textbook-action-buttons">
-          <button id="textbook-listen" class="mini-button" type="button">سماع</button>
-          <button id="textbook-translate" class="mini-button" type="button">ترجمة</button>
-        </div>
-        <p id="textbook-translation" class="textbook-translation" hidden></p>
-      </section>
-    </section>
-
-    <footer class="textbook-page-footer">
-      <a href="./quiz.html">الانتقال إلى التمارين</a>
-    </footer>
-  </main>
-
-  <script src="./page60-hotspots.js?v=12" defer></script>
-  <script src="./lesson.js?v=11" defer></script>
-</body>
-</html>
+<body>
+<main class="shell art-shell">
+<nav class="page-nav"><a href="./index.html">الرئيسية</a><a class="current" href="./textbook.html">القراءة والاستماع</a><a href="./quiz.html">التمارين</a></nav>
+<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>أدوات الصوت والتظليل تعمل على القطعة فقط، ولا تشمل أسئلة الكتاب أو بقية الصفحة.</p></header>
+<section class="art-panel">
+<h2>صفحات الدرس</h2>
+<p id="pdf-status" role="status">جارٍ التحقق من ملف الصفحتين…</p>
+<div class="pdf-upload-row"><label class="button-like" for="book-pdf-file">اختيار ملف الصفحتين من الجهاز</label><input id="book-pdf-file" type="file" accept="application/pdf,.pdf"><a id="open-book-pdf" href="#" target="_blank" rel="noopener" hidden>فتح الصفحتين في تبويب جديد</a></div>
+<div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden><iframe id="book-pdf" title="صفحتا الدرس 54 و55 من The Art of Advertising" loading="lazy"></iframe></div>
+<p class="art-note">يُعرض ملف الصفحتين من رابط PDF عام. إذا تعذّر عرضه داخل المتصفح، استخدم رابط «فتح الصفحتين في تبويب جديد».</p>
+</section>
+<section class="art-panel">
+<h2>القطعة الصوتية</h2>
+<p>اختر التشغيل للاستماع إلى القطعة جملةً جملة. ويمكنك تغيير السرعة أثناء الاستماع.</p>
+<div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1"><output id="speed-value">1.00×</output></div>
+<div class="art-controls">
+<button id="play-reading" type="button">تشغيل</button>
+<button id="pause-reading" type="button">إيقاف مؤقت</button>
+<button id="resume-reading" type="button">استكمال</button>
+<button id="stop-reading" type="button">إيقاف</button>
+</div>
+<p id="speech-status" class="art-note" role="status">يجري تجهيز الصوت…</p>
+<div id="passage-sentences" class="passage-text" aria-live="polite"></div>
+<p class="art-note">تُضاف الجمل المعتمدة إلى مشغل القطعة، ويرتبط كل سؤال في صفحة التمارين بمعرّف جملة محدد هنا.</p>
+</section>
+</main>
+<script src="./art-advertising-config.js?v=4"></script>
+<script src="./art-advertising-viewer.js?v=4" defer></script>
+</body></html>

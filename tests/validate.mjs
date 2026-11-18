@@ -3,25 +3,35 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, config, app, lesson, page, resultPage, resultScript, headers, styles, textbook, quiz, hotspotsSource] = await Promise.all([
-  read("../src/worker.js"), read("../wrangler.toml"), read("../public/app.js"),
-  read("../public/lesson.js"), read("../public/index.html"),
-  read("../public/results.html"), read("../public/results.js"),
-  read("../public/_headers"), read("../public/styles.css"), read("../public/textbook.html"), read("../public/quiz.html"), read("../public/page60-hotspots.js")
+const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript, headers, styles] = await Promise.all([
+  read("../src/worker.js"),
+  read("../wrangler.toml"),
+  read("../public/index.html"),
+  read("../public/textbook.html"),
+  read("../public/quiz.html"),
+  read("../public/art-advertising-config.js"),
+  read("../public/art-advertising-viewer.js"),
+  read("../public/art-advertising-quiz.js"),
+  read("../public/_headers"),
+  read("../public/art-advertising.css")
 ]);
 
-test("Worker only serves static assets and retains security headers", () => {
+const configMatch = configSource.match(/window\.ART_AD_CONFIG\s*=\s*([\s\S]*);\s*$/);
+assert.ok(configMatch, "lesson configuration should be a JavaScript object assignment");
+const lessonConfig = JSON.parse(configMatch[1]);
+const sentenceIds = new Set(lessonConfig.passageSentences.map(sentence => String(sentence.id)));
+
+test("Worker serves static assets with the required security headers", () => {
   assert.match(worker, /headers\.set\("x-content-type-options", "nosniff"\)/);
   assert.match(worker, /headers\.set\("x-frame-options", "DENY"\)/);
   assert.match(worker, /headers\.set\("referrer-policy", "no-referrer"\)/);
   assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
   assert.match(worker, /content-security-policy/);
+  assert.match(worker, /frame-src 'self' blob: https:\/\/drive\.google\.com/);
+  assert.match(headers, /frame-src 'self' blob: https:\/\/drive\.google\.com/);
   assert.match(worker, /env\.ASSETS\.fetch\(request\)/);
   assert.doesNotMatch(worker, /env\.DB|D1|api/);
-  assert.doesNotMatch(config, /d1_databases|database_id|binding = "DB"/);
-});
-
-test("static assets keep the browser security policy", () => {
+  assert.doesNotMatch(wrangler, /d1_databases|database_id|binding = "DB"/);
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /X-Frame-Options: DENY/);
   assert.match(headers, /Referrer-Policy: no-referrer/);
@@ -29,96 +39,85 @@ test("static assets keep the browser security policy", () => {
   assert.match(headers, /Content-Security-Policy:/);
 });
 
-test("student page has no registration, login, username, or password controls", () => {
-  assert.doesNotMatch(page, /id="auth-form"|id="login-tab"|id="register-tab"|id="username"|id="password"|type="password"/);
-  assert.match(page, /href="\.\/textbook.html"/);
-  assert.match(page, /href="\.\/quiz.html"/);
-  assert.match(page, /القطعة/);
-  assert.match(page, /التمارين/);
-  assert.equal([...page.matchAll(/class="home-choice"/g)].length, 2);
-  assert.match(textbook, /id="textbook-page"/);
-  assert.match(textbook, /The World of Plastic/);
-  assert.match(textbook, /The World of Plastic/);
-  assert.match(lesson, /page60/);
-  assert.doesNotMatch(textbook, /fliphtml5|<iframe|textbook-source-frame/);
+test("home page links to the reading and exercises pages without account controls", () => {
+  assert.match(home, /href="\.\/textbook\.html"/);
+  assert.match(home, /href="\.\/quiz\.html"/);
+  assert.match(home, /القراءة والاستماع|القطعة/);
+  assert.match(home, /التمارين/);
+  assert.match(home, /لا تُحفظ إجابات التمارين/);
+  assert.doesNotMatch(home, /id="auth-form"|id="login-tab"|id="register-tab"|type="password"/);
+});
+
+test("reading page has the PDF viewer, local preview, playback and speed controls", () => {
+  assert.match(textbook, /id="book-pdf"/);
+  assert.match(textbook, /id="book-pdf-file"/);
+  assert.match(textbook, /id="open-book-pdf"/);
+  assert.match(textbook, /id="passage-sentences"/);
+  assert.match(textbook, /id="play-reading"/);
+  assert.match(textbook, /id="pause-reading"/);
+  assert.match(textbook, /id="resume-reading"/);
+  assert.match(textbook, /id="stop-reading"/);
   assert.match(textbook, /id="speech-speed"/);
   assert.match(textbook, /min="0\.25"/);
   assert.match(textbook, /max="1"/);
-  assert.match(textbook, /lesson\.js/);
-  assert.doesNotMatch(textbook, /Before Reading|After Reading/);
-  assert.match(lesson, /if\(textbookPage\)\{/);
-  assert.match(textbook, /page60-hotspots\.js/);
-  assert.match(textbook, /id="textbook-listen"/);
-  assert.match(textbook, /id="textbook-translate"/);
-  assert.match(lesson, /sentence-highlight/);
-  assert.match(lesson, /word-highlight/);
-  assert.match(lesson, /selectSentence\(sentenceIndex\)/);
-  assert.match(lesson, /selectWord\(sentenceIndex,wordIndex\)/);
-  assert.match(lesson, /PAGE60_WORD_HOTSPOTS/);
-  assert.doesNotMatch(page, /sentences\.html|words\.html/);
-  assert.match(page, /quiz\.html/);
-  assert.doesNotMatch(page, /audio\.html|سرعة الصوت/);
-  assert.match(styles, /color-scheme:light/);
-  assert.doesNotMatch(page, /حفظ محلي/);
-  assert.doesNotMatch(app, /fetch\(|\/api\/|password|username|login|register/i);
-  assert.doesNotMatch(lesson, /fetch\(|\/api\/|account-ready/);
-  assert.match(lesson, /if\(quizArea\)\{/);
-  assert.match(lesson, /questions\.forEach\(\(q,i\)=>/);
-  assert.ok(lesson.includes('window.location.assign("./results.html")'));
-  assert.ok(resultPage.includes("النتيجة النهائية"));
-  assert.match(resultPage, /href="\.\/index\.html">العودة إلى القائمة الرئيسية/);
-  assert.doesNotMatch(resultPage, /إعادة التمارين من البداية/);
-  assert.ok(resultPage.includes("results.js"));
-  assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
+  assert.match(textbook, /art-advertising-viewer\.js/);
+  assert.match(viewer, /SpeechSynthesisUtterance/);
+  assert.match(viewer, /const speechSupported/);
+  assert.match(viewer, /synth\?\.pause/);
+  assert.match(viewer, /synth\?\.resume/);
+  assert.match(viewer, /Ignore malformed URL fragments/);
+  assert.match(textbook, /id="speech-status"/);
+  assert.match(viewer, /playEvidenceSentence/);
+  assert.match(viewer, /URL\.createObjectURL/);
+  assert.match(viewer, /URL\.revokeObjectURL/);
+  assert.match(viewer, /is-speaking/);
 });
 
-test("practice answers and results are not persisted between visits", () => {
-  assert.doesNotMatch(lesson, /StudentProgressStore|localStorage\.getItem|localStorage\.setItem|restore\(/);
-  assert.doesNotMatch(page, /progress-store|حفظ محلي/);
-  assert.doesNotMatch(lesson, /localStorage\\.removeItem/);
-  assert.ok(lesson.includes('sessionStorage.setItem("art-of-advertising:attempt-result:v1"'));
-  assert.ok(resultScript.includes("sessionStorage.removeItem(storageKey)"));
-  assert.equal([...lesson.matchAll(/type:"(?:choice|fill|match|truefalse)"/g)].length, 20);
-  assert.equal([...lesson.matchAll(/type:"choice"/g)].length, 5);
-  assert.equal([...lesson.matchAll(/type:"fill"/g)].length, 5);
-  assert.equal([...lesson.matchAll(/type:"match"/g)].length, 5);
-  assert.equal([...lesson.matchAll(/type:"truefalse"/g)].length, 5);
-  assert.ok(lesson.includes("Keep every meaning option clickable"));
-  assert.ok(lesson.includes("other.checked=false"));
-  assert.ok(lesson.includes("كل معنى يُستخدم في سؤال واحد فقط"));
-  assert.doesNotMatch(lesson, /input\.disabled\s*=/);
-  assert.doesNotMatch(lesson, /classList\.toggle\(["']unavailable/);
-  assert.match(lesson, /match:"ثالثًا: المعنى \(11–15\)"/);
-  assert.match(quiz, /المعنى/);
-  assert.doesNotMatch(quiz, /التوصيل بالأرقام/);
-  assert.ok(page.includes("styles.css?v=12"));
-  assert.ok(textbook.includes("styles.css?v=12"));
-  assert.ok(styles.includes(".textbook-body{color-scheme:light;background:#fff;color:#17263c}"));
-  assert.ok(quiz.includes("styles.css?v=7"));
-  assert.ok(quiz.includes('lesson.js?v=7'));
-  assert.ok(lesson.includes('a:["نقد","محفظة","تجّار","خصومات","مكافآت"]'));
-  assert.ok(!lesson.includes("1. نقد") && !lesson.includes("2. محفظة") && !lesson.includes("3. تجّار") && !lesson.includes("4. خصومات") && !lesson.includes("5. مكافآت"));
-  assert.ok(lesson.includes("function makeClickableSentence"));
-  assert.ok(lesson.includes("className=\"word-token\""));
-});
-
-test("practice answer positions are balanced and preserve original answer indexes", () => {
-  assert.ok(lesson.includes("const correctPositions = [1,2,0,1,2, 2,0,1,2,0, 3,1,4,0,2, 1,0,1,0,1]"));
-  assert.ok(lesson.includes("q.displayOrder.splice(correctPositions[i],0,q.correct)"));
-  assert.ok(lesson.includes("input.value=String(originalIndex)"));
-  assert.ok(lesson.includes("window.location.assign"));
-});
-
-
-test("credit-card sentence word hotspots stay on their own text rows", () => {
-  const match = hotspotsSource.match(/window\.PAGE60_WORD_HOTSPOTS\s*=\s*(\[[\s\S]*\]);/);
-  assert.ok(match, "page-60 hotspot data should be a JavaScript array");
-  const hotspots = JSON.parse(match[1]);
-  const target = hotspots.filter(([sentenceIndex]) => sentenceIndex === 17);
-  assert.equal(target.length, 12, "the target sentence should have 12 word hotspots");
-  for (const [sentenceIndex, wordIndex, , y, , height] of target) {
-    assert.equal(sentenceIndex, 17);
-    assert.equal(y, wordIndex <= 7 ? 244 : 259, `word ${wordIndex} should align with its printed row`);
-    assert.ok(height <= 13, `word ${wordIndex} should not extend into adjacent rows`);
+test("lesson content contains six Quick Check and exactly twenty correctly ordered exercises", () => {
+  assert.equal(lessonConfig.passageSentences.length, 18);
+  assert.equal(lessonConfig.quickCheckQuestions.length, 6);
+  assert.equal(lessonConfig.exercises.length, 20);
+  assert.deepEqual(
+    lessonConfig.exercises.map(question => question.type),
+    [
+      ...Array(10).fill("single_select"),
+      ...Array(5).fill("fill_blank"),
+      ...Array(5).fill("true_false")
+    ]
+  );
+  for (const question of [...lessonConfig.quickCheckQuestions, ...lessonConfig.exercises]) {
+    assert.ok(sentenceIds.has(String(question.evidenceId)), "each question must point to an existing evidence sentence");
+    if (question.type === "fill_blank") {
+      assert.ok(Array.isArray(question.acceptedAnswers) && question.acceptedAnswers.length > 0);
+    } else {
+      assert.ok(question.correctAnswer);
+      assert.equal(question.options.length, question.type === "true_false" ? 2 : 4);
+    }
   }
+  assert.ok(lessonConfig.quickCheckQuestions.every(question => question.type === "true_false"));
+});
+
+test("exercise page keeps Quick Check separate and uses the evidence-aware quiz script", () => {
+  assert.match(quiz, /Quick Check/);
+  assert.match(quiz, /id="quick-questions"/);
+  assert.match(quiz, /id="extra-exercises"/);
+  assert.match(quiz, /id="quiz-status"/);
+  assert.match(quiz, /ثلاثة أنواع من التمارين/);
+  assert.match(quizScript, /evidenceIsValid/);
+  assert.match(quizScript, /اعرض مكان الإجابة/);
+  assert.match(quizScript, /تحقق من الإجابة/);
+  assert.match(quizScript, /missingAnswerKeys/);
+  assert.match(quizScript, /missingEvidence/);
+  assert.match(quizScript, /sentence-/);
+});
+
+test("student exercise state is not persisted between visits", () => {
+  assert.doesNotMatch(quizScript, /localStorage|sessionStorage|indexedDB/);
+  assert.doesNotMatch(viewer, /localStorage|sessionStorage|indexedDB/);
+});
+
+test("reading sentence highlight is visually distinct and contained to the sentence", () => {
+  assert.match(styles, /\.passage-sentence/);
+  assert.match(styles, /\.passage-sentence\.is-speaking/);
+  assert.match(styles, /pdf-upload-row/);
 });
