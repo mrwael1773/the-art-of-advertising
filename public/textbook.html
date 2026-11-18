@@ -1,20 +1,36 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1423"><title>القراءة والاستماع | The Art of Advertising</title><link rel="stylesheet" href="./styles.css?v=13"><link rel="stylesheet" href="./art-advertising.css?v=1"></head>
-<body><main class="shell art-shell">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1423">
+<title>القراءة والاستماع | The Art of Advertising</title>
+<link rel="stylesheet" href="./styles.css?v=13">
+<link rel="stylesheet" href="./art-advertising.css?v=2">
+</head>
+<body>
+<main class="shell art-shell">
 <nav class="page-nav"><a href="./index.html">الرئيسية</a><a class="current" href="./textbook.html">القراءة والاستماع</a><a href="./quiz.html">التمارين</a></nav>
-<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>تعرض هذه الصفحة مادة الدرس كاملة. أدوات الصوت والتظليل مخصصة لنص القطعة فقط، ولا تشمل بقية عناصر الصفحة.</p></header>
+<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>أدوات الصوت والتظليل تعمل على القطعة فقط، ولا تشمل أسئلة الكتاب أو بقية الصفحة.</p></header>
 <section class="art-panel">
 <h2>صفحات الدرس</h2>
 <p id="pdf-status" role="status">لم يُربط ملف الكتاب بالموقع بعد.</p>
 <div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden><iframe id="book-pdf" title="صفحات درس The Art of Advertising" loading="lazy"></iframe></div>
-<p class="art-note">ملاحظة: ملف الكتاب الذي رفعته في المحادثة ليس منشورًا على موقعك تلقائيًا. يلزم ربط نسخة تملك حق نشرها برابط مباشر حتى تظهر هنا.</p>
+<p class="art-note">يلزم ربط نسخة من ملف الصفحتين برابط مباشر منشور ومصرّح به حتى تظهر هنا.</p>
 </section>
 <section class="art-panel">
-<h2>الصوت والتظليل</h2>
-<p>سيعمل الصوت على جمل القطعة فقط، مع تظليل الجملة الحالية. أزرار التشغيل ستُفعّل بعد إضافة النص الصوتي المطابق للنسخة المعتمدة.</p>
-<div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1" disabled><output id="speed-value">1.00×</output></div>
-<div class="art-controls"><button type="button" disabled>تشغيل</button><button type="button" disabled>إيقاف مؤقت</button><button type="button" disabled>استكمال</button><button type="button" disabled>إيقاف</button></div>
-<p class="art-note">لن أضع نصًا بديلًا أو صوتًا لا يطابق القطعة الأصلية.</p>
+<h2>القطعة الصوتية</h2>
+<p>اختر التشغيل للاستماع إلى القطعة جملةً جملة. ويمكنك تغيير السرعة أثناء الاستماع.</p>
+<div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1"><output id="speed-value">1.00×</output></div>
+<div class="art-controls">
+<button id="play-reading" type="button">تشغيل</button>
+<button id="pause-reading" type="button">إيقاف مؤقت</button>
+<button id="resume-reading" type="button">استكمال</button>
+<button id="stop-reading" type="button">إيقاف</button>
+</div>
+<div id="passage-sentences" class="passage-text" aria-live="polite"></div>
+<p class="art-note">تُضاف الجمل المعتمدة إلى مشغل القطعة، ويرتبط كل سؤال في صفحة التمارين بمعرّف جملة محدد هنا.</p>
 </section>
-</main><script src="./art-advertising-config.js?v=1"></script><script src="./art-advertising-viewer.js?v=1" defer></script></body></html>
+</main>
+<script src="./art-advertising-config.js?v=2"></script>
+<script src="./art-advertising-viewer.js?v=2" defer></script>
+</body></html>
