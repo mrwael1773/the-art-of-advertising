@@ -72,7 +72,7 @@
   }
 
   function setControls(playing, paused) {
-    playAll.disabled = playing || paused;
+    playAll.disabled = playing;
     pauseButton.disabled = !playing;
     resumeButton.disabled = !paused;
     stopButton.disabled = !playing && !paused;
@@ -165,9 +165,6 @@
   audio.addEventListener("timeupdate", syncHighlight);
   audio.addEventListener("seeked", syncHighlight);
   audio.addEventListener("play", () => setControls(true, false));
-  audio.addEventListener("pause", () => {
-    if (audio.currentTime > 0 && !audio.ended) setControls(false, true);
-  });
   audio.addEventListener("ended", () => {
     clearActive();
     followPlayback = false;
