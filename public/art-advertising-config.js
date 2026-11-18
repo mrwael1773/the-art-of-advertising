@@ -582,5 +582,5 @@ window.ART_AD_CONFIG = {
       "evidenceId": "bike-4"
     }
   ],
-  "pdfDownloadUrl": "https://drive.google.com/uc?export=download&id=12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1"
+  "pdfDownloadUrl": "./assets/art-advertising-source.pdf"
 };
