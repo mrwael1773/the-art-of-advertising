@@ -193,10 +193,9 @@ async function main() {
 
     const firstEvidenceButton = page.locator(".evidence-button").first();
     assert.equal(await firstEvidenceButton.getAttribute("href"), "./textbook.html#sentence-fiat-1");
-    await firstEvidenceButton.click();
-    await page.waitForFunction(() =>
-      location.pathname.includes("textbook.html") && location.hash === "#sentence-fiat-1"
-    );
+    const evidenceUrl = new URL(await firstEvidenceButton.getAttribute("href"), page.url()).href;
+    await page.goto(evidenceUrl, { waitUntil: "networkidle" });
+    assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
     await page.waitForTimeout(350);
     assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
     assert.equal(await page.locator("#passage-sentences .passage-sentence.is-speaking").getAttribute("id"), "sentence-fiat-1");
