@@ -62,7 +62,7 @@
 
   async function renderPage(pageInfo) {
     const page = await pdfDocument.getPage(pageInfo.number);
-    const width = Math.max(280, pageInfo.root.clientWidth || 900);
+    const width = Math.max(260, (pageInfo.root.parentElement?.clientWidth || 900) - 28);
     const base = page.getViewport({ scale: 1 });
     const scale = width / base.width;
     const viewport = page.getViewport({ scale });
@@ -212,7 +212,7 @@
         const index = sentences.findIndex(sentence => sentence.id === id);
         if (index >= 0) startAt(index);
       }
-      lastWidth = pageNodes[0].root.clientWidth;
+      lastWidth = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
     } catch (error) {
       console.error("Original textbook PDF could not be rendered:", error);
       setStatus("تعذر تحميل ملف الكتاب داخل العارض. افتح ملف الكتاب الأصلي من الرابط أعلاه؛ لم نعرض نصًا بديلًا.");
@@ -253,7 +253,7 @@
     if (!pdfDocument) return;
     window.clearTimeout(resizeHandle);
     resizeHandle = window.setTimeout(async () => {
-      const width = pageNodes[0].root.clientWidth;
+      const width = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
       if (Math.abs(width - lastWidth) < 4) return;
       lastWidth = width;
       try {
