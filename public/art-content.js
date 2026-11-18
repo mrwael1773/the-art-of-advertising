@@ -34,11 +34,11 @@
   ];
 
   const quickCheck = [
-    { id: "quick-1", prompt: "The FIAT 500 is a compact car.", options: ["صح", "خطأ"], correct: 0, evidence: "fiat-1" },
+    { id: "quick-1", prompt: "The new FIAT 500 is among the world’s most compact cars.", options: ["صح", "خطأ"], correct: 0, evidence: "fiat-1" },
     { id: "quick-2", prompt: "Buyers can select only one color for the FIAT 500.", options: ["صح", "خطأ"], correct: 1, evidence: "fiat-3" },
     { id: "quick-3", prompt: "Engineers from Germany designed the Henk suitcase.", options: ["صح", "خطأ"], correct: 1, evidence: "henk-1" },
     { id: "quick-4", prompt: "Ebony wood is one material used to make the Henk suitcase.", options: ["صح", "خطأ"], correct: 0, evidence: "henk-3" },
-    { id: "quick-5", prompt: "A fold-up bike takes up more space than a standard bike.", options: ["صح", "خطأ"], correct: 1, evidence: "fold-2" },
+    { id: "quick-5", prompt: "A fold-up bike is not as bulky as an ordinary bike.", options: ["صح", "خطأ"], correct: 0, evidence: "fold-2" },
     { id: "quick-6", prompt: "The earliest bicycles did not have pedals.", options: ["صح", "خطأ"], correct: 0, evidence: "bicycle-3" }
   ];
 
@@ -69,14 +69,14 @@
     },
     {
       id: "meaning",
-      title: "ثالثًا: معاني المفردات",
-      type: "meaning",
+      title: "ثالثًا: صِل الكلمة بمعناها",
+      type: "match",
       questions: [
-        { id: "meaning-1", prompt: "What is the meaning of compact?", options: ["صغير الحجم", "كبير الحجم", "سريع جدًا", "قديم"], correct: 0, evidence: "fiat-1" },
-        { id: "meaning-2", prompt: "What is the meaning of individually?", options: ["بشكل جماعي", "بشكل فردي", "بسرعة", "بسهولة"], correct: 1, evidence: "henk-2" },
-        { id: "meaning-3", prompt: "What is the meaning of portable?", options: ["ثقيل", "مكسور", "سهل النقل والحمل", "قديم"], correct: 2, evidence: "fold-1" },
-        { id: "meaning-4", prompt: "What is the meaning of bulky?", options: ["خفيف جدًا", "صغير الحجم", "سهل الطي", "ضخم ويشغل مساحة"], correct: 3, evidence: "fold-2" },
-        { id: "meaning-5", prompt: "What is the meaning of steerable?", options: ["قابل للتوجيه", "غير متحرك", "مصنوع من الخشب", "سريع"], correct: 0, evidence: "bicycle-4" }
+        { id: "meaning-1", prompt: "Match the word compact with its Arabic meaning.", options: ["صغير الحجم", "بشكل فردي", "سهل الحمل", "ضخم ويشغل مساحة", "قابل للتوجيه"], correct: 0, evidence: "fiat-1" },
+        { id: "meaning-2", prompt: "Match the word individually with its Arabic meaning.", options: ["صغير الحجم", "بشكل فردي", "سهل الحمل", "ضخم ويشغل مساحة", "قابل للتوجيه"], correct: 1, evidence: "henk-2" },
+        { id: "meaning-3", prompt: "Match the word portable with its Arabic meaning.", options: ["صغير الحجم", "بشكل فردي", "سهل الحمل", "ضخم ويشغل مساحة", "قابل للتوجيه"], correct: 2, evidence: "fold-1" },
+        { id: "meaning-4", prompt: "Match the word bulky with its Arabic meaning.", options: ["صغير الحجم", "بشكل فردي", "سهل الحمل", "ضخم ويشغل مساحة", "قابل للتوجيه"], correct: 3, evidence: "fold-2" },
+        { id: "meaning-5", prompt: "Match the word steerable with its Arabic meaning.", options: ["صغير الحجم", "بشكل فردي", "سهل الحمل", "ضخم ويشغل مساحة", "قابل للتوجيه"], correct: 4, evidence: "bicycle-4" }
       ]
     },
     {
