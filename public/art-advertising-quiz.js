@@ -12,9 +12,9 @@
   const evidenceIsValid = q => Boolean(q.evidenceId && sentenceIds.has(String(q.evidenceId)));
   const evidenceButton = q => {
     const href = evidenceIsValid(q) ? './textbook.html#sentence-' + encodeURIComponent(q.evidenceId) : "";
-    return '<button type="button" class="evidence-button" ' +
-      (href ? 'data-evidence="' + href + '"' : 'disabled title="لا يتوفر دليل موثق لهذا السؤال بعد"') +
-      '>اعرض مكان الإجابة</button>';
+    return href
+      ? '<a class="evidence-button" href="' + href + '">اعرض مكان الإجابة</a>'
+      : '<button type="button" class="evidence-button" disabled title="لا يتوفر دليل موثق لهذا السؤال بعد">اعرض مكان الإجابة</button>';
   };
   const renderQuestion = (q, index, prefix, expectedType) => {
     let answerUI = "";
@@ -80,9 +80,6 @@
       feedback.classList.toggle("is-correct", correct);
       feedback.classList.toggle("is-wrong", !correct);
     });
-  });
-  document.querySelectorAll("[data-evidence]").forEach(button => {
-    button.addEventListener("click", () => { location.href = button.dataset.evidence; });
   });
 
   const allQuestions = [...quick,...exercises];
