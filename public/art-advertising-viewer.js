@@ -4,6 +4,9 @@
   const status = document.getElementById("pdf-status");
   const wrap = document.getElementById("pdf-frame-wrap");
   const frame = document.getElementById("book-pdf");
+  const fileInput = document.getElementById("book-pdf-file");
+  const openLink = document.getElementById("open-book-pdf");
+  let localPdfUrl = null;
   const speed = document.getElementById("speech-speed");
   const output = document.getElementById("speed-value");
   const passage = document.getElementById("passage-sentences");
@@ -15,11 +18,36 @@
   let utterance = null;
   let queueToken = 0;
 
-  if (config.pdfUrl && /^https:\/\//i.test(config.pdfUrl)) {
-    frame.src = config.pdfUrl;
+  const showPdf = (url, message) => {
+    frame.src = url;
     wrap.hidden = false;
-    status.textContent = "تم ربط ملف الدرس.";
+    openLink.href = url;
+    openLink.hidden = false;
+    status.textContent = message;
+  };
+  if (typeof config.pdfUrl === "string" && config.pdfUrl.trim()) {
+    try {
+      const pdf = new URL(config.pdfUrl, window.location.href);
+      const safeProtocol = pdf.protocol === "https:" || pdf.origin === window.location.origin;
+      if (safeProtocol && /\\.pdf$/i.test(pdf.pathname)) showPdf(pdf.href, "تم تحميل ملف صفحات الدرس.");
+      else status.textContent = "رابط PDF غير صالح. استخدم رابط HTTPS مباشرًا أو ملفًا داخل الموقع.";
+    } catch { status.textContent = "تعذر قراءة رابط ملف PDF." }
+  } else {
+    status.textContent = "لم يُربط ملف PDF دائم بالموقع بعد. يمكنك معاينته من جهازك مؤقتًا.";
   }
+  fileInput?.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      status.textContent = "الملف المحدد ليس ملف PDF.";
+      fileInput.value = "";
+      return;
+    }
+    if (localPdfUrl) URL.revokeObjectURL(localPdfUrl);
+    localPdfUrl = URL.createObjectURL(file);
+    showPdf(localPdfUrl, "تُعرض الآن معاينة محلية لهذا الجهاز فقط؛ لن يراها بقية زوار الموقع.");
+  });
+  window.addEventListener("beforeunload", () => { if (localPdfUrl) URL.revokeObjectURL(localPdfUrl); });
 
   if (!passage) return;
   const sentences = Array.isArray(config.passageSentences) ? config.passageSentences : [];
