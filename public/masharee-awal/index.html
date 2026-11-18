@@ -48,15 +48,15 @@ lines.forEach((line,i)=>{
  line[2].forEach(([x,y,w,h],row)=>{
   const b=document.createElement("button");b.type="button";b.className="hot";
   b.setAttribute("aria-label",row===0?"تشغيل جملة "+(i+1)+" — "+line[0]:"السطر "+(row+1)+" من الجملة "+(i+1));
-  Object.assign(b.style,{left:x+"%",top:(y+2.0)+"%",width:w+"%",height:(h*0.62)+"%"});
+  Object.assign(b.style,{left:x+"%",top:(y+3.2)+"%",width:w+"%",height:(h*0.48)+"%"});
   b.addEventListener("click",()=>speak(i));page.append(b);group.push(b);
  });
  spots.push(group);
 });
 let voices=[],token=0,current=-1,mode="idle";
 const omarAudio=$("#omarAudio"),adnanAudio=$("#adnanAudio");
-const omarRanges={1:[0.256,1.30],3:[1.664,7.92],5:[8.491,21.14],7:[21.816,38.65]};
-const adnanRanges={0:[0.299,2.197],2:[2.56,3.712],4:[4.096,4.864],6:[5.12,6.15]};
+const omarRanges={1:[0,1.30],3:[1.35,7.92],5:[8.15,21.14],7:[21.45,38.65]};
+const adnanRanges={0:[0,2.197],2:[2.20,3.712],4:[3.75,4.864],6:[4.80,6.15]};
 const speed=$("#speed"),speedValue=$("#speedValue");
 speed.addEventListener("input",()=>{speedValue.value=Number(speed.value).toFixed(1)+"×";speedValue.textContent=speedValue.value;omarAudio.playbackRate=Number(speed.value);adnanAudio.playbackRate=Number(speed.value);});
 function loadVoices(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));}
