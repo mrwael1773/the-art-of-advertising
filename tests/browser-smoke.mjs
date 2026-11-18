@@ -231,6 +231,21 @@ async function main() {
     assert.deepEqual(apiRequests, [], "The lesson must not send account or progress API requests.");
     assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
 
+    // Verify the real public PDF and the real PDF.js CDN in Chromium, not only the deterministic stub.
+    const realPdfPage = await context.newPage();
+    await realPdfPage.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
+    await realPdfPage.waitForFunction(() => {
+      const value = document.querySelector("#speech-status")?.textContent || "";
+      return value.includes("الصفحتان الأصليتان جاهزتان") || value.includes("تعذر تحميل") || value.includes("تعذر تشغيل");
+    }, { timeout: 60000 });
+    assert.match(await realPdfPage.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/,
+      "The actual Google Drive PDF must load through PDF.js, and every original passage sentence must map to its page text.");
+    assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
+    await realPdfPage.locator("#play-reading").click();
+    assert.ok(await realPdfPage.locator(".textLayer .sentence-speaking").count() > 0,
+      "Real PDF.js text spans should receive the active sentence highlight.");
+    await realPdfPage.close();
+
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const unsupportedPage = await unsupportedContext.newPage();
     await unsupportedPage.addInitScript(() => {
