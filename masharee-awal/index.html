@@ -1,11 +1,30 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>المحادثة التفاعلية</title>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المحادثة التفاعلية - صفحة 59</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:14px;background:#f3f5f8;color:#172033;font-family:system-ui,Tahoma,sans-serif}main{max-width:850px;margin:auto}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:1.2rem}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 15px;background:#155e75;color:white;cursor:pointer}.secondary{background:#e2e8f0;color:#172033}button:disabled{opacity:.45}.page{position:relative;max-width:790px;margin:auto;background:white;line-height:0;box-shadow:0 8px 24px #0001}.page img{width:100%;height:auto;display:block}.hot{position:absolute;border:2px solid transparent;border-radius:5px;background:transparent;padding:0}.hot.selected{background:#facc1560;border-color:#ca8a04}.hot.active{background:#22c55e55;border-color:#15803d}.status{max-width:790px;margin:12px auto;padding:12px;background:white;border-radius:10px;color:#475569;line-height:1.5}
-</style></head><body><main><header><h1>المحادثة التفاعلية</h1><b>صفحة 59</b></header>
-<div class="controls"><button id="play">▶ استمع إلى المحادثة</button><button class="secondary" id="pause" disabled>إيقاف مؤقت</button><button class="secondary" id="stop" disabled>إيقاف</button></div>
-<div class="page" id="page"><img src="conversation-page-59.jpg" alt="صفحة الكتاب الأصلية للمحادثة"></div>
-<div class="status" id="status" aria-live="polite">اضغط زر الاستماع أو اضغط على موضع جملة في الصفحة لسماعها وحدها.</div></main>
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#f3f5f8;color:#172033;font-family:system-ui,Tahoma,sans-serif}
+main{max-width:850px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:10px}h1{font-size:1.2rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 15px;background:#155e75;color:white;cursor:pointer}
+.secondary{background:#e2e8f0;color:#172033}button:disabled{opacity:.45;cursor:not-allowed}
+.page{position:relative;max-width:790px;margin:auto;background:white;line-height:0;box-shadow:0 8px 24px #0001;overflow:hidden}
+.page img{width:100%;height:auto;display:block}.hot{position:absolute;border:2px solid transparent;border-radius:5px;background:transparent;padding:0;min-width:0;min-height:0}
+.hot:focus-visible{outline:3px solid #2563eb;outline-offset:1px}.hot.selected{background:#facc1550;border-color:#ca8a04}.hot.active{background:#22c55e55;border-color:#15803d}
+.status{max-width:790px;margin:12px auto;padding:12px;background:white;border-radius:10px;color:#475569;line-height:1.6}
+.note{font-size:.88rem;color:#64748b;margin:8px 0}
+</style></head>
+<body><main>
+<header><h1>المحادثة التفاعلية</h1><b>صفحة 59</b></header>
+<div class="controls">
+<button id="play">▶ استمع إلى المحادثة</button>
+<button class="secondary" id="pause" disabled>إيقاف مؤقت</button>
+<button class="secondary" id="stop" disabled>إيقاف</button>
+</div>
+<div class="page" id="page"><img src="conversation-page-59.jpg" alt="صفحة الكتاب الأصلية للمحادثة" onerror="document.querySelector('#status').textContent='صورة صفحة الكتاب لم تُرفق بالموقع بعد؛ يلزم رفع ملف conversation-page-59.jpg إلى مجلد المشروع.'"></div>
+<div class="status" id="status" aria-live="polite">اضغط زر الاستماع أو اضغط على موضع جملة في الصفحة لسماعها وحدها.</div>
+<p class="note">ملاحظة: اختلاف صوت الشخصيتين يعتمد حاليًا على الأصوات الإنجليزية المتاحة في جهازك.</p>
+</main>
 <script>
 const lines=[
 ["Adnan","Hi, Omar. What are you up to?",[13,15.7,61,2.0]],
@@ -17,13 +36,36 @@ const lines=[
 ["Adnan","And why is it here?",[13,27.3,59,1.8]],
 ["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[13,28.8,61,5.8]]
 ];
-const page=document.querySelector("#page"),status=document.querySelector("#status"),spots=[];
-lines.forEach((line,i)=>{const b=document.createElement("button");b.className="hot";b.setAttribute("aria-label","تشغيل الجملة "+(i+1));const [x,y,w,h]=line[2];Object.assign(b.style,{left:x+"%",top:y+"%",width:w+"%",height:h+"%"});b.onclick=()=>{stop();speak(i)};page.append(b);spots.push(b)});
-let voices=[],token=0,index=0,running=false;function load(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang))}load();speechSynthesis.onvoiceschanged=load;
-function setActive(i){spots.forEach((b,n)=>b.classList.toggle("active",n===i));spots.forEach((b,n)=>b.classList.toggle("selected",n===i));status.textContent=lines[i][0]+" — الجملة "+(i+1)}
-function utter(i,t,done){const u=new SpeechSynthesisUtterance(lines[i][1]);const v=voices.length>1?voices[i%2]:voices[0];if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=.88;u.pitch=i%2?1.08:1;u.onstart=()=>{if(t===token)setActive(i)};u.onend=()=>{if(t===token)done?.()};u.onerror=()=>{if(t===token){running=false;status.textContent="تعذر تشغيل الصوت في هذا المتصفح."}};speechSynthesis.speak(u)}
-function speak(i){const t=++token;running=false;utter(i,t,()=>{spots[i].classList.remove("active");status.textContent="انتهى الاستماع إلى الجملة المحددة."})}
-function play(){stop();const t=++token;index=0;running=true;document.querySelector("#pause").disabled=false;document.querySelector("#stop").disabled=false;function next(){if(t!==token)return;if(index>=lines.length){running=false;status.textContent="انتهت المحادثة.";document.querySelector("#pause").disabled=true;document.querySelector("#stop").disabled=true;return}utter(index,t,()=>{index++;next()})}next()}
-function stop(){token++;speechSynthesis.cancel();running=false;spots.forEach(b=>b.classList.remove("active"));document.querySelector("#pause").disabled=true;document.querySelector("#stop").disabled=true}
-document.querySelector("#play").onclick=play;document.querySelector("#stop").onclick=stop;document.querySelector("#pause").onclick=()=>{if(speechSynthesis.paused){speechSynthesis.resume();status.textContent="تمت متابعة المحادثة.";document.querySelector("#pause").textContent="إيقاف مؤقت"}else if(speechSynthesis.speaking){speechSynthesis.pause();status.textContent="تم إيقاف الصوت مؤقتًا.";document.querySelector("#pause").textContent="متابعة"}};
+const $=s=>document.querySelector(s),page=$("#page"),status=$("#status"),pauseBtn=$("#pause"),stopBtn=$("#stop"),spots=[];
+lines.forEach((line,i)=>{
+ const b=document.createElement("button");b.type="button";b.className="hot";
+ b.setAttribute("aria-label","تشغيل جملة "+(i+1)+" — "+line[0]);
+ const [x,y,w,h]=line[2];Object.assign(b.style,{left:x+"%",top:y+"%",width:w+"%",height:h+"%"});
+ b.addEventListener("click",()=>speak(i));page.append(b);spots.push(b);
+});
+let voices=[],token=0,current=-1,mode="idle";
+function loadVoices(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));}
+loadVoices();speechSynthesis.addEventListener?.("voiceschanged",loadVoices);
+function controls(active){pauseBtn.disabled=!active;stopBtn.disabled=!active;pauseBtn.textContent="إيقاف مؤقت";}
+function clearActive(){spots.forEach(b=>b.classList.remove("active"));}
+function mark(i){spots.forEach((b,n)=>{b.classList.toggle("active",n===i);b.classList.toggle("selected",n===i)});status.textContent=lines[i][0]+" — الجملة "+(i+1);}
+function finish(t,msg){if(t!==token)return;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
+function say(i,t,onDone){
+ current=i;const u=new SpeechSynthesisUtterance(lines[i][1]);const v=voices.length>1?voices[i%2]:voices[0];
+ if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=.88;u.pitch=i%2?1.08:1;
+ u.onstart=()=>{if(t===token)mark(i)};
+ u.onend=()=>{if(t===token)onDone?.()};
+ u.onerror=()=>{if(t===token)finish(t,"تعذر تشغيل الصوت. تحقق من دعم المتصفح للنطق.");};
+ speechSynthesis.speak(u);
+}
+function stop(){token++;speechSynthesis.cancel();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
+function speak(i){stop();const t=++token;mode="single";controls(true);say(i,t,()=>finish(t,"انتهى الاستماع إلى الجملة المحددة."));}
+function play(){stop();const t=++token;let i=0;mode="all";controls(true);
+ const next=()=>{if(t!==token)return;if(i>=lines.length){finish(t,"انتهت المحادثة كاملة.");return;}say(i,t,()=>{i++;next()});};next();
+}
+$("#play").addEventListener("click",play);stopBtn.addEventListener("click",stop);
+pauseBtn.addEventListener("click",()=>{
+ if(speechSynthesis.paused){speechSynthesis.resume();pauseBtn.textContent="إيقاف مؤقت";status.textContent="تمت متابعة الاستماع.";}
+ else if(speechSynthesis.speaking){speechSynthesis.pause();pauseBtn.textContent="متابعة";status.textContent="الصوت متوقف مؤقتًا.";}
+});
 </script></body></html>
