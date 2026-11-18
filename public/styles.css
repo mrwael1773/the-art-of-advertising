@@ -37,7 +37,7 @@ input:focus{border-color:#8db8ff;box-shadow:0 0 0 3px #8db8ff25}
 .sentence-ar,.vocab-meaning{color:#c1cee0;border-color:#40516a}
 .mini-button,.page-nav{background:#253650;border-color:#40516a;color:#e4edfb}
 .page-nav a{color:#c3d0e3}.page-nav a.current{background:#3b5d88;color:#fff;box-shadow:0 2px 8px #0004}
-.lesson-number{background:#253b5b;color:#a9caff}
+.lesson-number{background:#253b5b;color:#a9caff}.menu-number{background:#253b5b;color:#a9caff}
 
 .quiz-option{border-color:#40516a;color:#e7edf7}.quiz-option:has(input:checked){background:#263e5e;border-color:#8db8ff}
 .local-badge{background:#173c36;color:#a9ead4}
