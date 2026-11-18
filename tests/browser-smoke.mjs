@@ -239,7 +239,7 @@ async function main() {
       return value.includes("الصفحتان الأصليتان جاهزتان") || value.includes("تعذر تحميل") || value.includes("تعذر تشغيل");
     }, { timeout: 60000 });
     assert.match(await realPdfPage.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/,
-      "The actual Google Drive PDF must load through PDF.js, and every original passage sentence must map to its page text.");
+      "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".textLayer .sentence-speaking").count() > 0,
