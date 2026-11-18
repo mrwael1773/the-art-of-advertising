@@ -17,6 +17,15 @@
   let current = -1;
   let utterance = null;
   let queueToken = 0;
+  const speechSupported = "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
+  const synth = speechSupported ? window.speechSynthesis : null;
+  const speechStatus = document.getElementById("speech-status");
+  if (!speechSupported) {
+    [play, pause, resume, stop].filter(Boolean).forEach(button => { button.disabled = true; });
+    if (speechStatus) speechStatus.textContent = "متصفحك لا يدعم النطق الصوتي؛ يمكنك قراءة القطعة واستخدام دليل الجمل.";
+  } else if (speechStatus) {
+    speechStatus.textContent = "الصوت جاهز. يمكنك تغيير السرعة أثناء الاستماع.";
+  }
 
   const showPdf = (url, message) => {
     frame.src = url;
@@ -78,9 +87,9 @@
     active?.scrollIntoView({behavior:"smooth", block:"center"});
   };
   const speakFrom = (index, token) => {
-    if (token !== queueToken || index >= sentences.length) return;
+    if (!speechSupported || token !== queueToken || index >= sentences.length) return;
     highlight(index);
-    utterance = new SpeechSynthesisUtterance(sentences[index].text);
+    utterance = new window.SpeechSynthesisUtterance(sentences[index].text);
     utterance.lang = "en-US";
     utterance.rate = setSpeed();
     utterance.onend = () => {
@@ -91,24 +100,24 @@
         passage.querySelectorAll(".passage-sentence").forEach(n => n.classList.remove("is-speaking"));
       }
     };
-    speechSynthesis.speak(utterance);
+    synth.speak(utterance);
   };
   const start = index => {
-    if (!("speechSynthesis" in window) || !sentences.length) return;
+    if (!speechSupported || !sentences.length) return;
     queueToken++;
-    speechSynthesis.cancel();
+    synth.cancel();
     speakFrom(index, queueToken);
   };
   speed?.addEventListener("input", () => {
     setSpeed();
-    if (current >= 0 && "speechSynthesis" in window && speechSynthesis.speaking) start(current);
+    if (current >= 0 && synth?.speaking) start(current);
   });
   play?.addEventListener("click", () => start(0));
-  pause?.addEventListener("click", () => speechSynthesis.pause());
-  resume?.addEventListener("click", () => speechSynthesis.resume());
+  pause?.addEventListener("click", () => synth?.pause());
+  resume?.addEventListener("click", () => synth?.resume());
   stop?.addEventListener("click", () => {
     queueToken++;
-    speechSynthesis.cancel();
+    synth?.cancel();
     passage.querySelectorAll(".passage-sentence").forEach(n => n.classList.remove("is-speaking"));
     current = -1;
   });
@@ -116,7 +125,8 @@
     const index = sentences.findIndex((s, i) => String(s.id || (i + 1)) === String(id));
     if (index >= 0) start(index);
   };
-  const target = decodeURIComponent(location.hash.slice(1));
+  let target = "";
+  try { target = decodeURIComponent(location.hash.slice(1)); } catch { /* Ignore malformed URL fragments. */ }
   if (target.startsWith("sentence-")) {
     const id = target.slice("sentence-".length);
     setTimeout(() => window.playEvidenceSentence(id), 250);
