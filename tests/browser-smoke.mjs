@@ -192,7 +192,7 @@ async function main() {
     assert.match(await quickCard.locator(".question-feedback").textContent(), /إجابة صحيحة/);
 
     const firstEvidenceButton = page.locator(".evidence-button").first();
-    assert.equal(await firstEvidenceButton.getAttribute("data-evidence"), "./textbook.html#sentence-fiat-1");
+    assert.equal(await firstEvidenceButton.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await firstEvidenceButton.click();
     await page.waitForFunction(() =>
       location.pathname.endsWith("/textbook.html") && location.hash === "#sentence-fiat-1"
