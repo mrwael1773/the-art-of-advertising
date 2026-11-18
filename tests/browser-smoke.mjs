@@ -191,8 +191,12 @@ async function main() {
     await quickCard.locator(".check-answer").click();
     assert.match(await quickCard.locator(".question-feedback").textContent(), /إجابة صحيحة/);
 
-    await page.locator(".evidence-button").first().click();
-    await page.waitForURL("**/textbook.html#sentence-fiat-1");
+    const firstEvidenceButton = page.locator(".evidence-button").first();
+    assert.equal(await firstEvidenceButton.getAttribute("data-evidence"), "./textbook.html#sentence-fiat-1");
+    await firstEvidenceButton.click();
+    await page.waitForFunction(() =>
+      location.pathname.endsWith("/textbook.html") && location.hash === "#sentence-fiat-1"
+    );
     await page.waitForTimeout(350);
     assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
     assert.equal(await page.locator("#passage-sentences .passage-sentence.is-speaking").getAttribute("id"), "sentence-fiat-1");
