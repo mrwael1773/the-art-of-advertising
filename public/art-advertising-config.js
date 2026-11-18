@@ -1,6 +1,7 @@
-/* Set pdfUrl to a public direct URL for a copy you are authorized to publish. */
+/* Only add verified lesson text and question/evidence mappings here. */
 window.ART_AD_CONFIG = {
   pdfUrl: "",
   passageSentences: [],
-  evidenceMap: {}
+  quickCheckQuestions: [],
+  exercises: []
 };
