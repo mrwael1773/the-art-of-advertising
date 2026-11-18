@@ -1,78 +1,121 @@
-/* Paraphrased lesson content and source-aligned practice. Evidence IDs map to passage sentences. */
+/* Exact source sentences from the supplied textbook PDF (pages 54–55). */
 window.ART_AD_CONFIG = {
   "pdfUrl": "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
   "passageSentences": [
     {
       "id": "fiat-1",
-      "text": "The FIAT 500 is a tiny classic car that returned with a fresh design."
+      "text": "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
+      "page": 1
     },
     {
       "id": "fiat-2",
-      "text": "It is about 3.35 meters long, 1.65 meters wide, and 1.49 meters tall."
+      "text": "The new FIAT 500 is a triumph of Italian design.",
+      "page": 1
     },
     {
       "id": "fiat-3",
-      "text": "Its design recalls the original model, and buyers can choose different colors and options."
+      "text": "Every line has been crafted to reflect the legendary original, and buyers will be offered a variety of colors and options to customize their car.",
+      "page": 1
     },
     {
       "id": "fiat-4",
-      "text": "The two-seat FIAT 500 first appeared in 1957 with a 13-horsepower engine and a top speed of about 85 kilometers per hour."
+      "text": "The FIAT 500 two-seater was introduced in 1957, and it became an automotive legend.",
+      "page": 1
+    },
+    {
+      "id": "fiat-5",
+      "text": "It featured a 13 horsepower engine and had a top speed of about 53 miles (85 kilometers) per hour.",
+      "page": 1
     },
     {
       "id": "henk-1",
-      "text": "The Henk suitcase was developed by Dutch engineers and designers over ten years."
+      "text": "According to Forbes magazine, Henk is the most expensive suitcase in the world.",
+      "page": 1
     },
     {
       "id": "henk-2",
-      "text": "Each suitcase is made individually to match the customer's requested specifications."
+      "text": "The Henk “friendly” suitcase was developed by a group of Dutch engineers and designers over a period of ten years.",
+      "page": 1
     },
     {
       "id": "henk-3",
-      "text": "It is designed to feel as light as pulling no more than 25 grams, even when packed with heavy items."
+      "text": "Each suitcase is made individually and is built to the individual customer’s requested specifications.",
+      "page": 1
     },
     {
       "id": "henk-4",
-      "text": "The suitcase can be made from ebony wood or Italian leather."
+      "text": "You may prefer to opt for one of the recommended combinations, which have been carefully selected.",
+      "page": 1
     },
     {
       "id": "henk-5",
-      "text": "Its remote control can hide the wheels and activate the locking system."
+      "text": "It has been designed to feel like you’re pulling no more than 25 grams, even if you’ve packed bricks in the suitcase.",
+      "page": 1
     },
     {
       "id": "henk-6",
-      "text": "Forbes describes Henk as the world’s most expensive suitcase; its titanium wheels provide a smooth ride, and its price ranges from twenty thousand to forty thousand dollars."
+      "text": "It comes in ebony (wood) or Italian leather.",
+      "page": 1
+    },
+    {
+      "id": "henk-7",
+      "text": "The control is used to hide the wheels and to activate a locking system.",
+      "page": 1
+    },
+    {
+      "id": "henk-8",
+      "text": "The wheels are made of titanium, providing the smoothest ride.",
+      "page": 1
+    },
+    {
+      "id": "henk-9",
+      "text": "The price can be as high as a car, ranging from $20,000 to $40,000.",
+      "page": 1
     },
     {
       "id": "bike-1",
-      "text": "A fold-up bike looks like a regular bicycle, but it is portable and easy to store."
+      "text": "It looks like an ordinary bike, but it’s portable.",
+      "page": 2
     },
     {
       "id": "bike-2",
-      "text": "It is smaller and less bulky than a standard bike, so it is easier to park and transport."
+      "text": "This folding bike can easily be transported and stored when it is not in use.",
+      "page": 2
     },
     {
       "id": "bike-3",
-      "text": "Fold-up bikes are available in a variety of styles."
+      "text": "It can make your life easier.",
+      "page": 2
+    },
+    {
+      "id": "bike-4",
+      "text": "In contrast to the standard bike, it is much smaller and less bulky, so it can be parked and stored more readily.",
+      "page": 2
+    },
+    {
+      "id": "bike-5",
+      "text": "The fold-up bike is attractive, and it comes in a variety of styles.",
+      "page": 2
     },
     {
       "id": "history-1",
-      "text": "Bicycles were invented in France in the 1790s, and the earliest models were made of wood."
+      "text": "Bicycles were invented in France in the 1790s.",
+      "page": 2
     },
     {
       "id": "history-2",
-      "text": "Those first bicycles had no pedals, and their front wheel could not turn from side to side."
+      "text": "The first bikes were made of wood, had a front wheel that didn’t move from left to right, and didn’t have pedals.",
+      "page": 2
     },
     {
       "id": "history-3",
-      "text": "In 1817, Baron Karl von Drais developed a steerable front wheel in Germany."
+      "text": "In 1817, a steerable front wheel was developed by Baron Karl von Drais in Germany, and in 1839, the first pedals were introduced by Kirkpatrick MacMillan, a blacksmith from Scotland.",
+      "page": 2
     },
     {
       "id": "history-4",
-      "text": "In 1839, Kirkpatrick MacMillan, a blacksmith from Scotland, introduced the first pedals."
-    },
-    {
-      "id": "history-5",
-      "text": "Early bicycles had large front wheels because people believed that a larger wheel made the bicycle faster."
+      "text": "The first bikes had large front wheels because it was believed that the bigger the front wheel, the faster the bike.",
+      "page": 2
     }
   ],
   "quickCheckQuestions": [
@@ -122,7 +165,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "false",
-      "evidenceId": "henk-1"
+      "evidenceId": "henk-2"
     },
     {
       "type": "true_false",
@@ -138,7 +181,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "true",
-      "evidenceId": "henk-4"
+      "evidenceId": "henk-6"
     },
     {
       "type": "true_false",
@@ -154,7 +197,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "true",
-      "evidenceId": "bike-2"
+      "evidenceId": "bike-4"
     },
     {
       "type": "true_false",
@@ -244,7 +287,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "13",
-      "evidenceId": "fiat-4"
+      "evidenceId": "fiat-5"
     },
     {
       "type": "single_select",
@@ -268,7 +311,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "85",
-      "evidenceId": "fiat-4"
+      "evidenceId": "fiat-5"
     },
     {
       "type": "single_select",
@@ -292,7 +335,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "dutch",
-      "evidenceId": "henk-1"
+      "evidenceId": "henk-2"
     },
     {
       "type": "single_select",
@@ -316,7 +359,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "ten",
-      "evidenceId": "henk-1"
+      "evidenceId": "henk-2"
     },
     {
       "type": "single_select",
@@ -340,7 +383,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "individual",
-      "evidenceId": "henk-2"
+      "evidenceId": "henk-3"
     },
     {
       "type": "single_select",
@@ -364,7 +407,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "ebony",
-      "evidenceId": "henk-4"
+      "evidenceId": "henk-6"
     },
     {
       "type": "single_select",
@@ -388,7 +431,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "wheels-lock",
-      "evidenceId": "henk-5"
+      "evidenceId": "henk-7"
     },
     {
       "type": "single_select",
@@ -412,7 +455,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "titanium",
-      "evidenceId": "henk-6"
+      "evidenceId": "henk-8"
     },
     {
       "type": "fill_blank",
@@ -422,7 +465,7 @@ window.ART_AD_CONFIG = {
         "40000",
         "forty thousand"
       ],
-      "evidenceId": "henk-6"
+      "evidenceId": "henk-9"
     },
     {
       "type": "fill_blank",
@@ -431,7 +474,7 @@ window.ART_AD_CONFIG = {
         "store",
         "be stored"
       ],
-      "evidenceId": "bike-1"
+      "evidenceId": "bike-2"
     },
     {
       "type": "fill_blank",
@@ -456,7 +499,7 @@ window.ART_AD_CONFIG = {
       "acceptedAnswers": [
         "1839"
       ],
-      "evidenceId": "history-4"
+      "evidenceId": "history-3"
     },
     {
       "type": "true_false",
@@ -472,7 +515,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "false",
-      "evidenceId": "history-1"
+      "evidenceId": "history-2"
     },
     {
       "type": "true_false",
@@ -504,7 +547,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "true",
-      "evidenceId": "history-4"
+      "evidenceId": "history-3"
     },
     {
       "type": "true_false",
@@ -520,7 +563,7 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "true",
-      "evidenceId": "history-5"
+      "evidenceId": "history-4"
     },
     {
       "type": "true_false",
@@ -536,7 +579,8 @@ window.ART_AD_CONFIG = {
         }
       ],
       "correctAnswer": "false",
-      "evidenceId": "bike-2"
+      "evidenceId": "bike-4"
     }
-  ]
+  ],
+  "pdfDownloadUrl": "https://drive.google.com/uc?export=download&id=12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1"
 };
