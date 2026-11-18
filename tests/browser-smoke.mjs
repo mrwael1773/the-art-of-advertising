@@ -228,6 +228,19 @@ async function main() {
     }
     assert.deepEqual(apiRequests, [], "The lesson must not send account or progress API requests.");
     assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
+
+    const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const unsupportedPage = await unsupportedContext.newPage();
+    await unsupportedPage.addInitScript(() => {
+      Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: undefined });
+      Object.defineProperty(window, "speechSynthesis", { configurable: true, value: undefined });
+    });
+    await unsupportedPage.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    assert.equal(await unsupportedPage.locator("#play-reading").isDisabled(), true);
+    assert.equal(await unsupportedPage.locator("#pause-reading").isDisabled(), true);
+    assert.match(await unsupportedPage.locator("#speech-status").textContent(), /لا يدعم النطق الصوتي/);
+    await unsupportedContext.close();
+
     await context.close();
     console.log("Browser checks passed: lesson navigation, PDF local preview, sentence audio/highlighting, all 26 evidence-linked questions, answer checking, accessibility, responsive layouts, and no persistence/API calls.");
   } finally {
