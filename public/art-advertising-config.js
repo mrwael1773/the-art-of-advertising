@@ -1,6 +1,5 @@
 /* Exact source sentences from the supplied textbook PDF (pages 54–55). */
 window.ART_AD_CONFIG = {
-  "pdfUrl": "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
   "passageSentences": [
     {
       "id": "fiat-1",
