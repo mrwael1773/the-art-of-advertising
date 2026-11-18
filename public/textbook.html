@@ -2,54 +2,77 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="القطعة الأصلية The World of Plastic للصف الأول الثانوي مع تظليل الجمل والكلمات والترجمة والنطق.">
-  <title>القطعة | الصف الأول الثانوي | The World of Plastic</title>
-  <link rel="stylesheet" href="./styles.css?v=12">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6fb">
+  <meta name="description" content="اقرأ واستمع إلى موضوعات درس The Art of Advertising مع تظليل الجمل.">
+  <title>القطعة والاستماع | The Art of Advertising</title>
+  <link rel="stylesheet" href="./styles.css?v=13">
+  <script src="./art-content.js?v=1" defer></script>
+  <script src="./reader.js?v=1" defer></script>
 </head>
-<body class="textbook-body">
-  <main class="shell textbook-shell">
-    <nav class="textbook-nav" aria-label="التنقل">
-      <a href="./index.html">الرئيسية</a>
-      <span aria-hidden="true">/</span>
-      <span>القطعة</span>
-      <a href="./quiz.html">التمارين</a>
-    </nav>
-
-    <header class="page-intro textbook-intro">
-      <p class="eyebrow">الصف الأول الثانوي · UNIT 4 · READING</p>
-      <h1>القطعة</h1>
-      <p>هذه صورة الصفحة الأصلية من الكتاب. اضغط مرة على الجملة لتظليلها، ثم اضغط على الكلمة داخلها لتظليل الكلمة وحدها. بعد التحديد اختر «سماع» أو «ترجمة».</p>
+<body>
+  <main class="shell">
+    <header class="site-header">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true">4</span>
+        <span class="brand-copy">
+          <span class="eyebrow">UNIT 4 · READING</span>
+          <strong>THE ART OF ADVERTISING</strong>
+        </span>
+      </a>
+      <a class="back-link" href="./index.html">الرئيسية</a>
     </header>
 
-    <section class="textbook-interaction" aria-label="القطعة التفاعلية">
-      <div class="speed-control">
-        <label for="speech-speed">سرعة النطق</label>
-        <input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="0.85">
-        <output id="speed-value" for="speech-speed">0.85×</output>
-      </div>
+    <nav class="page-nav" aria-label="التنقل بين الصفحات">
+      <a class="current" href="./textbook.html" aria-current="page">القطعة والاستماع</a>
+      <a href="./quiz.html">الفهم والتمارين</a>
+    </nav>
 
-      <p id="lesson-message" class="message" role="status" aria-live="polite"></p>
+    <header class="page-intro">
+      <p class="eyebrow">PAGE 54–55 · LISTEN AND READ</p>
+      <h1>القطعة والاستماع</h1>
+      <p>استمع إلى النص كاملًا، أو ابدأ من أي جملة بالضغط على زر الاستماع بجانبها. سيبقى التظليل على الجملة التي ينطقها الصوت، ويمكنك الإيقاف المؤقت أو المتابعة في أي وقت.</p>
+    </header>
 
-      <div id="textbook-page" class="textbook-image-stage" aria-label="صورة القطعة الأصلية The World of Plastic"></div>
-
-      <section id="textbook-selection" class="textbook-selection" aria-live="polite" hidden>
-        <p id="textbook-selection-label" class="textbook-selection-label"></p>
-        <div class="textbook-action-buttons">
-          <button id="textbook-listen" class="mini-button" type="button">سماع</button>
-          <button id="textbook-translate" class="mini-button" type="button">ترجمة</button>
+    <section class="audio-panel" aria-label="التحكم بالصوت">
+      <div class="audio-panel-heading">
+        <div>
+          <p class="eyebrow">NATURAL ENGLISH VOICE</p>
+          <h2>استمع إلى القطعة</h2>
         </div>
-        <p id="textbook-translation" class="textbook-translation" hidden></p>
-      </section>
+        <span class="voice-chip">صوت طبيعي</span>
+      </div>
+      <div class="audio-buttons">
+        <button id="play-all" class="button primary-button" type="button">▶ استمع إلى النص كاملًا</button>
+        <button id="pause-audio" class="button secondary-button" type="button" disabled>إيقاف مؤقت</button>
+        <button id="resume-audio" class="button secondary-button" type="button" disabled>متابعة</button>
+        <button id="stop-audio" class="button quiet-button" type="button" disabled>إيقاف</button>
+      </div>
+      <div class="speed-control">
+        <label for="speech-speed">سرعة الصوت</label>
+        <input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1">
+        <output id="speed-value" for="speech-speed">1.0×</output>
+        <span class="speed-hint">من 0.25× إلى 1× (السرعة الطبيعية)</span>
+      </div>
+      <p id="audio-status" class="status-message" role="status" aria-live="polite">اضغط زر الاستماع للبدء.</p>
+      <audio id="lesson-audio" preload="metadata" src="https://resource2.heygen.ai/text_to_speech/e5985a6c5fcb4e1d9247c437a6067191/eae6fca42aae4b78b992533e96ab43c9/id=897b5f5e90f94448abacb780ae421a3b.wav"></audio>
     </section>
 
-    <footer class="textbook-page-footer">
-      <a href="./quiz.html">الانتقال إلى التمارين</a>
+    <aside id="return-banner" class="return-banner" hidden>
+      <div>
+        <strong>هذا هو الدليل المطلوب في القطعة</strong>
+        <p>تم تظليل الجملة التي تحتوي على المعلومة المرتبطة بالسؤال.</p>
+      </div>
+      <a id="return-link" class="button secondary-button" href="./quiz.html">العودة إلى السؤال</a>
+    </aside>
+
+    <section id="reading-content" class="reading-content" aria-label="نصوص القراءة">
+      <p class="loading-note">يتم تجهيز نص القراءة...</p>
+    </section>
+
+    <footer class="page-footer">
+      <a class="button primary-button" href="./quiz.html">انتقل إلى الفهم والتمارين ←</a>
     </footer>
   </main>
-
-  <script src="./page60-hotspots.js?v=12" defer></script>
-  <script src="./lesson.js?v=11" defer></script>
 </body>
 </html>
