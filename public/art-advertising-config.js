@@ -64,11 +64,11 @@ window.ART_AD_CONFIG = {
     },
     {
       "id": "history-3",
-      "text": "In 1817, Baron Karl von Drais developed a front wheel that could be steered."
+      "text": "In 1817, Baron Karl von Drais developed a steerable front wheel in Germany."
     },
     {
       "id": "history-4",
-      "text": "In 1839, Kirkpatrick MacMillan introduced the first pedals."
+      "text": "In 1839, Kirkpatrick MacMillan, a blacksmith from Scotland, introduced the first pedals."
     },
     {
       "id": "history-5",
@@ -78,7 +78,7 @@ window.ART_AD_CONFIG = {
   "quickCheckQuestions": [
     {
       "type": "true_false",
-      "prompt": "The FIAT 500 is presented as a very small classic car.",
+      "prompt": "The new FIAT 500 is one of the world’s most compact cars.",
       "options": [
         {
           "value": "true",
