@@ -27,6 +27,7 @@ test("Worker serves static assets with the required security headers", () => {
   assert.match(worker, /headers\.set\("referrer-policy", "no-referrer"\)/);
   assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
   assert.match(worker, /content-security-policy/);
+  assert.match(worker, /frame-src 'self' blob:/);
   assert.match(worker, /env\.ASSETS\.fetch\(request\)/);
   assert.doesNotMatch(worker, /env\.DB|D1|api/);
   assert.doesNotMatch(wrangler, /d1_databases|database_id|binding = "DB"/);
