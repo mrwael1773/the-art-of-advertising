@@ -1,9 +1,27 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1423"><title>التمارين | The Art of Advertising</title><link rel="stylesheet" href="./styles.css?v=13"><link rel="stylesheet" href="./art-advertising.css?v=1"></head>
-<body><main class="shell art-shell">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1423">
+<title>التمارين | The Art of Advertising</title>
+<link rel="stylesheet" href="./styles.css?v=13">
+<link rel="stylesheet" href="./art-advertising.css?v=2">
+</head>
+<body>
+<main class="shell art-shell">
 <nav class="page-nav"><a href="./index.html">الرئيسية</a><a href="./textbook.html">القراءة والاستماع</a><a class="current" href="./quiz.html">التمارين</a></nav>
-<header class="intro page-intro"><p class="eyebrow">UNIT 4 · PRACTICE</p><h1>التمارين</h1><p>تتضمن هذه الصفحة أسئلة الفهم والصح والخطأ، إضافة إلى أربعة أقسام تدريبية، مع إمكانية فتح موضع الدليل في القطعة.</p></header>
-<section class="art-panel"><h2>Quick Check – B. Comprehension</h2><p>سيُضاف هنا نص أسئلة الصح والخطأ الستة من صفحة الدرس، مع خيارات True / False وزر «عرض الدليل» لكل سؤال.</p><p class="art-note">لم أضع أسئلة تخمينية؛ يلزم اعتماد نص الأسئلة ومواقع الأدلة من المصدر قبل تفعيل التصحيح.</p></section>
-<section class="art-panel"><h2>التمارين الإضافية</h2><p>المخطط المعتمد: 4 أنواع من التمارين × 5 أسئلة = 20 سؤالًا. لكل سؤال رابط إلى الجملة الداعمة في القطعة.</p><p class="art-note">ستُفعّل الأسئلة بعد ربطها بالنص الصحيح، حتى لا يحصل الطالب على إجابات أو أدلة غير دقيقة.</p></section>
-</main></body></html>
+<header class="intro page-intro"><p class="eyebrow">UNIT 4 · PRACTICE</p><h1>التمارين</h1><p>حل السؤال، ثم استخدم زر «اعرض مكان الإجابة» للانتقال إلى الجملة الداعمة في القطعة وتشغيل صوتها.</p></header>
+<section class="art-panel" aria-labelledby="quick-title">
+<h2 id="quick-title">Quick Check – B. Comprehension</h2>
+<div id="quick-questions" class="question-list" aria-live="polite"></div>
+</section>
+<section class="art-panel" aria-labelledby="practice-title">
+<h2 id="practice-title">التمارين الإضافية</h2>
+<p>أربعة أنواع من التمارين، خمسة أسئلة في كل نوع.</p>
+<div id="extra-exercises" class="question-list" aria-live="polite"></div>
+</section>
+<p id="quiz-status" class="art-note" role="status">يجري تحميل الأسئلة المعتمدة…</p>
+</main>
+<script src="./art-advertising-config.js?v=2"></script>
+<script src="./art-advertising-quiz.js?v=1" defer></script>
+</body></html>
