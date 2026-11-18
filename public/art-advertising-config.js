@@ -1,6 +1,6 @@
 /* Paraphrased lesson content and source-aligned practice. Evidence IDs map to passage sentences. */
 window.ART_AD_CONFIG = {
-  "pdfUrl": "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
+  "pdfUrl": "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview#page=54",
   "passageSentences": [
     {
       "id": "fiat-1",
