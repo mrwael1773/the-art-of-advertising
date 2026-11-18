@@ -29,7 +29,7 @@
     try {
       const pdf = new URL(config.pdfUrl, window.location.href);
       const safeProtocol = pdf.protocol === "https:" || pdf.origin === window.location.origin;
-      if (safeProtocol && /\\.pdf$/i.test(pdf.pathname)) showPdf(pdf.href, "تم تحميل ملف صفحات الدرس.");
+      if (safeProtocol && /\.pdf$/i.test(pdf.pathname)) showPdf(pdf.href, "تم تحميل ملف صفحات الدرس.");
       else status.textContent = "رابط PDF غير صالح. استخدم رابط HTTPS مباشرًا أو ملفًا داخل الموقع.";
     } catch { status.textContent = "تعذر قراءة رابط ملف PDF." }
   } else {
