@@ -22,3 +22,9 @@
 .question-actions button:disabled{opacity:.45;cursor:not-allowed}
 #quiz-status.is-complete{border:1px solid #198754}
 .evidence-button:focus-visible,.check-answer:focus-visible,.blank-input:focus-visible{outline:3px solid #7db4ff;outline-offset:2px}
+
+/* Textbook PDF source and local preview */
+.pdf-upload-row{display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;margin:1rem 0}
+.pdf-upload-row input[type=file]{max-width:100%;font:inherit;color:inherit}
+.pdf-upload-row .button-like{display:inline-flex;align-items:center;padding:.7rem 1rem;border-radius:.7rem;background:#d8e8ff;color:#10223b;font-weight:700;cursor:pointer}
+.pdf-upload-row a{color:var(--link,#8fc2ff);text-decoration:underline}
