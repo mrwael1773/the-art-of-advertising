@@ -42,6 +42,7 @@ test("home page links to the reading and exercises pages without account control
   assert.match(home, /href="\.\/quiz\.html"/);
   assert.match(home, /القراءة والاستماع|القطعة/);
   assert.match(home, /التمارين/);
+  assert.match(home, /لا تُحفظ إجابات التمارين/);
   assert.doesNotMatch(home, /id="auth-form"|id="login-tab"|id="register-tab"|type="password"/);
 });
 
@@ -94,6 +95,7 @@ test("exercise page keeps Quick Check separate and uses the evidence-aware quiz 
   assert.match(quiz, /id="quick-questions"/);
   assert.match(quiz, /id="extra-exercises"/);
   assert.match(quiz, /id="quiz-status"/);
+  assert.match(quiz, /ثلاثة أنواع من التمارين/);
   assert.match(quizScript, /evidenceIsValid/);
   assert.match(quizScript, /اعرض مكان الإجابة/);
   assert.match(quizScript, /تحقق من الإجابة/);
