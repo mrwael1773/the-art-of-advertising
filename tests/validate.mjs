@@ -48,33 +48,37 @@ test("home page links to the reading and exercises pages without account control
   assert.doesNotMatch(home, /id="auth-form"|id="login-tab"|id="register-tab"|type="password"/);
 });
 
-test("reading page has the PDF viewer, local preview, playback and speed controls", () => {
-  assert.match(textbook, /id="book-pdf"/);
-  assert.match(textbook, /id="book-pdf-file"/);
-  assert.match(textbook, /id="open-book-pdf"/);
-  assert.match(textbook, /id="passage-sentences"/);
+test("reading page renders original textbook pages with audio and source-position highlighting", () => {
+  assert.match(textbook, /id="pdf-page-1"/);
+  assert.match(textbook, /id="pdf-page-2"/);
+  assert.match(textbook, /class="textLayer"/);
+  assert.match(textbook, /pdf\\.min\\.js/);
   assert.match(textbook, /id="play-reading"/);
   assert.match(textbook, /id="pause-reading"/);
   assert.match(textbook, /id="resume-reading"/);
   assert.match(textbook, /id="stop-reading"/);
   assert.match(textbook, /id="speech-speed"/);
-  assert.match(textbook, /min="0\.25"/);
+  assert.match(textbook, /min="0\\.25"/);
   assert.match(textbook, /max="1"/);
-  assert.match(textbook, /art-advertising-viewer\.js/);
-  assert.match(viewer, /SpeechSynthesisUtterance/);
-  assert.match(viewer, /const speechSupported/);
-  assert.match(viewer, /synth\?\.pause/);
-  assert.match(viewer, /synth\?\.resume/);
-  assert.match(viewer, /Ignore malformed URL fragments/);
   assert.match(textbook, /id="speech-status"/);
+  assert.match(textbook, /source-pdf-link/);
+  assert.doesNotMatch(textbook, /passage-sentences|passage-text|book-pdf-file/);
+  assert.match(viewer, /pdfjsLib\\.getDocument/);
+  assert.match(viewer, /renderTextLayer/);
+  assert.match(viewer, /sentence-speaking/);
+  assert.match(viewer, /SpeechSynthesisUtterance/);
+  assert.match(viewer, /synth\\.pause/);
+  assert.match(viewer, /synth\\.resume/);
   assert.match(viewer, /playEvidenceSentence/);
-  assert.match(viewer, /URL\.createObjectURL/);
-  assert.match(viewer, /URL\.revokeObjectURL/);
-  assert.match(viewer, /is-speaking/);
+  assert.match(viewer, /locateSentenceItems/);
+  assert.match(worker, /script-src/);
+  assert.match(worker, /worker-src/);
+  assert.match(headers, /script-src/);
 });
 
+
 test("lesson content contains six Quick Check and exactly twenty correctly ordered exercises", () => {
-  assert.equal(lessonConfig.passageSentences.length, 18);
+  assert.equal(lessonConfig.passageSentences.length, 23);
   assert.equal(lessonConfig.quickCheckQuestions.length, 6);
   assert.equal(lessonConfig.exercises.length, 20);
   assert.deepEqual(
@@ -95,6 +99,11 @@ test("lesson content contains six Quick Check and exactly twenty correctly order
     }
   }
   assert.ok(lessonConfig.quickCheckQuestions.every(question => question.type === "true_false"));
+  assert.ok(lessonConfig.passageSentences.every(sentence => [1, 2].includes(sentence.page)));
+  assert.ok(lessonConfig.passageSentences.some(sentence => sentence.text.startsWith("The tiny classic is back, measuring")));
+  assert.ok(lessonConfig.passageSentences.some(sentence => sentence.text === "Bicycles were invented in France in the 1790s."));
+  assert.ok(lessonConfig.passageSentences.some(sentence => sentence.text.includes("Kirkpatrick MacMillan")));
+  assert.ok(lessonConfig.passageSentences.every(sentence => !sentence.text.includes("returned with a fresh design")));
 });
 
 test("exercise page keeps Quick Check separate and uses the evidence-aware quiz script", () => {
