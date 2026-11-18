@@ -85,17 +85,23 @@
     button.addEventListener("click", () => { location.href = button.dataset.evidence; });
   });
 
-  const missingEvidence = [...quick,...exercises].filter(q=>!evidenceIsValid(q)).length;
+  const allQuestions = [...quick,...exercises];
+  const missingEvidence = allQuestions.filter(q=>!evidenceIsValid(q)).length;
+  const missingAnswerKeys = allQuestions.filter(q=>{
+    if (q.type === "fill_blank") return !Array.isArray(q.acceptedAnswers) || q.acceptedAnswers.length === 0;
+    return !q.correctAnswer;
+  }).length;
   const invalidTypes = exercises.filter((q,i)=>{
     const expected = i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false";
     return q.type !== expected;
   }).length;
   const complete = quick.length === 6 && exercises.length === 20 &&
+    quick.every(q=>q.type === "true_false") &&
     exercises.every((q,i)=>q.type === (i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false")) &&
-    missingEvidence === 0 && invalidTypes === 0;
+    missingEvidence === 0 && missingAnswerKeys === 0 && invalidTypes === 0;
   status.textContent = complete
-    ? "اكتملت الأسئلة العشرون وأسئلة Quick Check، وكل سؤال مرتبط بجملة دليل في القطعة."
+    ? "اكتملت أسئلة Quick Check والتمارين العشرون، مع مفاتيح إجابة وأدلة مرتبطة بجمل القطعة."
     : "المراجعة: " + quick.length + "/6 أسئلة Quick Check، " + exercises.length + "/20 تمرينًا، " +
-      missingEvidence + " سؤالًا بلا دليل موثق. لن تُفعّل أزرار الأدلة إلا بعد ربطها بجمل القطعة.";
+      missingEvidence + " سؤالًا بلا دليل، و" + missingAnswerKeys + " بلا مفتاح إجابة.";
   status.classList.toggle("is-complete",complete);
 })();
