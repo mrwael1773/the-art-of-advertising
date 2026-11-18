@@ -56,7 +56,7 @@ lines.forEach((line,i)=>{
 let voices=[],token=0,current=-1,mode="idle",activeRow=-1;
 const omarAudio=$("#omarAudio"),adnanAudio=$("#adnanAudio");
 const omarRanges={1:[0,1.30],3:[1.35,7.92],5:[8.15,21.14],7:[21.45,38.65]};
-const adnanRanges={0:[0,2.197],2:[2.20,3.712],4:[3.75,4.864],6:[4.80,6.15]};
+const adnanRanges={0:[0,2.197],2:[2.20,3.712],4:[3.75,4.864],6:[4.80,5.75]};
 const speed=$("#speed"),speedValue=$("#speedValue");
 speed.addEventListener("input",()=>{speedValue.value=Number(speed.value).toFixed(1)+"×";speedValue.textContent=speedValue.value;omarAudio.playbackRate=Number(speed.value);adnanAudio.playbackRate=Number(speed.value);});
 function loadVoices(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));}
