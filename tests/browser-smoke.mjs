@@ -101,7 +101,14 @@ async function main() {
 
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#passage-sentences .passage-sentence").count(), 18);
-    assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), false, "The PDF viewer remains hidden until a source file is selected or configured.");
+    assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true, "The configured textbook PDF viewer should be visible on page load.");
+    assert.equal(
+      await page.locator("#book-pdf").getAttribute("src"),
+      "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
+      "The textbook viewer should use the verified public Google Drive preview URL."
+    );
+    assert.equal(await page.locator("#open-book-pdf").isVisible(), true);
+    assert.match(await page.locator("#pdf-status").textContent(), /تم تحميل صفحتي الدرس/);
     assert.equal(await page.locator("#book-pdf-file").count(), 1);
     assert.equal(await page.locator("#play-reading").count(), 1);
     assert.equal(await page.locator("#pause-reading").count(), 1);
