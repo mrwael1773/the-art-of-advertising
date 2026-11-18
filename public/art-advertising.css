@@ -16,3 +16,9 @@
 .check-answer{border:1px solid var(--line);border-radius:.7rem;padding:.7rem 1rem;font:inherit;cursor:pointer}
 .question-feedback.is-correct{color:#198754}.question-feedback.is-wrong{color:#b45309}
 .exercise-section{margin:1.2rem 0}.exercise-section>h3{margin-bottom:.8rem}
+
+.blank-answer{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:.6rem 0 1rem}
+.blank-input{min-width:180px;max-width:100%;padding:.65rem .8rem;border:1px solid var(--line);border-radius:.65rem;background:var(--paper);color:inherit;font:inherit}
+.question-actions button:disabled{opacity:.45;cursor:not-allowed}
+#quiz-status.is-complete{border:1px solid #198754}
+.evidence-button:focus-visible,.check-answer:focus-visible,.blank-input:focus-visible{outline:3px solid #7db4ff;outline-offset:2px}
