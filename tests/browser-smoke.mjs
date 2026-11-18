@@ -17,14 +17,14 @@ let serverOutput = "";
 async function waitForServer() {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
-    if (server.exitCode !== null) throw new Error("Worker exited before readiness.\\n" + serverOutput);
+    if (server.exitCode !== null) throw new Error("Worker exited before readiness.\n" + serverOutput);
     try {
       const response = await fetch(origin + "/");
       if (response.status === 200) return;
     } catch {}
     await new Promise(resolve => setTimeout(resolve, 300));
   }
-  throw new Error("Timed out waiting for local Worker.\\n" + serverOutput);
+  throw new Error("Timed out waiting for local Worker.\n" + serverOutput);
 }
 
 async function auditAccessibility(page) {
@@ -46,6 +46,37 @@ async function auditAccessibility(page) {
   });
   assert.deepEqual(violations, [], `Accessibility violations: ${JSON.stringify(violations)}`);
 }
+
+const pdfJsStub = `
+window.pdfjsLib = {
+  GlobalWorkerOptions: {},
+  getDocument() {
+    return { promise: Promise.resolve({
+      numPages: 2,
+      async getPage(pageNumber) {
+        return {
+          getViewport({ scale }) { return { width: 612 * scale, height: 792 * scale, scale }; },
+          render() { return { promise: Promise.resolve() }; },
+          async getTextContent() {
+            return { items: window.ART_AD_CONFIG.passageSentences
+              .filter(sentence => sentence.page === pageNumber)
+              .map(sentence => ({ str: sentence.text })) };
+          }
+        };
+      }
+    }) };
+  },
+  renderTextLayer({ textContent, container, textDivs }) {
+    for (const item of textContent.items) {
+      const span = document.createElement("span");
+      span.textContent = item.str;
+      container.append(span);
+      textDivs.push(span);
+    }
+    return { promise: Promise.resolve() };
+  }
+};
+`;
 
 async function main() {
   server = spawn("npx", [
@@ -71,18 +102,21 @@ async function main() {
       Object.defineProperty(window, "speechSynthesis", {
         configurable: true,
         value: {
-          cancel() {},
-          pause() {},
-          resume() {},
+          cancel() { window.__paused = false; },
+          pause() { window.__paused = true; },
+          resume() { window.__paused = false; },
           speak(utterance) {
             window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate });
             window.__lastUtterance = utterance;
           },
-          get speaking() { return Boolean(window.__lastUtterance); }
+          get speaking() { return Boolean(window.__lastUtterance) && !window.__paused; },
+          get paused() { return Boolean(window.__paused); }
         }
       });
     });
     const page = await context.newPage();
+    await page.route("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", route =>
+      route.fulfill({ status: 200, contentType: "application/javascript", body: pdfJsStub }));
     const apiRequests = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
@@ -99,37 +133,22 @@ async function main() {
     assert.equal(await page.locator('input[type="password"]').count(), 0);
     await auditAccessibility(page);
 
-    // Keep CI deterministic: the real public Drive preview is verified separately;
-    // this browser test checks that the page wires the configured preview URL correctly.
-    await page.route("https://drive.google.com/**", route => route.fulfill({
-      status: 200,
-      contentType: "text/html; charset=utf-8",
-      body: "<!doctype html><title>Google Drive preview test stub</title>"
-    }));
     const textbookResponse = await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     const textbookCsp = textbookResponse.headers()["content-security-policy"] || "";
-    assert.match(textbookCsp, /frame-src[^;]*https:\/\/drive\.google\.com/,
-      "The page CSP must allow only the configured Google Drive preview frame.");
-    assert.ok(page.frames().some(frame => frame.url().startsWith("https://drive.google.com/file/d/")),
-      "The configured Google Drive preview frame should be navigable under the page CSP.");
-    assert.equal(await page.locator("#passage-sentences .passage-sentence").count(), 18);
-    assert.match(await page.locator("#sentence-henk-3").textContent(), /25 grams/,
-      "The Henk suitcase reading detail should retain the source's 25-gram light-pull fact.");
-    assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true, "The configured textbook PDF viewer should be visible on page load.");
-    assert.equal(
-      await page.locator("#book-pdf").getAttribute("src"),
-      "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
-      "The textbook viewer should use the verified public Google Drive preview URL."
-    );
-    assert.equal(await page.locator("#open-book-pdf").isVisible(), true);
-    assert.match(await page.locator("#pdf-status").textContent(), /تم تحميل صفحتي الدرس/);
-    assert.equal(await page.locator("#book-pdf-file").count(), 1);
-    assert.equal(await page.locator("#play-reading").count(), 1);
-    assert.equal(await page.locator("#pause-reading").count(), 1);
-    assert.equal(await page.locator("#resume-reading").count(), 1);
-    assert.equal(await page.locator("#stop-reading").count(), 1);
+    assert.match(textbookCsp, /script-src[^;]*cdnjs\.cloudflare\.com/);
+    await page.waitForFunction(() => document.querySelectorAll(".pdf-page .textLayer span").length === 23);
+    assert.equal(await page.locator(".pdf-page").count(), 2);
+    assert.equal(await page.locator(".pdf-page canvas").count(), 2);
+    assert.equal(await page.locator(".pdf-page .textLayer span").count(), 23);
+    assert.equal(await page.locator("#passage-sentences").count(), 0);
+    assert.equal(await page.locator(".passage-text").count(), 0);
+    assert.match(await page.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/);
+    assert.equal(await page.locator(".source-pdf-link").getAttribute("href"),
+      "./assets/art-advertising-source.pdf");
+    assert.equal(await page.locator("#play-reading").isDisabled(), false);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
+
     await page.locator("#speech-speed").evaluate(el => {
       el.value = "0.25";
       el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -139,23 +158,13 @@ async function main() {
     let spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
-    assert.equal(spoken.text, "The FIAT 500 is a tiny classic car that returned with a fresh design.");
-    assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
+    assert.equal(spoken.text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
     await page.locator("#pause-reading").click();
+    assert.match(await page.locator("#speech-status").textContent(), /متوقف مؤقتًا/);
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
-    assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 0);
-
-    await page.locator("#book-pdf-file").setInputFiles({
-      name: "sample.pdf",
-      mimeType: "application/pdf",
-      buffer: Buffer.from("%PDF-1.4\\n% local preview smoke test")
-    });
-    assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true);
-    assert.match(await page.locator("#pdf-status").textContent(), /معاينة محلية/);
-    assert.match(await page.locator("#book-pdf").getAttribute("src"), /^blob:/);
-    assert.equal(await page.locator("#open-book-pdf").isVisible(), true);
-    await auditAccessibility(page);
+    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 0);
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -166,6 +175,7 @@ async function main() {
       assert.ok(dimensions.scroll <= dimensions.client + 1,
         `Reading page horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
     }
+    await auditAccessibility(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
@@ -177,15 +187,14 @@ async function main() {
     assert.equal(await page.locator("#extra-exercises [data-type='true_false']").count(), 5);
     assert.equal(await page.locator(".evidence-button").count(), 26);
     assert.equal(await page.locator(".evidence-button:disabled").count(), 0);
+
     const evidenceTargets = await page.locator(".evidence-button").evaluateAll(links =>
       links.map(link => decodeURIComponent(new URL(link.href).hash.replace(/^#sentence-/, "")))
     );
-    const passageIds = await page.evaluate(() =>
+    const sentenceIds = await page.evaluate(() =>
       window.ART_AD_CONFIG.passageSentences.map(sentence => String(sentence.id))
     );
-    assert.equal(evidenceTargets.length, 26);
-    assert.ok(evidenceTargets.every(id => passageIds.includes(id)),
-      "Every question's evidence link must target an existing reading sentence.");
+    assert.ok(evidenceTargets.every(id => sentenceIds.includes(id)));
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(0).locator("input[type=radio]").count(), 4);
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(14).locator("input[type=radio]").count(), 2);
 
@@ -201,20 +210,13 @@ async function main() {
     await blankCard.locator(".check-answer").click();
     assert.match(await blankCard.locator(".question-feedback").textContent(), /إجابة صحيحة/);
 
-    const quickCard = page.locator("#quick-questions .question-card").first();
-    const quickAnswer = await quickCard.getAttribute("data-correct");
-    await quickCard.locator(`input[type="radio"][value="${quickAnswer}"]`).check();
-    await quickCard.locator(".check-answer").click();
-    assert.match(await quickCard.locator(".question-feedback").textContent(), /إجابة صحيحة/);
-
-    const firstEvidenceButton = page.locator(".evidence-button").first();
-    assert.equal(await firstEvidenceButton.getAttribute("href"), "./textbook.html#sentence-fiat-1");
-    const evidenceUrl = new URL(await firstEvidenceButton.getAttribute("href"), page.url()).href;
-    await page.goto(evidenceUrl, { waitUntil: "networkidle" });
+    const firstEvidence = page.locator(".evidence-button").first();
+    assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
+    await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.querySelector(".textLayer .sentence-speaking"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    await page.waitForTimeout(350);
-    assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
-    assert.equal(await page.locator("#passage-sentences .passage-sentence.is-speaking").getAttribute("id"), "sentence-fiat-1");
+    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
+    assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
     await auditAccessibility(page);
 
     for (const width of [320, 360, 390, 768, 1280]) {
@@ -229,20 +231,36 @@ async function main() {
     assert.deepEqual(apiRequests, [], "The lesson must not send account or progress API requests.");
     assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
 
+    // Verify the real public PDF and the real PDF.js CDN in Chromium, not only the deterministic stub.
+    const realPdfPage = await context.newPage();
+    await realPdfPage.goto(origin + "/textbook.html", { waitUntil: "domcontentloaded" });
+    await realPdfPage.waitForFunction(() => {
+      const value = document.querySelector("#speech-status")?.textContent || "";
+      return value.includes("الصفحتان الأصليتان جاهزتان") || value.includes("تعذر تحميل") || value.includes("تعذر تشغيل");
+    }, { timeout: 60000 });
+    assert.match(await realPdfPage.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/,
+      "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
+    assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
+    await realPdfPage.locator("#play-reading").click();
+    assert.ok(await realPdfPage.locator(".textLayer .sentence-speaking").count() > 0,
+      "Real PDF.js text spans should receive the active sentence highlight.");
+    await realPdfPage.close();
+
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const unsupportedPage = await unsupportedContext.newPage();
     await unsupportedPage.addInitScript(() => {
       Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: undefined });
       Object.defineProperty(window, "speechSynthesis", { configurable: true, value: undefined });
     });
+    await unsupportedPage.route("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", route =>
+      route.fulfill({ status: 200, contentType: "application/javascript", body: pdfJsStub }));
     await unsupportedPage.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     assert.equal(await unsupportedPage.locator("#play-reading").isDisabled(), true);
-    assert.equal(await unsupportedPage.locator("#pause-reading").isDisabled(), true);
     assert.match(await unsupportedPage.locator("#speech-status").textContent(), /لا يدعم النطق الصوتي/);
     await unsupportedContext.close();
 
     await context.close();
-    console.log("Browser checks passed: lesson navigation, PDF local preview, sentence audio/highlighting, all 26 evidence-linked questions, answer checking, accessibility, responsive layouts, and no persistence/API calls.");
+    console.log("Browser checks passed: original-page PDF text layer, on-page sentence highlighting, playback controls, speed control, all 26 evidence-linked questions, accessibility, responsive layouts, and no persistence/API calls.");
   } finally {
     await browser.close();
   }

@@ -3,4 +3,4 @@
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
   Cross-Origin-Resource-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-src 'self' blob: https://drive.google.com; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob: https://cdnjs.cloudflare.com; base-uri 'self'; form-action 'self'; frame-src 'self' blob: https://drive.google.com; frame-ancestors 'none'; object-src 'none'

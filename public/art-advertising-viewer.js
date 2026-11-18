@@ -1,135 +1,273 @@
 (() => {
   "use strict";
   const config = window.ART_AD_CONFIG || {};
-  const status = document.getElementById("pdf-status");
-  const wrap = document.getElementById("pdf-frame-wrap");
-  const frame = document.getElementById("book-pdf");
-  const fileInput = document.getElementById("book-pdf-file");
-  const openLink = document.getElementById("open-book-pdf");
-  let localPdfUrl = null;
+  const pdfUrl = config.pdfDownloadUrl;
+  const pageNodes = [1, 2].map(number => ({
+    number,
+    root: document.getElementById("pdf-page-" + number),
+    canvas: document.querySelector("#pdf-page-" + number + " canvas"),
+    layer: document.querySelector("#pdf-page-" + number + " .textLayer"),
+    model: null
+  }));
+  const status = document.getElementById("speech-status");
   const speed = document.getElementById("speech-speed");
-  const output = document.getElementById("speed-value");
-  const passage = document.getElementById("passage-sentences");
-  const play = document.getElementById("play-reading");
-  const pause = document.getElementById("pause-reading");
-  const resume = document.getElementById("resume-reading");
-  const stop = document.getElementById("stop-reading");
-  let current = -1;
-  let utterance = null;
+  const speedValue = document.getElementById("speed-value");
+  const playButton = document.getElementById("play-reading");
+  const pauseButton = document.getElementById("pause-reading");
+  const resumeButton = document.getElementById("resume-reading");
+  const stopButton = document.getElementById("stop-reading");
+  const sentences = Array.isArray(config.passageSentences) ? config.passageSentences : [];
+  const supported = "speechSynthesis" in window &&
+    typeof window.SpeechSynthesisUtterance === "function";
+  const synth = supported ? window.speechSynthesis : null;
+  let currentIndex = -1;
   let queueToken = 0;
-  const speechSupported = "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
-  const synth = speechSupported ? window.speechSynthesis : null;
-  const speechStatus = document.getElementById("speech-status");
-  if (!speechSupported) {
-    [play, pause, resume, stop].filter(Boolean).forEach(button => { button.disabled = true; });
-    if (speechStatus) speechStatus.textContent = "متصفحك لا يدعم النطق الصوتي؛ يمكنك قراءة القطعة واستخدام دليل الجمل.";
-  } else if (speechStatus) {
-    speechStatus.textContent = "الصوت جاهز. يمكنك تغيير السرعة أثناء الاستماع.";
+  let pdfDocument = null;
+  let resizeHandle = 0;
+  let lastWidth = 0;
+
+  const setStatus = message => { if (status) status.textContent = message; };
+  const setButtons = enabled => {
+    [playButton, pauseButton, resumeButton, stopButton].forEach(button => {
+      if (button) button.disabled = !enabled;
+    });
+  };
+  const normalizedTokens = value => String(value || "")
+    .replace(/ﬁ/g, "fi").replace(/[’‘]/g, "'").toLowerCase()
+    .match(/[a-z0-9]+(?:'[a-z]+)?/g) || [];
+  const makeItemTokens = items => {
+    const tokens = [];
+    items.forEach((item, itemIndex) => {
+      normalizedTokens(item.str).forEach(token => tokens.push({ token, itemIndex }));
+    });
+    return tokens;
+  };
+  const locateSentenceItems = (sentence, tokens) => {
+    const wanted = normalizedTokens(sentence.text);
+    if (!wanted.length) return [];
+    for (let start = 0; start <= tokens.length - wanted.length; start++) {
+      let matched = true;
+      for (let offset = 0; offset < wanted.length; offset++) {
+        if (tokens[start + offset].token !== wanted[offset]) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        return [...new Set(tokens.slice(start, start + wanted.length).map(token => token.itemIndex))];
+      }
+    }
+    return [];
+  };
+
+  async function renderPage(pageInfo) {
+    const page = await pdfDocument.getPage(pageInfo.number);
+    const width = Math.max(260, (pageInfo.root.parentElement?.clientWidth || 900) - 28);
+    const base = page.getViewport({ scale: 1 });
+    const scale = width / base.width;
+    const viewport = page.getViewport({ scale });
+    const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+    const canvas = pageInfo.canvas;
+    const context = canvas.getContext("2d", { alpha: false });
+    canvas.width = Math.ceil(viewport.width * outputScale);
+    canvas.height = Math.ceil(viewport.height * outputScale);
+    canvas.style.width = viewport.width + "px";
+    canvas.style.height = viewport.height + "px";
+    pageInfo.root.style.width = viewport.width + "px";
+    pageInfo.root.style.height = viewport.height + "px";
+    pageInfo.layer.style.width = viewport.width + "px";
+    pageInfo.layer.style.height = viewport.height + "px";
+    pageInfo.layer.replaceChildren();
+
+    await page.render({
+      canvasContext: context,
+      viewport,
+      transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0]
+    }).promise;
+
+    const textContent = await page.getTextContent();
+    const textDivs = [];
+    const textLayerTask = window.pdfjsLib.renderTextLayer({
+      textContent,
+      container: pageInfo.layer,
+      viewport,
+      textDivs
+    });
+    await textLayerTask.promise;
+    pageInfo.model = {
+      page,
+      viewport,
+      items: textContent.items,
+      textDivs,
+      tokens: makeItemTokens(textContent.items)
+    };
   }
 
-  const showPdf = (url, message) => {
-    frame.src = url;
-    wrap.hidden = false;
-    openLink.href = url;
-    openLink.hidden = false;
-    status.textContent = message;
-  };
-  if (typeof config.pdfUrl === "string" && config.pdfUrl.trim()) {
-    try {
-      const pdf = new URL(config.pdfUrl, window.location.href);
-      const safeProtocol = pdf.protocol === "https:";
-      const safeLocalPdf = pdf.origin === window.location.origin && /\.pdf$/i.test(pdf.pathname);
-      const safeDrivePreview = pdf.origin === "https://drive.google.com" &&
-        /^\/file\/d\/[A-Za-z0-9_-]+\/preview\/?$/.test(pdf.pathname);
-      if (safeProtocol && (safeLocalPdf || safeDrivePreview)) {
-        showPdf(pdf.href, "تم تحميل صفحتي الدرس من ملف PDF العام.");
-      } else {
-        status.textContent = "رابط PDF غير صالح أو غير مدعوم.";
-      }
-    } catch { status.textContent = "تعذر قراءة رابط ملف PDF." }
-  } else {
-    status.textContent = "لم يُربط ملف PDF دائم بالموقع بعد. يمكنك معاينته من جهازك مؤقتًا.";
+  function clearHighlight() {
+    pageNodes.forEach(info => {
+      info.layer.querySelectorAll(".sentence-speaking").forEach(node => {
+        node.classList.remove("sentence-speaking");
+      });
+    });
   }
-  fileInput?.addEventListener("change", () => {
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      status.textContent = "الملف المحدد ليس ملف PDF.";
-      fileInput.value = "";
+
+  function highlightSentence(index) {
+    clearHighlight();
+    const sentence = sentences[index];
+    if (!sentence) return false;
+    const pageInfo = pageNodes.find(info => info.number === Number(sentence.page));
+    if (!pageInfo || !pageInfo.model) return false;
+    const itemIndexes = locateSentenceItems(sentence, pageInfo.model.tokens);
+    const spans = itemIndexes.map(itemIndex => pageInfo.model.textDivs[itemIndex]).filter(Boolean);
+    if (!spans.length) {
+      setStatus("تعذر تحديد موضع إحدى الجمل في طبقة النص لهذه الصفحة.");
+      return false;
+    }
+    spans.forEach(span => span.classList.add("sentence-speaking"));
+    const first = spans[0];
+    const pageRect = pageInfo.root.getBoundingClientRect();
+    const spanRect = first.getBoundingClientRect();
+    if (spanRect.top < pageRect.top || spanRect.bottom > pageRect.bottom) {
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return true;
+  }
+
+  const getRate = () => {
+    const rate = Math.min(1, Math.max(0.25, Number(speed?.value || 1)));
+    if (speedValue) speedValue.value = rate.toFixed(2) + "×";
+    return rate;
+  };
+
+  function speakFrom(index, token) {
+    if (!supported || token !== queueToken || index >= sentences.length) {
+      if (index >= sentences.length) {
+        currentIndex = -1;
+        clearHighlight();
+        setStatus("انتهى الاستماع إلى القطعة كاملة.");
+      }
       return;
     }
-    if (localPdfUrl) URL.revokeObjectURL(localPdfUrl);
-    localPdfUrl = URL.createObjectURL(file);
-    showPdf(localPdfUrl, "تُعرض الآن معاينة محلية لهذا الجهاز فقط؛ لن يراها بقية زوار الموقع.");
-  });
-  window.addEventListener("beforeunload", () => { if (localPdfUrl) URL.revokeObjectURL(localPdfUrl); });
-
-  if (!passage) return;
-  const sentences = Array.isArray(config.passageSentences) ? config.passageSentences : [];
-  const safe = value => String(value).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-  passage.innerHTML = sentences.length
-    ? sentences.map((s, i) => '<p class="passage-sentence" id="sentence-' + safe(s.id || (i + 1)) + '" data-index="' + i + '">' + safe(s.text || "") + '</p>').join("")
-    : '<p class="art-note">سيظهر نص القطعة هنا بعد إدخال الجمل المعتمدة وربطها بمصدر الدرس.</p>';
-
-  const setSpeed = () => {
-    const value = Math.min(1, Math.max(.25, Number(speed?.value || 1)));
-    if (output) output.value = value.toFixed(2) + "×";
-    return value;
-  };
-  const highlight = index => {
-    passage.querySelectorAll(".passage-sentence").forEach((node, i) => {
-      node.classList.toggle("is-speaking", i === index);
-    });
-    current = index;
-    const active = passage.querySelector('[data-index="' + index + '"]');
-    active?.scrollIntoView({behavior:"smooth", block:"center"});
-  };
-  const speakFrom = (index, token) => {
-    if (!speechSupported || token !== queueToken || index >= sentences.length) return;
-    highlight(index);
-    utterance = new window.SpeechSynthesisUtterance(sentences[index].text);
+    currentIndex = index;
+    if (!highlightSentence(index)) return;
+    const utterance = new SpeechSynthesisUtterance(sentences[index].text);
     utterance.lang = "en-US";
-    utterance.rate = setSpeed();
+    utterance.rate = getRate();
     utterance.onend = () => {
       if (token === queueToken) speakFrom(index + 1, token);
     };
-    utterance.onerror = () => {
-      if (token === queueToken) {
-        passage.querySelectorAll(".passage-sentence").forEach(n => n.classList.remove("is-speaking"));
-      }
+    utterance.onerror = event => {
+      if (token !== queueToken || event.error === "canceled" || event.error === "interrupted") return;
+      setStatus("توقف النطق بسبب مشكلة في خدمة الصوت. يمكنك الضغط على تشغيل للمحاولة مجددًا.");
     };
+    setStatus("يُنطق النص الأصلي — الجملة " + (index + 1) + " من " + sentences.length + ".");
     synth.speak(utterance);
-  };
-  const start = index => {
-    if (!speechSupported || !sentences.length) return;
+  }
+
+  function startAt(index) {
+    if (!supported || !pdfDocument || !sentences.length) return;
     queueToken++;
     synth.cancel();
-    speakFrom(index, queueToken);
-  };
-  speed?.addEventListener("input", () => {
-    setSpeed();
-    if (current >= 0 && synth?.speaking) start(current);
+    speakFrom(Math.max(0, index), queueToken);
+  }
+
+  async function initialize() {
+    if (!window.pdfjsLib || !pdfUrl) {
+      setStatus("تعذر تشغيل عارض صفحات الكتاب. افتح ملف الكتاب الأصلي من الرابط أعلاه.");
+      return;
+    }
+    if (!supported) {
+      setStatus("هذا المتصفح لا يدعم النطق الصوتي. يمكنك عرض صفحات الكتاب الأصلية.");
+      return;
+    }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    try {
+      setStatus("جارٍ تحميل ملف الكتاب الأصلي…");
+      pdfDocument = await window.pdfjsLib.getDocument({
+        url: pdfUrl,
+        withCredentials: false,
+        disableRange: true,
+        disableStream: true
+      }).promise;
+      if (pdfDocument.numPages < 2) {
+        throw new Error("ملف المصدر لا يحتوي على الصفحتين المطلوبتين.");
+      }
+      for (const pageInfo of pageNodes) await renderPage(pageInfo);
+      const missing = sentences.filter(sentence => {
+        const info = pageNodes.find(item => item.number === Number(sentence.page));
+        return !info?.model || !locateSentenceItems(sentence, info.model.tokens).length;
+      });
+      setButtons(true);
+      getRate();
+      if (missing.length) {
+        setStatus("تم عرض الصفحتين الأصليتين. تعذر ربط " + missing.length +
+          " جمل بمواضعها النصية؛ لن يتم عرض تظليل تخميني.");
+      } else {
+        setStatus("الصفحتان الأصليتان جاهزتان. سيظهر التظليل فوق الجملة نفسها أثناء النطق.");
+      }
+      const hash = decodeURIComponent(location.hash.slice(1));
+      if (hash.startsWith("sentence-")) {
+        const id = hash.slice("sentence-".length);
+        const index = sentences.findIndex(sentence => sentence.id === id);
+        if (index >= 0) startAt(index);
+      }
+      lastWidth = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
+    } catch (error) {
+      console.error("Original textbook PDF could not be rendered:", error);
+      setStatus("تعذر تحميل ملف الكتاب داخل العارض. افتح ملف الكتاب الأصلي من الرابط أعلاه؛ لم نعرض نصًا بديلًا.");
+      setButtons(false);
+    }
+  }
+
+  playButton?.addEventListener("click", () => startAt(0));
+  pauseButton?.addEventListener("click", () => {
+    if (synth?.speaking) {
+      synth.pause();
+      setStatus("الصوت متوقف مؤقتًا. اضغط متابعة للاستكمال.");
+    }
   });
-  play?.addEventListener("click", () => start(0));
-  pause?.addEventListener("click", () => synth?.pause());
-  resume?.addEventListener("click", () => synth?.resume());
-  stop?.addEventListener("click", () => {
+  resumeButton?.addEventListener("click", () => {
+    if (synth?.paused) {
+      synth.resume();
+      setStatus("تمت متابعة النطق.");
+    }
+  });
+  stopButton?.addEventListener("click", () => {
     queueToken++;
     synth?.cancel();
-    passage.querySelectorAll(".passage-sentence").forEach(n => n.classList.remove("is-speaking"));
-    current = -1;
+    currentIndex = -1;
+    clearHighlight();
+    setStatus("تم إيقاف الاستماع.");
+  });
+  speed?.addEventListener("input", () => {
+    const rate = getRate();
+    if (currentIndex >= 0 && synth?.speaking) {
+      setStatus("تم تغيير السرعة. أُعيد تشغيل الجملة الحالية بالسرعة الجديدة.");
+      startAt(currentIndex);
+    } else {
+      setStatus("سرعة الصوت: " + rate.toFixed(2) + "×.");
+    }
+  });
+  window.addEventListener("resize", () => {
+    if (!pdfDocument) return;
+    window.clearTimeout(resizeHandle);
+    resizeHandle = window.setTimeout(async () => {
+      const width = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
+      if (Math.abs(width - lastWidth) < 4) return;
+      lastWidth = width;
+      try {
+        for (const pageInfo of pageNodes) await renderPage(pageInfo);
+        if (currentIndex >= 0) highlightSentence(currentIndex);
+      } catch (error) {
+        console.error("Page resize failed:", error);
+      }
+    }, 180);
   });
   window.playEvidenceSentence = id => {
-    const index = sentences.findIndex((s, i) => String(s.id || (i + 1)) === String(id));
-    if (index >= 0) start(index);
+    const index = sentences.findIndex(sentence => String(sentence.id) === String(id));
+    if (index >= 0) startAt(index);
   };
-  let target = "";
-  try { target = decodeURIComponent(location.hash.slice(1)); } catch { /* Ignore malformed URL fragments. */ }
-  if (target.startsWith("sentence-")) {
-    const id = target.slice("sentence-".length);
-    setTimeout(() => window.playEvidenceSentence(id), 250);
-  }
-  setSpeed();
+  getRate();
+  initialize();
 })();
