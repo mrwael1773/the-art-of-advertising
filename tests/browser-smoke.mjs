@@ -99,6 +99,13 @@ async function main() {
     assert.equal(await page.locator('input[type="password"]').count(), 0);
     await auditAccessibility(page);
 
+    // Keep CI deterministic: the real public Drive preview is verified separately;
+    // this browser test checks that the page wires the configured preview URL correctly.
+    await page.route("https://drive.google.com/**", route => route.fulfill({
+      status: 200,
+      contentType: "text/html; charset=utf-8",
+      body: "<!doctype html><title>Google Drive preview test stub</title>"
+    }));
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#passage-sentences .passage-sentence").count(), 18);
     assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true, "The configured textbook PDF viewer should be visible on page load.");
