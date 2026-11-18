@@ -152,7 +152,7 @@ async function main() {
     assert.equal(await page.locator(".evidence-button").count(), 26);
     assert.equal(await page.locator(".evidence-button:disabled").count(), 0);
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(0).locator("input[type=radio]").count(), 4);
-    assert.equal(await page.locator("#extra-exercises .answer-options").nth(15).locator("input[type=radio]").count(), 2);
+    assert.equal(await page.locator("#extra-exercises .answer-options").nth(14).locator("input[type=radio]").count(), 2);
 
     const mcCard = page.locator("#extra-exercises .question-card").first();
     const mcAnswer = await mcCard.getAttribute("data-correct");
@@ -173,7 +173,7 @@ async function main() {
     assert.match(await quickCard.locator(".question-feedback").textContent(), /إجابة صحيحة/);
 
     await page.locator(".evidence-button").first().click();
-    await page.waitForURL("**/textbook.html#sentence-fi at-1".replace(" ", ""));
+    await page.waitForURL("**/textbook.html#sentence-fiat-1");
     await page.waitForTimeout(350);
     assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
     assert.equal(await page.locator("#passage-sentences .passage-sentence.is-speaking").getAttribute("id"), "sentence-fiat-1");
