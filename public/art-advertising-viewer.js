@@ -35,7 +35,6 @@
     if (output) output.value = value.toFixed(2) + "×";
     return value;
   };
-  speed?.addEventListener("input", setSpeed);
   const highlight = index => {
     passage.querySelectorAll(".passage-sentence").forEach((node, i) => {
       node.classList.toggle("is-speaking", i === index);
@@ -66,6 +65,10 @@
     speechSynthesis.cancel();
     speakFrom(index, queueToken);
   };
+  speed?.addEventListener("input", () => {
+    setSpeed();
+    if (current >= 0 && "speechSynthesis" in window && speechSynthesis.speaking) start(current);
+  });
   play?.addEventListener("click", () => start(0));
   pause?.addEventListener("click", () => speechSynthesis.pause());
   resume?.addEventListener("click", () => speechSynthesis.resume());
