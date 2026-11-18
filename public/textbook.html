@@ -1,38 +1,69 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1423">
-<title>القراءة والاستماع | The Art of Advertising</title>
+<meta name="description" content="اقرأ صفحات الكتاب الأصلية 54 و55 واستمع إلى القطعة مع تظليل الجملة في موضعها على الصفحة.">
+<title>القطعة والاستماع | The Art of Advertising</title>
 <link rel="stylesheet" href="./styles.css?v=13">
-<link rel="stylesheet" href="./art-advertising.css?v=3">
+<link rel="stylesheet" href="./art-advertising.css?v=4">
 </head>
 <body>
-<main class="shell art-shell">
-<nav class="page-nav"><a href="./index.html">الرئيسية</a><a class="current" href="./textbook.html">القراءة والاستماع</a><a href="./quiz.html">التمارين</a></nav>
-<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>كل ما تحتاجه للقراءة والاستماع موجود في هذه الصفحة؛ يظهر التظليل على الجملة نفسها أثناء نطقها.</p></header>
-<section class="art-panel reading-page-panel" aria-labelledby="reading-page-title">
-<h2 id="reading-page-title">صفحتا الدرس والقطعة الصوتية</h2>
-<p id="pdf-status" role="status">جارٍ التحقق من ملف الصفحتين…</p>
-<div class="pdf-upload-row"><label class="button-like" for="book-pdf-file">اختيار ملف الصفحتين من الجهاز</label><input id="book-pdf-file" type="file" accept="application/pdf,.pdf"><a id="open-book-pdf" href="#" target="_blank" rel="noopener" hidden>فتح الصفحتين في تبويب جديد</a></div>
-<div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden><iframe id="book-pdf" title="صفحتا الدرس 54 و55 من The Art of Advertising" loading="lazy"></iframe></div>
-<p class="art-note">إذا تعذّر عرض ملف PDF داخل المتصفح، استخدم رابط «فتح الصفحتين في تبويب جديد».</p>
-<div class="reading-audio-area" aria-labelledby="audio-title">
-<h3 id="audio-title">استمع إلى القطعة وتابع التظليل</h3>
-<p>يُنطق النص جملةً جملة، وتُظلّل الجملة الحالية في مكانها أسفل أدوات الصوت. يمكنك تغيير السرعة أثناء التشغيل.</p>
-<div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1"><output id="speed-value">1.00×</output></div>
+<main class="shell art-shell textbook-reader">
+<nav class="page-nav" aria-label="التنقل بين الصفحات">
+<a href="./index.html">الرئيسية</a>
+<a class="current" href="./textbook.html" aria-current="page">القراءة والاستماع</a>
+<a href="./quiz.html">التمارين</a>
+</nav>
+<header class="intro page-intro">
+<p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p>
+<h1>القراءة والاستماع</h1>
+<p>هذه صفحات الكتاب الأصلية كما هي. استمع إلى القطعة، وستظهر علامة التظليل فوق الجملة نفسها في موضعها على الصفحة، دون إنشاء نص قراءة إضافي.</p>
+</header>
+
+<section class="art-panel reader-controls" aria-labelledby="audio-title">
+<div class="reader-controls-heading">
+<div><p class="eyebrow">ORIGINAL TEXTBOOK · PAGES 54–55</p><h2 id="audio-title">استمع وتابع الجملة على الكتاب</h2></div>
+<a class="source-pdf-link" href="https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/view" target="_blank" rel="noopener noreferrer">فتح ملف الكتاب الأصلي</a>
+</div>
+<div class="speed-control">
+<label for="speech-speed">سرعة الصوت</label>
+<input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1">
+<output id="speed-value" for="speech-speed">1.00×</output>
+</div>
 <div class="art-controls" aria-label="أدوات تشغيل القطعة">
-<button id="play-reading" type="button">تشغيل</button>
-<button id="pause-reading" type="button">إيقاف مؤقت</button>
-<button id="resume-reading" type="button">استكمال</button>
-<button id="stop-reading" type="button">إيقاف</button>
+<button id="play-reading" type="button" disabled>▶ تشغيل القطعة</button>
+<button id="pause-reading" type="button" disabled>إيقاف مؤقت</button>
+<button id="resume-reading" type="button" disabled>متابعة</button>
+<button id="stop-reading" type="button" disabled>إيقاف</button>
 </div>
-<p id="speech-status" class="art-note" role="status">يجري تجهيز الصوت…</p>
-<div id="passage-sentences" class="passage-text" aria-live="polite"></div>
-<p class="art-note">كل سؤال في صفحة التمارين يرتبط بالجملة الداعمة هنا؛ زر «اعرض مكان الإجابة» يعيدك مباشرةً إلى موضعها ويبدأ نطقها.</p>
-</div>
+<p id="speech-status" class="reader-status" role="status" aria-live="polite">جارٍ تحميل صفحات الكتاب الأصلية…</p>
 </section>
+
+<section id="pdf-pages" class="pdf-pages" aria-label="صفحات الكتاب الأصلية">
+<article class="source-page" aria-labelledby="page54-title">
+<h2 id="page54-title">صفحة الكتاب 54</h2>
+<div class="pdf-page" id="pdf-page-1" data-page="1">
+<canvas aria-label="صورة صفحة الكتاب 54"></canvas>
+<div class="textLayer" aria-hidden="true"></div>
+</div>
+</article>
+<article class="source-page" aria-labelledby="page55-title">
+<h2 id="page55-title">صفحة الكتاب 55</h2>
+<div class="pdf-page" id="pdf-page-2" data-page="2">
+<canvas aria-label="صورة صفحة الكتاب 55"></canvas>
+<div class="textLayer" aria-hidden="true"></div>
+</div>
+</article>
+</section>
+<p class="reader-footnote">التظليل مرتبط بالنص المستخرج من ملف الكتاب نفسه. إذا تعذّر تحميل الصفحات، استخدم رابط فتح الملف الأصلي أعلاه.</p>
+<footer class="page-footer">
+<a class="button primary-button" href="./quiz.html">انتقل إلى الفهم والتمارين ←</a>
+</footer>
 </main>
-<script src="./art-advertising-config.js?v=4"></script>
-<script src="./art-advertising-viewer.js?v=4" defer></script>
-</body></html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+<script src="./art-advertising-config.js?v=5" defer></script>
+<script src="./art-advertising-viewer.js?v=5" defer></script>
+</body>
+</html>
