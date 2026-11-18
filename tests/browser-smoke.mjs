@@ -172,6 +172,15 @@ async function main() {
     assert.equal(await page.locator("#extra-exercises [data-type='true_false']").count(), 5);
     assert.equal(await page.locator(".evidence-button").count(), 26);
     assert.equal(await page.locator(".evidence-button:disabled").count(), 0);
+    const evidenceTargets = await page.locator(".evidence-button").evaluateAll(links =>
+      links.map(link => decodeURIComponent(new URL(link.href).hash.replace(/^#sentence-/, "")))
+    );
+    const passageIds = await page.evaluate(() =>
+      window.ART_AD_CONFIG.passageSentences.map(sentence => String(sentence.id))
+    );
+    assert.equal(evidenceTargets.length, 26);
+    assert.ok(evidenceTargets.every(id => passageIds.includes(id)),
+      "Every question's evidence link must target an existing reading sentence.");
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(0).locator("input[type=radio]").count(), 4);
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(14).locator("input[type=radio]").count(), 2);
 
