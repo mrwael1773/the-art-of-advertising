@@ -111,7 +111,7 @@ async function main() {
     assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true, "The configured textbook PDF viewer should be visible on page load.");
     assert.equal(
       await page.locator("#book-pdf").getAttribute("src"),
-      "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview#page=54",
+      "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/preview",
       "The textbook viewer should use the verified public Google Drive preview URL."
     );
     assert.equal(await page.locator("#open-book-pdf").isVisible(), true);
