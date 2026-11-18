@@ -4,7 +4,7 @@ window.ART_AD_CONFIG = {
   "passageSentences": [
     {
       "id": "fiat-1",
-      "text": "The FIAT 500 is a small classic car that returned with a fresh design."
+      "text": "The FIAT 500 is a tiny classic car that returned with a fresh design."
     },
     {
       "id": "fiat-2",
@@ -40,7 +40,7 @@ window.ART_AD_CONFIG = {
     },
     {
       "id": "henk-6",
-      "text": "The wheels are made of titanium, and the price can range from twenty thousand to forty thousand dollars."
+      "text": "Forbes describes Henk as the world’s most expensive suitcase; its titanium wheels provide a smooth ride, and its price ranges from twenty thousand to forty thousand dollars."
     },
     {
       "id": "bike-1",
