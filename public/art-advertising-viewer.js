@@ -28,9 +28,15 @@
   if (typeof config.pdfUrl === "string" && config.pdfUrl.trim()) {
     try {
       const pdf = new URL(config.pdfUrl, window.location.href);
-      const safeProtocol = pdf.origin === window.location.origin;
-      if (safeProtocol && /\.pdf$/i.test(pdf.pathname)) showPdf(pdf.href, "تم تحميل ملف صفحات الدرس.");
-      else status.textContent = "رابط PDF غير صالح. استخدم رابطًا مباشرًا من داخل الموقع.";
+      const safeProtocol = pdf.protocol === "https:";
+      const safeLocalPdf = pdf.origin === window.location.origin && /\.pdf$/i.test(pdf.pathname);
+      const safeDrivePreview = pdf.origin === "https://drive.google.com" &&
+        /^\/file\/d\/[A-Za-z0-9_-]+\/preview\/?$/.test(pdf.pathname);
+      if (safeProtocol && (safeLocalPdf || safeDrivePreview)) {
+        showPdf(pdf.href, "تم تحميل صفحتي الدرس من ملف PDF العام.");
+      } else {
+        status.textContent = "رابط PDF غير صالح أو غير مدعوم.";
+      }
     } catch { status.textContent = "تعذر قراءة رابط ملف PDF." }
   } else {
     status.textContent = "لم يُربط ملف PDF دائم بالموقع بعد. يمكنك معاينته من جهازك مؤقتًا.";
