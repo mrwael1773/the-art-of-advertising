@@ -144,7 +144,7 @@ async function main() {
     assert.equal(await page.locator(".passage-text").count(), 0);
     assert.match(await page.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/);
     assert.equal(await page.locator(".source-pdf-link").getAttribute("href"),
-      "https://drive.google.com/file/d/12uTt_P9J_uIQDkTMPQBsgDCYiTfa8QY1/view");
+      "./assets/art-advertising-source.pdf");
     assert.equal(await page.locator("#play-reading").isDisabled(), false);
     assert.equal(await page.locator("#speech-speed").getAttribute("min"), "0.25");
     assert.equal(await page.locator("#speech-speed").getAttribute("max"), "1");
