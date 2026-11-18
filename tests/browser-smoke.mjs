@@ -139,7 +139,7 @@ async function main() {
     let spoken = await page.evaluate(() => window.__spoken.at(-1));
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
-    assert.equal(spoken.text, "The FIAT 500 is a small classic car that returned with a fresh design.");
+    assert.equal(spoken.text, "The FIAT 500 is a tiny classic car that returned with a fresh design.");
     assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
     await page.locator("#pause-reading").click();
     await page.locator("#resume-reading").click();
