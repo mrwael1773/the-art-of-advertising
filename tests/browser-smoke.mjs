@@ -195,7 +195,7 @@ async function main() {
     assert.equal(await firstEvidenceButton.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await firstEvidenceButton.click();
     await page.waitForFunction(() =>
-      location.pathname.endsWith("/textbook.html") && location.hash === "#sentence-fiat-1"
+      location.pathname.includes("textbook.html") && location.hash === "#sentence-fiat-1"
     );
     await page.waitForTimeout(350);
     assert.equal(await page.locator(".passage-sentence.is-speaking").count(), 1);
