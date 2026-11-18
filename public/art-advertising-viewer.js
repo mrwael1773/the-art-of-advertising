@@ -28,9 +28,9 @@
   if (typeof config.pdfUrl === "string" && config.pdfUrl.trim()) {
     try {
       const pdf = new URL(config.pdfUrl, window.location.href);
-      const safeProtocol = pdf.protocol === "https:" || pdf.origin === window.location.origin;
+      const safeProtocol = pdf.origin === window.location.origin;
       if (safeProtocol && /\.pdf$/i.test(pdf.pathname)) showPdf(pdf.href, "تم تحميل ملف صفحات الدرس.");
-      else status.textContent = "رابط PDF غير صالح. استخدم رابط HTTPS مباشرًا أو ملفًا داخل الموقع.";
+      else status.textContent = "رابط PDF غير صالح. استخدم رابطًا مباشرًا من داخل الموقع.";
     } catch { status.textContent = "تعذر قراءة رابط ملف PDF." }
   } else {
     status.textContent = "لم يُربط ملف PDF دائم بالموقع بعد. يمكنك معاينته من جهازك مؤقتًا.";
