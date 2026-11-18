@@ -7,16 +7,19 @@
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
+  const sentences = Array.isArray(config.passageSentences) ? config.passageSentences : [];
+  const sentenceIds = new Set(sentences.map((s,i)=>String(s.id || (i+1))));
+  const evidenceIsValid = q => Boolean(q.evidenceId && sentenceIds.has(String(q.evidenceId)));
   const evidenceButton = q => {
-    const href = q.evidenceId ? './textbook.html#sentence-' + encodeURIComponent(q.evidenceId) : "";
+    const href = evidenceIsValid(q) ? './textbook.html#sentence-' + encodeURIComponent(q.evidenceId) : "";
     return '<button type="button" class="evidence-button" ' +
-      (href ? 'data-evidence="' + href + '"' : 'disabled title="سيُفعّل بعد ربط السؤال بجملة الدليل"') +
+      (href ? 'data-evidence="' + href + '"' : 'disabled title="لا يتوفر دليل موثق لهذا السؤال بعد"') +
       '>اعرض مكان الإجابة</button>';
   };
-  const renderQuestion = (q, index, prefix) => {
+  const renderQuestion = (q, index, prefix, expectedType) => {
     let answerUI = "";
-    if (q.type === "fill_blank") {
-      answerUI = '<label class="blank-answer">إجابتك: <input class="blank-input" type="text" autocomplete="off" placeholder="اكتب الكلمة الناقصة"></label>';
+    if (expectedType === "fill_blank") {
+      answerUI = '<label class="blank-answer">إجابتك: <input class="blank-input" type="text" autocomplete="off" placeholder="اكتب الإجابة"></label>';
     } else {
       const options = Array.isArray(q.options) ? q.options : [];
       answerUI = '<div class="answer-options">' + options.map(option =>
@@ -25,30 +28,36 @@
       ).join("") + '</div>';
     }
     const accepted = Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers : (q.correctAnswer ? [q.correctAnswer] : []);
-    return '<article class="question-card" data-type="' + esc(q.type || "single_select") +
-      '" data-correct="' + esc(q.correctAnswer || "") + '" data-accepted="' + esc(JSON.stringify(accepted)) + '">' +
+    const typeValid = q.type === expectedType;
+    const evidenceValid = evidenceIsValid(q);
+    const answerValid = expectedType === "fill_blank"
+      ? accepted.length > 0
+      : Array.isArray(q.options) && q.options.length === (expectedType === "true_false" ? 2 : 4) && accepted.length > 0;
+    return '<article class="question-card" data-type="' + expectedType +
+      '" data-correct="' + esc(q.correctAnswer || "") + '" data-accepted="' + esc(JSON.stringify(accepted)) +
+      '" data-valid="' + (typeValid && evidenceValid && answerValid ? "true" : "false") + '">' +
       '<h3>' + esc(q.prompt || ("السؤال " + (index + 1))) + '</h3>' + answerUI +
-      '<div class="question-actions"><button type="button" class="check-answer">تحقق من الإجابة</button>' +
+      '<div class="question-actions"><button type="button" class="check-answer" ' +
+      (answerValid ? "" : "disabled") + '>تحقق من الإجابة</button>' +
       evidenceButton(q) + '</div><span class="question-feedback" aria-live="polite"></span></article>';
   };
   const quick = Array.isArray(config.quickCheckQuestions) ? config.quickCheckQuestions : [];
   const exercises = Array.isArray(config.exercises) ? config.exercises : [];
   quickRoot.innerHTML = quick.length
-    ? quick.map((q,i)=>renderQuestion(q,i,"quick")).join("")
-    : '<p class="art-note">أسئلة الصح والخطأ الستة ستُضاف بعد مطابقة نصها ومواضع أدلتها مع المصدر.</p>';
+    ? quick.map((q,i)=>renderQuestion(q,i,"quick","true_false")).join("")
+    : '<p class="art-note">لم تُضف أسئلة Quick Check الستة بعد.</p>';
 
   const groups = [
-    { title:"الأسئلة 1–10: اختيار من متعدد", type:"single_select", items:exercises.slice(0,10) },
-    { title:"الأسئلة 11–15: أكمل الفراغ", type:"fill_blank", items:exercises.slice(10,15) },
-    { title:"الأسئلة 16–20: صح أو خطأ", type:"true_false", items:exercises.slice(15,20) }
+    { title:"الأسئلة 1–10: اختيار من متعدد", type:"single_select", start:0, end:10 },
+    { title:"الأسئلة 11–15: أكمل الفراغ", type:"fill_blank", start:10, end:15 },
+    { title:"الأسئلة 16–20: صح أو خطأ", type:"true_false", start:15, end:20 }
   ];
-  extraRoot.innerHTML = groups.map((group, gi) =>
-    '<section class="exercise-section"><h3>' + group.title + '</h3>' +
-    (group.items.length
-      ? group.items.map((q,qi)=>renderQuestion({...q,type:group.type},gi + "-" + qi,"exercise")).join("")
-      : '<p class="art-note">ستُضاف هذه المجموعة بعد اعتماد أسئلتها وربط كل سؤال بجملة الدليل.</p>') +
-    '</section>'
-  ).join("");
+  extraRoot.innerHTML = groups.map(group => {
+    const items = exercises.slice(group.start,group.end);
+    return '<section class="exercise-section"><h3>' + group.title + '</h3>' +
+      (items.length ? items.map((q,i)=>renderQuestion(q,group.start+i,"exercise",group.type)).join("") :
+      '<p class="art-note">لم تُضف أسئلة هذه المجموعة بعد.</p>') + '</section>';
+  }).join("");
 
   document.querySelectorAll(".check-answer").forEach(button => {
     button.addEventListener("click", () => {
@@ -64,10 +73,10 @@
       let accepted = [];
       try { accepted = JSON.parse(card.dataset.accepted || "[]"); } catch {}
       if (!accepted.length && card.dataset.correct) accepted = [card.dataset.correct];
-      if (!accepted.length) { feedback.textContent = "لم يُفعّل التصحيح لهذا السؤال بعد."; return; }
+      if (!accepted.length) { feedback.textContent = "لم يُضف مفتاح الإجابة لهذا السؤال بعد."; return; }
       const normalize = value => String(value).trim().toLocaleLowerCase();
       const correct = accepted.some(value => normalize(value) === normalize(answer));
-      feedback.textContent = correct ? "إجابة صحيحة!" : "ليست الإجابة الصحيحة، حاول مرة أخرى.";
+      feedback.textContent = correct ? "إجابة صحيحة!" : "إجابة غير صحيحة، حاول مرة أخرى.";
       feedback.classList.toggle("is-correct", correct);
       feedback.classList.toggle("is-wrong", !correct);
     });
@@ -75,5 +84,18 @@
   document.querySelectorAll("[data-evidence]").forEach(button => {
     button.addEventListener("click", () => { location.href = button.dataset.evidence; });
   });
-  status.textContent = 'الترتيب المعتمد: 1–10 اختيار من متعدد، 11–15 أكمل الفراغ، 16–20 صح أو خطأ. ولكل سؤال زر للوصول إلى موضع الدليل.';
+
+  const missingEvidence = [...quick,...exercises].filter(q=>!evidenceIsValid(q)).length;
+  const invalidTypes = exercises.filter((q,i)=>{
+    const expected = i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false";
+    return q.type !== expected;
+  }).length;
+  const complete = quick.length === 6 && exercises.length === 20 &&
+    exercises.every((q,i)=>q.type === (i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false")) &&
+    missingEvidence === 0 && invalidTypes === 0;
+  status.textContent = complete
+    ? "اكتملت الأسئلة العشرون وأسئلة Quick Check، وكل سؤال مرتبط بجملة دليل في القطعة."
+    : "المراجعة: " + quick.length + "/6 أسئلة Quick Check، " + exercises.length + "/20 تمرينًا، " +
+      missingEvidence + " سؤالًا بلا دليل موثق. لن تُفعّل أزرار الأدلة إلا بعد ربطها بجمل القطعة.";
+  status.classList.toggle("is-complete",complete);
 })();
