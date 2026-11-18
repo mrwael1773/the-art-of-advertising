@@ -62,6 +62,11 @@ test("reading page has the PDF viewer, local preview, playback and speed control
   assert.match(textbook, /max="1"/);
   assert.match(textbook, /art-advertising-viewer\.js/);
   assert.match(viewer, /SpeechSynthesisUtterance/);
+  assert.match(viewer, /const speechSupported/);
+  assert.match(viewer, /synth\?\.pause/);
+  assert.match(viewer, /synth\?\.resume/);
+  assert.match(viewer, /Ignore malformed URL fragments/);
+  assert.match(textbook, /id="speech-status"/);
   assert.match(viewer, /playEvidenceSentence/);
   assert.match(viewer, /URL\.createObjectURL/);
   assert.match(viewer, /URL\.revokeObjectURL/);
