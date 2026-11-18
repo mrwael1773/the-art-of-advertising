@@ -48,7 +48,7 @@ lines.forEach((line,i)=>{
  line[2].forEach(([x,y,w,h],row)=>{
   const b=document.createElement("button");b.type="button";b.className="hot";
   b.setAttribute("aria-label",row===0?"تشغيل جملة "+(i+1)+" — "+line[0]:"السطر "+(row+1)+" من الجملة "+(i+1));
-  Object.assign(b.style,{left:x+"%",top:(y+1.0)+"%",width:w+"%",height:h+"%"});
+  Object.assign(b.style,{left:x+"%",top:(y+2.0)+"%",width:w+"%",height:(h*0.62)+"%"});
   b.addEventListener("click",()=>speak(i));page.append(b);group.push(b);
  });
  spots.push(group);
