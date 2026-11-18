@@ -106,7 +106,12 @@ async function main() {
       contentType: "text/html; charset=utf-8",
       body: "<!doctype html><title>Google Drive preview test stub</title>"
     }));
-    await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    const textbookResponse = await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    const textbookCsp = textbookResponse.headers()["content-security-policy"] || "";
+    assert.match(textbookCsp, /frame-src[^;]*https:\/\/drive\.google\.com/,
+      "The page CSP must allow only the configured Google Drive preview frame.");
+    assert.ok(page.frames().some(frame => frame.url().startsWith("https://drive.google.com/file/d/")),
+      "The configured Google Drive preview frame should be navigable under the page CSP.");
     assert.equal(await page.locator("#passage-sentences .passage-sentence").count(), 18);
     assert.match(await page.locator("#sentence-henk-3").textContent(), /25 grams/,
       "The Henk suitcase reading detail should retain the source's 25-gram light-pull fact.");
