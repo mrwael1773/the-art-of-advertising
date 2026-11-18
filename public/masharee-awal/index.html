@@ -25,6 +25,7 @@ main{max-width:850px;margin:auto}header{display:flex;justify-content:space-betwe
 <button class="secondary" id="stop" disabled>إيقاف</button>
 </div>
 <div class="speed-control"><label for="speed">سرعة الصوت</label><input id="speed" type="range" min="0.25" max="1" step="0.05" value="1"><output id="speedValue" for="speed">1.0×</output><span class="note">0.25× بطيء جدًا — 1× السرعة الطبيعية</span></div>
+<audio id="omarAudio" preload="auto" src="https://resource2.heygen.ai/text_to_speech/e5985a6c5fcb4e1d9247c437a6067191/c30ecab014cb4a8d816d07f6b2b625c8/id=7184660b9fed43cfb48cb23227905644.wav"></audio>
 <div class="page" id="page"><img src="conversation-page-59.jpg" alt="صفحة الكتاب الأصلية للمحادثة" onerror="document.querySelector('#status').textContent='تعذر تحميل صورة الصفحة. تحقق من الاتصال ثم أعد تحميل الموقع.'"></div>
 <div class="status" id="status" aria-live="polite">اضغط زر الاستماع أو اضغط على موضع جملة في الصفحة لسماعها وحدها.</div>
 <p class="note">يختار الموقع أفضل صوتين إنجليزيين متاحين في جهازك، مع تفضيل الصوت الطبيعي لعمر. جودة الصوت وعدد الأصوات يعتمدان على الأصوات المثبتة في الجهاز والمتصفح.</p>
@@ -52,8 +53,10 @@ lines.forEach((line,i)=>{
  spots.push(group);
 });
 let voices=[],token=0,current=-1,mode="idle";
+const omarAudio=$("#omarAudio");
+const omarRanges={1:[0.256,1.30],3:[1.664,7.92],5:[8.491,21.14],7:[21.816,38.65]};
 const speed=$("#speed"),speedValue=$("#speedValue");
-speed.addEventListener("input",()=>{speedValue.value=Number(speed.value).toFixed(1)+"×";speedValue.textContent=speedValue.value;});
+speed.addEventListener("input",()=>{speedValue.value=Number(speed.value).toFixed(1)+"×";speedValue.textContent=speedValue.value;omarAudio.playbackRate=Number(speed.value);});
 function loadVoices(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));}
 function scoreVoice(v,role){
  const n=(v.name+" "+v.voiceURI).toLowerCase();let s=0;
@@ -76,14 +79,23 @@ function clearActive(){spots.flat().forEach(b=>b.classList.remove("active","sele
 function mark(i){clearActive();spots[i].forEach(b=>b.classList.add("active","selected"));status.textContent=lines[i][0]+" — الجملة "+(i+1);}
 function finish(t,msg){if(t!==token)return;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
 function say(i,t,onDone){
- current=i;const u=new SpeechSynthesisUtterance(lines[i][1]);const v=chosenVoice(lines[i][0]);
+ current=i;mark(i);
+ if(lines[i][0]==="Omar"){
+  const range=omarRanges[i];if(!range){finish(t,"تعذر تحديد مقطع عمر.");return;}
+  const end=range[1];omarAudio.pause();omarAudio.currentTime=range[0];omarAudio.playbackRate=Number(speed.value);
+  const tick=()=>{if(t!==token)return;if(omarAudio.currentTime>=end){omarAudio.pause();omarAudio.removeEventListener("timeupdate",tick);onDone?.();}};
+  omarAudio.addEventListener("timeupdate",tick);
+  omarAudio.play().catch(()=>{omarAudio.removeEventListener("timeupdate",tick);finish(t,"تعذر تحميل صوت عمر. تحقق من الاتصال ثم أعد المحاولة.");});
+  return;
+ }
+ const u=new SpeechSynthesisUtterance(lines[i][1]);const v=chosenVoice(lines[i][0]);
  if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=Number(speed.value);u.pitch=1;
  u.onstart=()=>{if(t===token)mark(i)};
  u.onend=()=>{if(t===token)onDone?.()};
  u.onerror=()=>{if(t===token)finish(t,"تعذر تشغيل الصوت. تحقق من دعم المتصفح للنطق.");};
  speechSynthesis.speak(u);
 }
-function stop(){token++;speechSynthesis.cancel();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
+function stop(){token++;speechSynthesis.cancel();omarAudio.pause();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
 function speak(i){stop();const t=++token;mode="single";controls(true);say(i,t,()=>finish(t,"انتهى الاستماع إلى الجملة المحددة."));}
 function play(){stop();const t=++token;let i=0;mode="all";controls(true);
  const next=()=>{if(t!==token)return;if(i>=lines.length){finish(t,"انتهت المحادثة كاملة.");return;}say(i,t,()=>{i++;next()});};next();
