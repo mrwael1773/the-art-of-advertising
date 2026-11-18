@@ -5,24 +5,23 @@
 <meta name="theme-color" content="#0b1423">
 <title>القراءة والاستماع | The Art of Advertising</title>
 <link rel="stylesheet" href="./styles.css?v=13">
-<link rel="stylesheet" href="./art-advertising.css?v=2">
+<link rel="stylesheet" href="./art-advertising.css?v=3">
 </head>
 <body>
 <main class="shell art-shell">
 <nav class="page-nav"><a href="./index.html">الرئيسية</a><a class="current" href="./textbook.html">القراءة والاستماع</a><a href="./quiz.html">التمارين</a></nav>
-<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>أدوات الصوت والتظليل تعمل على القطعة فقط، ولا تشمل أسئلة الكتاب أو بقية الصفحة.</p></header>
-<section class="art-panel">
-<h2>صفحات الدرس</h2>
+<header class="intro page-intro"><p class="eyebrow">UNIT 4 · THE ART OF ADVERTISING</p><h1>القراءة والاستماع</h1><p>كل ما تحتاجه للقراءة والاستماع موجود في هذه الصفحة؛ يظهر التظليل على الجملة نفسها أثناء نطقها.</p></header>
+<section class="art-panel reading-page-panel" aria-labelledby="reading-page-title">
+<h2 id="reading-page-title">صفحتا الدرس والقطعة الصوتية</h2>
 <p id="pdf-status" role="status">جارٍ التحقق من ملف الصفحتين…</p>
 <div class="pdf-upload-row"><label class="button-like" for="book-pdf-file">اختيار ملف الصفحتين من الجهاز</label><input id="book-pdf-file" type="file" accept="application/pdf,.pdf"><a id="open-book-pdf" href="#" target="_blank" rel="noopener" hidden>فتح الصفحتين في تبويب جديد</a></div>
 <div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden><iframe id="book-pdf" title="صفحتا الدرس 54 و55 من The Art of Advertising" loading="lazy"></iframe></div>
-<p class="art-note">يُعرض ملف الصفحتين من رابط PDF عام. إذا تعذّر عرضه داخل المتصفح، استخدم رابط «فتح الصفحتين في تبويب جديد».</p>
-</section>
-<section class="art-panel">
-<h2>القطعة الصوتية</h2>
-<p>اختر التشغيل للاستماع إلى القطعة جملةً جملة. ويمكنك تغيير السرعة أثناء الاستماع.</p>
+<p class="art-note">إذا تعذّر عرض ملف PDF داخل المتصفح، استخدم رابط «فتح الصفحتين في تبويب جديد».</p>
+<div class="reading-audio-area" aria-labelledby="audio-title">
+<h3 id="audio-title">استمع إلى القطعة وتابع التظليل</h3>
+<p>يُنطق النص جملةً جملة، وتُظلّل الجملة الحالية في مكانها أسفل أدوات الصوت. يمكنك تغيير السرعة أثناء التشغيل.</p>
 <div class="speed-control"><label for="speech-speed">سرعة النطق</label><input id="speech-speed" type="range" min="0.25" max="1" step="0.05" value="1"><output id="speed-value">1.00×</output></div>
-<div class="art-controls">
+<div class="art-controls" aria-label="أدوات تشغيل القطعة">
 <button id="play-reading" type="button">تشغيل</button>
 <button id="pause-reading" type="button">إيقاف مؤقت</button>
 <button id="resume-reading" type="button">استكمال</button>
@@ -30,7 +29,8 @@
 </div>
 <p id="speech-status" class="art-note" role="status">يجري تجهيز الصوت…</p>
 <div id="passage-sentences" class="passage-text" aria-live="polite"></div>
-<p class="art-note">تُضاف الجمل المعتمدة إلى مشغل القطعة، ويرتبط كل سؤال في صفحة التمارين بمعرّف جملة محدد هنا.</p>
+<p class="art-note">كل سؤال في صفحة التمارين يرتبط بالجملة الداعمة هنا؛ زر «اعرض مكان الإجابة» يعيدك مباشرةً إلى موضعها ويبدأ نطقها.</p>
+</div>
 </section>
 </main>
 <script src="./art-advertising-config.js?v=4"></script>
