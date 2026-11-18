@@ -1,7 +1,7 @@
-/* Only add verified lesson text and question/evidence mappings here. */
+/* Add only verified source-aligned text, answers, and evidence sentence IDs. */
 window.ART_AD_CONFIG = {
   pdfUrl: "",
   passageSentences: [],
   quickCheckQuestions: [],
-  exercises: []
+  exerciseSections: []
 };
