@@ -2,31 +2,57 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#10233f">
-  <meta name="description" content="النتيجة النهائية وتمييز الإجابات التي تحتاج إلى مراجعة">
-  <title>النتيجة النهائية | The World of Plastic</title>
-  <link rel="stylesheet" href="./styles.css?v=5">
-  <script src="./results.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6fb">
+  <meta name="description" content="النتيجة النهائية ومراجعة الأسئلة التي تحتاج إلى تحسين.">
+  <title>النتيجة النهائية | The Art of Advertising</title>
+  <link rel="stylesheet" href="./styles.css?v=13">
+  <script src="./results.js?v=1" defer></script>
 </head>
 <body>
   <main class="shell">
-    <header class="brand">
-      <div class="brand-mark" aria-hidden="true">A</div>
-      <div><p class="eyebrow">UNIT 4 · READING 9</p><h1>The Art of Advertising</h1><p class="subtitle">The World of Plastic</p></div>
+    <header class="site-header">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true">4</span>
+        <span class="brand-copy">
+          <span class="eyebrow">UNIT 4 · YOUR RESULT</span>
+          <strong>THE ART OF ADVERTISING</strong>
+        </span>
+      </a>
+      <a class="back-link" href="./index.html">الرئيسية</a>
     </header>
-    <section class="intro page-intro"><p class="eyebrow">YOUR PRACTICE</p><h2>النتيجة النهائية</h2><p>راجع نتيجتك والإجابات التي تحتاج إلى إعادة التعلّم.</p></section>
-    <section class="auth-card lesson-page" aria-live="polite">
-      <div id="result-unavailable" hidden><p class="lesson-message">النتيجة غير متاحة. ابدأ محاولة جديدة من صفحة التمارين.</p><a class="primary result-retry" href="./index.html">العودة إلى القائمة الرئيسية</a></div>
+
+    <header class="page-intro">
+      <p class="eyebrow">FINAL RESULT</p>
+      <h1>النتيجة النهائية</h1>
+      <p>راجع نتيجتك، ويمكنك فتح دليل أي إجابة غير صحيحة من داخل القطعة.</p>
+    </header>
+
+    <section class="result-panel" aria-live="polite">
+      <div id="result-unavailable" class="empty-state" hidden>
+        <p>لا توجد نتيجة متاحة لهذه المحاولة. ارجع إلى التمارين وأكمل الإجابة عن الأسئلة.</p>
+        <a class="button primary-button" href="./quiz.html">العودة إلى التمارين</a>
+      </div>
       <div id="result-content" hidden>
-        <div class="final-score"><strong id="final-score"></strong><span id="score-caption">إجابتك الصحيحة من إجمالي الأسئلة</span></div>
-        <h3 id="wrong-heading">الإجابات الخاطئة ومراجعتها</h3>
-        <div id="wrong-answers" class="wrong-list"></div>
-        <p id="all-correct" class="result-empty" hidden>ممتاز! جميع إجاباتك صحيحة. 🎉</p>
-        <a class="primary result-retry" href="./index.html">العودة إلى القائمة الرئيسية</a>
+        <div class="score-card">
+          <span class="eyebrow">YOUR SCORE</span>
+          <strong id="final-score">0 / 26</strong>
+          <p id="score-caption">إجابات صحيحة</p>
+        </div>
+        <div id="all-correct" class="all-correct" hidden>
+          ممتاز! جميع إجاباتك صحيحة. 🎉
+        </div>
+        <section id="wrong-section">
+          <h2 id="wrong-heading">أسئلة تحتاج إلى مراجعة</h2>
+          <div id="wrong-answers" class="wrong-list"></div>
+        </section>
+        <div class="result-actions">
+          <a class="button primary-button" href="./quiz.html">إعادة حل التمارين</a>
+          <a class="button secondary-button" href="./index.html">العودة إلى الرئيسية</a>
+        </div>
       </div>
     </section>
-    <footer><p>نتيجة هذه المحاولة مؤقتة ولا يتم حفظها بعد عرضها.</p></footer>
+    <footer class="page-footer"><p>نتيجة هذه المحاولة مؤقتة، ولا تُحفظ كملف شخصي أو حساب طالب.</p></footer>
   </main>
 </body>
 </html>
