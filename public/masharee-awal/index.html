@@ -48,7 +48,7 @@ lines.forEach((line,i)=>{
  line[2].forEach(([x,y,w,h],row)=>{
   const b=document.createElement("button");b.type="button";b.className="hot";
   b.setAttribute("aria-label",row===0?"تشغيل جملة "+(i+1)+" — "+line[0]:"السطر "+(row+1)+" من الجملة "+(i+1));
-  Object.assign(b.style,{left:x+"%",top:(y+3.2)+"%",width:w+"%",height:(h*0.48)+"%"});
+  Object.assign(b.style,{left:x+"%",top:(y+2.4)+"%",width:w+"%",height:(h*0.48)+"%"});
   b.addEventListener("click",()=>speak(i));page.append(b);group.push(b);
  });
  spots.push(group);
@@ -90,13 +90,13 @@ function say(i,t,onDone){
  audio.pause();audio.currentTime=range[0];audio.playbackRate=Number(speed.value);
  const tick=()=>{
   if(t!==token)return;
-  if(audio.currentTime>=end){
-   audio.pause();audio.removeEventListener("timeupdate",tick);onDone?.();
+  if(!audio.paused&&audio.currentTime>=end){
+   audio.pause();audio.currentTime=end;onDone?.();return;
   }
+  requestAnimationFrame(tick);
  };
- audio.addEventListener("timeupdate",tick);
+ requestAnimationFrame(tick);
  audio.play().catch(()=>{
-  audio.removeEventListener("timeupdate",tick);
   finish(t,"تعذر تحميل التسجيل الصوتي. تحقق من الاتصال ثم أعد المحاولة.");
  });
 }
