@@ -16,19 +16,19 @@ const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript,
   read("../public/art-advertising.css")
 ]);
 
-const configMatch = configSource.match(/window\\.ART_AD_CONFIG\\s*=\\s*([\\s\\S]*);\\s*$/);
+const configMatch = configSource.match(/window\.ART_AD_CONFIG\s*=\s*([\s\S]*);\s*$/);
 assert.ok(configMatch, "lesson configuration should be a JavaScript object assignment");
 const lessonConfig = JSON.parse(configMatch[1]);
 const sentenceIds = new Set(lessonConfig.passageSentences.map(sentence => String(sentence.id)));
 
 test("Worker serves static assets with the required security headers", () => {
-  assert.match(worker, /headers\\.set\\("x-content-type-options", "nosniff"\\)/);
-  assert.match(worker, /headers\\.set\\("x-frame-options", "DENY"\\)/);
-  assert.match(worker, /headers\\.set\\("referrer-policy", "no-referrer"\\)/);
-  assert.match(worker, /headers\\.set\\("cross-origin-resource-policy", "same-origin"\\)/);
+  assert.match(worker, /headers\.set\("x-content-type-options", "nosniff"\)/);
+  assert.match(worker, /headers\.set\("x-frame-options", "DENY"\)/);
+  assert.match(worker, /headers\.set\("referrer-policy", "no-referrer"\)/);
+  assert.match(worker, /headers\.set\("cross-origin-resource-policy", "same-origin"\)/);
   assert.match(worker, /content-security-policy/);
-  assert.match(worker, /env\\.ASSETS\\.fetch\\(request\\)/);
-  assert.doesNotMatch(worker, /env\\.DB|D1|api/);
+  assert.match(worker, /env\.ASSETS\.fetch\(request\)/);
+  assert.doesNotMatch(worker, /env\.DB|D1|api/);
   assert.doesNotMatch(wrangler, /d1_databases|database_id|binding = "DB"/);
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /X-Frame-Options: DENY/);
@@ -38,8 +38,8 @@ test("Worker serves static assets with the required security headers", () => {
 });
 
 test("home page links to the reading and exercises pages without account controls", () => {
-  assert.match(home, /href="\\.\\/textbook\\.html"/);
-  assert.match(home, /href="\\.\\/quiz\\.html"/);
+  assert.match(home, /href="\.\/textbook\.html"/);
+  assert.match(home, /href="\.\/quiz\.html"/);
   assert.match(home, /القراءة والاستماع|القطعة/);
   assert.match(home, /التمارين/);
   assert.doesNotMatch(home, /id="auth-form"|id="login-tab"|id="register-tab"|type="password"/);
@@ -55,13 +55,13 @@ test("reading page has the PDF viewer, local preview, playback and speed control
   assert.match(textbook, /id="resume-reading"/);
   assert.match(textbook, /id="stop-reading"/);
   assert.match(textbook, /id="speech-speed"/);
-  assert.match(textbook, /min="0\\.25"/);
+  assert.match(textbook, /min="0\.25"/);
   assert.match(textbook, /max="1"/);
-  assert.match(textbook, /art-advertising-viewer\\.js/);
+  assert.match(textbook, /art-advertising-viewer\.js/);
   assert.match(viewer, /SpeechSynthesisUtterance/);
   assert.match(viewer, /playEvidenceSentence/);
-  assert.match(viewer, /URL\\.createObjectURL/);
-  assert.match(viewer, /URL\\.revokeObjectURL/);
+  assert.match(viewer, /URL\.createObjectURL/);
+  assert.match(viewer, /URL\.revokeObjectURL/);
   assert.match(viewer, /is-speaking/);
 });
 
@@ -108,7 +108,7 @@ test("student exercise state is not persisted between visits", () => {
 });
 
 test("reading sentence highlight is visually distinct and contained to the sentence", () => {
-  assert.match(styles, /\\.passage-sentence/);
-  assert.match(styles, /\\.passage-sentence\\.is-speaking/);
+  assert.match(styles, /\.passage-sentence/);
+  assert.match(styles, /\.passage-sentence\.is-speaking/);
   assert.match(styles, /pdf-upload-row/);
 });
