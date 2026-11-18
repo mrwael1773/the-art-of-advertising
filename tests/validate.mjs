@@ -72,7 +72,6 @@ test("lesson content contains six Quick Check and exactly twenty correctly order
   assert.deepEqual(
     lessonConfig.exercises.map(question => question.type),
     [
-      ..."single_select ".repeat(0),
       ...Array(10).fill("single_select"),
       ...Array(5).fill("fill_blank"),
       ...Array(5).fill("true_false")
