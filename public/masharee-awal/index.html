@@ -6,14 +6,14 @@
 <style>
 *{box-sizing:border-box}body{margin:0;padding:14px;background:#f3f5f8;color:#172033;font-family:system-ui,Tahoma,sans-serif}
 main{max-width:850px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:10px}h1{font-size:1.2rem}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 15px;background:#155e75;color:white;cursor:pointer}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 15px;background:#155e75;color:white;cursor:pointer}.speed-control{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;padding:10px 13px;border-radius:10px;margin:10px 0 14px}.speed-control input{width:min(220px,48vw);accent-color:#155e75}.speed-control output{font-weight:800;min-width:3.5em;text-align:center}
 .secondary{background:#e2e8f0;color:#172033}button:disabled{opacity:.45;cursor:not-allowed}
 .page{position:relative;max-width:790px;margin:auto;background:white;line-height:0;box-shadow:0 8px 24px #0001;overflow:hidden}
 .page img{width:100%;height:auto;display:block}
-.hot{position:absolute;border:0;border-radius:2px;background:rgba(255,205,45,.22);mix-blend-mode:multiply;padding:0;min-width:0;min-height:0;cursor:pointer}
+.hot{position:absolute;border:0;border-radius:1px;background:transparent;padding:0;min-width:0;min-height:0;cursor:pointer;opacity:1;mix-blend-mode:normal}
 .hot:focus-visible{outline:2px solid #2563eb;outline-offset:1px}
-.hot.selected{background:rgba(255,205,45,.25)}
-.hot.active{background:rgba(34,197,94,.24);box-shadow:none}
+.hot.selected{background:transparent}
+.hot.active{background:rgba(255,220,35,.25);mix-blend-mode:multiply;box-shadow:none}
 .status{max-width:790px;margin:12px auto;padding:12px;background:white;border-radius:10px;color:#475569;line-height:1.6}
 .note{font-size:.88rem;color:#64748b;margin:8px 0}
 </style></head>
@@ -24,20 +24,21 @@ main{max-width:850px;margin:auto}header{display:flex;justify-content:space-betwe
 <button class="secondary" id="pause" disabled>إيقاف مؤقت</button>
 <button class="secondary" id="stop" disabled>إيقاف</button>
 </div>
+<div class="speed-control"><label for="speed">سرعة الصوت</label><input id="speed" type="range" min="0.6" max="1.5" step="0.1" value="1"><output id="speedValue" for="speed">1.0×</output><span class="note">البطيء ← → السريع</span></div>
 <div class="page" id="page"><img src="conversation-page-59.jpg" alt="صفحة الكتاب الأصلية للمحادثة" onerror="document.querySelector('#status').textContent='تعذر تحميل صورة الصفحة. تحقق من الاتصال ثم أعد تحميل الموقع.'"></div>
 <div class="status" id="status" aria-live="polite">اضغط زر الاستماع أو اضغط على موضع جملة في الصفحة لسماعها وحدها.</div>
 <p class="note">يختار الموقع أفضل صوتين إنجليزيين متاحين في جهازك، مع تفضيل الصوت الطبيعي لعمر. جودة الصوت وعدد الأصوات يعتمدان على الأصوات المثبتة في الجهاز والمتصفح.</p>
 </main>
 <script>
 const lines=[
-["Adnan","Hi, Omar. What are you up to?",[[19.1,20.1,17.0,1.25]]],
-["Omar","I'm turning off my alarm.",[[19.1,21.8,16.1,1.25]]],
-["Adnan","What on earth is that?",[[19.1,23.5,15.8,1.25]]],
-["Omar","It's the new flying helicopter alarm. It runs on rechargeable batteries! It's the best alarm clock I've ever had.",[[19.1,25.2,41.0,1.25],[19.1,26.9,33.0,1.25]]],
-["Adnan","How does it work?",[[19.1,28.6,14.8,1.25]]],
-["Omar","You see, the top part, in other words the flying part, is placed on a base. The alarm is set and when it goes off the top part flies off the base. It is made to fly in order to make you get up, catch it, and put it back on its base.",[[19.1,30.3,58.0,1.25],[19.1,32.0,55.0,1.25],[19.1,33.7,50.0,1.25]]],
-["Adnan","And why is it here?",[[19.1,35.4,15.4,1.25]]],
-["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[[19.1,37.1,60.0,1.25],[19.1,38.8,58.0,1.25],[19.1,40.5,56.5,1.25],[19.1,42.2,58.5,1.25],[19.1,43.9,14.8,1.25]]]
+["Adnan","Hi, Omar. What are you up to?",[[19.1,19.25,17.0,1.35]]],
+["Omar","I'm turning off my alarm.",[[19.1,20.8,16.1,1.35]]],
+["Adnan","What on earth is that?",[[19.1,22.35,15.8,1.35]]],
+["Omar","It's the new flying helicopter alarm. It runs on rechargeable batteries! It's the best alarm clock I've ever had.",[[19.1,23.9,41.0,1.35],[19.1,25.4,33.0,1.35]]],
+["Adnan","How does it work?",[[19.1,27.55,14.8,1.35]]],
+["Omar","You see, the top part, in other words the flying part, is placed on a base. The alarm is set and when it goes off the top part flies off the base. It is made to fly in order to make you get up, catch it, and put it back on its base.",[[19.1,29.1,58.0,1.35],[19.1,30.6,55.0,1.35],[19.1,32.1,50.0,1.35]]],
+["Adnan","And why is it here?",[[19.1,34.0,15.4,1.35]]],
+["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[[19.1,35.55,60.0,1.35],[19.1,37.1,58.0,1.35],[19.1,38.6,56.5,1.35],[19.1,40.1,58.5,1.35],[19.1,41.6,14.8,1.35]]]
 ];
 const $=s=>document.querySelector(s),page=$("#page"),status=$("#status"),pauseBtn=$("#pause"),stopBtn=$("#stop"),spots=[];
 lines.forEach((line,i)=>{
@@ -51,6 +52,8 @@ lines.forEach((line,i)=>{
  spots.push(group);
 });
 let voices=[],token=0,current=-1,mode="idle";
+const speed=$("#speed"),speedValue=$("#speedValue");
+speed.addEventListener("input",()=>{speedValue.value=Number(speed.value).toFixed(1)+"×";speedValue.textContent=speedValue.value;});
 function loadVoices(){voices=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));}
 function scoreVoice(v,role){
  const n=(v.name+" "+v.voiceURI).toLowerCase();let s=0;
@@ -74,7 +77,7 @@ function mark(i){clearActive();spots[i].forEach(b=>b.classList.add("active","sel
 function finish(t,msg){if(t!==token)return;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
 function say(i,t,onDone){
  current=i;const u=new SpeechSynthesisUtterance(lines[i][1]);const v=chosenVoice(lines[i][0]);
- if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=.92;u.pitch=1;
+ if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=Number(speed.value);u.pitch=1;
  u.onstart=()=>{if(t===token)mark(i)};
  u.onend=()=>{if(t===token)onDone?.()};
  u.onerror=()=>{if(t===token)finish(t,"تعذر تشغيل الصوت. تحقق من دعم المتصفح للنطق.");};
