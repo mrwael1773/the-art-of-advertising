@@ -108,6 +108,8 @@ async function main() {
     }));
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#passage-sentences .passage-sentence").count(), 18);
+    assert.match(await page.locator("#sentence-henk-3").textContent(), /25 grams/,
+      "The Henk suitcase reading detail should retain the source's 25-gram light-pull fact.");
     assert.equal(await page.locator("#pdf-frame-wrap").isVisible(), true, "The configured textbook PDF viewer should be visible on page load.");
     assert.equal(
       await page.locator("#book-pdf").getAttribute("src"),
