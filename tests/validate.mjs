@@ -67,6 +67,11 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /renderTextLayer/);
   assert.match(viewer, /sentence-highlight/);
   assert.match(viewer, /getClientRects/);
+  assert.match(viewer, /const wordRects = \[\]/);
+  assert.match(viewer, /Join the word rectangles into one continuous band/);
+  assert.match(viewer, /sentence-highlight-line/);
+  assert.match(styles, /background:rgba\(100,190,230,\.22\)/);
+  assert.match(styles, /mix-blend-mode:multiply/);
   assert.match(viewer, /pointerdown/);
   assert.match(viewer, /caretPositionFromPoint/);
   assert.match(textbook, /sentence-highlight-layer/);
