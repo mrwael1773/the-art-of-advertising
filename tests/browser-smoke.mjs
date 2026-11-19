@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 import axe from "axe-core";
 
 const wranglerVersion = "4.159.0";
@@ -341,6 +341,58 @@ async function main() {
     assert.match(await realPdfPage.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/,
       "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
+
+    // Crucial regression coverage: tap the actual PDF.js text layer, not the
+    // one-span-per-sentence stub above. The source PDF splits and positions
+    // text independently, so only this verifies sentence-to-word mapping.
+    const realPdfTapCases = [
+      { page: 1, word: "tiny", sentence: "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall." },
+      { page: 1, word: "measuring", sentence: "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall." },
+      { page: 1, word: "triumph", sentence: "The new FIAT 500 is a triumph of Italian design." },
+      { page: 1, word: "crafted", sentence: "Every line has been crafted to reflect the legendary original, and buyers will be offered a variety of colors and options to customize their car." },
+      { page: 1, word: "introduced", sentence: "The FIAT 500 two-seater was introduced in 1957, and it became an automotive legend." },
+      { page: 1, word: "According", sentence: "According to Forbes magazine, Henk is the most expensive suitcase in the world." },
+      { page: 2, word: "portable", sentence: "It looks like an ordinary bike, but it’s portable." },
+      { page: 2, word: "transported", sentence: "This folding bike can easily be transported and stored when it is not in use." },
+      { page: 2, word: "contrast", sentence: "In contrast to the standard bike, it is much smaller and less bulky, so it can be parked and stored more readily." },
+      { page: 2, word: "invented", sentence: "Bicycles were invented in France in the 1790s." },
+      { page: 2, word: "steerable", sentence: "In 1817, a steerable front wheel was developed by Baron Karl von Drais in Germany, and in 1839, the first pedals were introduced by Kirkpatrick MacMillan, a blacksmith from Scotland." }
+    ];
+    for (const testCase of realPdfTapCases) {
+      const tapped = await realPdfPage.evaluate(({ pageNumber, word }) => {
+        const root = document.querySelector("#pdf-page-" + pageNumber);
+        const spans = Array.from(root.querySelectorAll(".textLayer span"));
+        for (const span of spans) {
+          const node = span.firstChild;
+          if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+          const match = Array.from(node.textContent.matchAll(/[a-z0-9]+(?:['’][a-z]+)?/gi))
+            .find(item => item[0].toLowerCase() === word.toLowerCase());
+          if (!match) continue;
+          const range = document.createRange();
+          range.setStart(node, match.index);
+          range.setEnd(node, match.index + match[0].length);
+          const rect = range.getBoundingClientRect();
+          span.dispatchEvent(new MouseEvent("click", {
+            bubbles: true, cancelable: true,
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2
+          }));
+          return { word: range.toString(), x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }
+        throw new Error("Could not locate real PDF.js word: " + word);
+      }, { pageNumber: testCase.page, word: testCase.word });
+      const result = await realPdfPage.evaluate(() => ({
+        spoken: window.__spoken.at(-1)?.text || "",
+        highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || ""
+      }));
+      const expectedStart = testCase.sentence.slice(testCase.sentence.toLowerCase().indexOf(testCase.word.toLowerCase()));
+      assert.equal(result.highlighted.toLowerCase(), testCase.word.toLowerCase(),
+        "Real PDF tap must highlight the exact tapped word " + testCase.word + "; got " + result.highlighted);
+      assert.equal(result.spoken, expectedStart,
+        "Real PDF tap must start within the correct source sentence for " + testCase.word +
+        "; tap=" + JSON.stringify(tapped) + "; got=" + result.spoken);
+    }
+
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").count() > 0,
       "Every spoken word should receive an independent highlight mark over the real PDF.js text layer.");
@@ -413,6 +465,94 @@ async function main() {
     assert.equal(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").getAttribute("data-word"), spokenWordBeforeResize,
       "Resizing the original PDF page must preserve the currently spoken word.");
     await realPdfPage.close();
+
+    // Safari uses WebKit. Run the same real-PDF hit test there, with a
+    // touch-style pointer and an iOS-like selection-before-click sequence.
+    const webkitBrowser = await webkit.launch({ headless: true });
+    try {
+      const webkitContext = await webkitBrowser.newContext({
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true
+      });
+      await webkitContext.addInitScript(() => {
+        window.__spoken = [];
+        class TestUtterance {
+          constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+        }
+        Object.defineProperty(window, "SpeechSynthesisUtterance", {
+          configurable: true, value: TestUtterance
+        });
+        Object.defineProperty(window, "speechSynthesis", {
+          configurable: true,
+          value: {
+            cancel() {}, pause() {}, resume() {},
+            speak(utterance) {
+              window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate });
+              window.__lastUtterance = utterance;
+            },
+            get speaking() { return Boolean(window.__lastUtterance); },
+            get paused() { return false; }
+          }
+        });
+      });
+      const safariPage = await webkitContext.newPage();
+      await safariPage.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+      await safariPage.waitForFunction(() =>
+        (document.querySelector("#speech-status")?.textContent || "").includes("الصفحتان الأصليتان جاهزتان"),
+      { timeout: 60000 });
+
+      const safariTapCases = [
+        { page: 1, word: "measuring", sentence: "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall." },
+        { page: 1, word: "triumph", sentence: "The new FIAT 500 is a triumph of Italian design." },
+        { page: 1, word: "introduced", sentence: "The FIAT 500 two-seater was introduced in 1957, and it became an automotive legend." },
+        { page: 1, word: "According", sentence: "According to Forbes magazine, Henk is the most expensive suitcase in the world." },
+        { page: 2, word: "portable", sentence: "It looks like an ordinary bike, but it’s portable." },
+        { page: 2, word: "invented", sentence: "Bicycles were invented in France in the 1790s." }
+      ];
+      for (const testCase of safariTapCases) {
+        const tapPoint = await safariPage.evaluate(({ pageNumber, word }) => {
+          const root = document.querySelector("#pdf-page-" + pageNumber);
+          for (const span of root.querySelectorAll(".textLayer span")) {
+            const node = span.firstChild;
+            if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+            const match = Array.from(node.textContent.matchAll(/[a-z0-9]+(?:['’][a-z]+)?/gi))
+              .find(item => item[0].toLowerCase() === word.toLowerCase());
+            if (!match) continue;
+            // A real student taps only visible text. Scroll the original PDF word
+            // into the mobile viewport before measuring its physical touch point.
+            span.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const rect = range.getBoundingClientRect();
+            window.getSelection().removeAllRanges();
+            const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            if (point.x < 0 || point.x > window.innerWidth || point.y < 0 || point.y > window.innerHeight) {
+              throw new Error("WebKit tap target is outside the visible viewport: " + JSON.stringify(point));
+            }
+            return point;
+          }
+          throw new Error("Could not locate WebKit PDF word: " + word);
+        }, { pageNumber: testCase.page, word: testCase.word });
+        // Use Playwright's real touch input (touchstart/end -> pointer -> click).
+        // The app resolves the source span from touch coordinates, not event.target,
+        // because WebKit may retarget the generated click to a wrapper element.
+        await safariPage.touchscreen.tap(tapPoint.x, tapPoint.y);
+        const result = await safariPage.evaluate(() => ({
+          spoken: window.__spoken.at(-1)?.text || "",
+          highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || ""
+        }));
+        const expectedStart = testCase.sentence.slice(testCase.sentence.toLowerCase().indexOf(testCase.word.toLowerCase()));
+        assert.equal(result.highlighted.toLowerCase(), testCase.word.toLowerCase(),
+          "WebKit touch tap must highlight the exact word " + testCase.word + "; got " + result.highlighted);
+        assert.equal(result.spoken, expectedStart,
+          "WebKit touch tap must use the sentence containing " + testCase.word + "; got " + result.spoken);
+      }
+      await webkitContext.close();
+    } finally {
+      await webkitBrowser.close();
+    }
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const unsupportedPage = await unsupportedContext.newPage();

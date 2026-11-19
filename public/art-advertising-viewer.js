@@ -300,15 +300,36 @@
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
 
-    // Do not trust caret offsets here: on touch browsers the caret API may
-    // return an element-child offset (not a character offset), or choose a
-    // neighbouring line in PDF.js's transformed text layer. Resolve the tap
-    // against the actual client rectangles of every mapped source word.
+    // Resolve the touched PDF.js source item from the physical viewport
+    // coordinates. Mobile Safari may retarget a touch-generated click to a
+    // wrapper/canvas rather than the underlying text span, so event.target is
+    // not a reliable source of text identity.
+    let targetSpan = null;
+    let targetSpanScore = Infinity;
+    for (const span of pageInfo.layer.querySelectorAll("span[data-pdf-item-index]")) {
+      for (const rect of span.getClientRects()) {
+        if (event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top || event.clientY > rect.bottom) continue;
+        const score = Math.hypot(
+          event.clientX - (rect.left + rect.right) / 2,
+          event.clientY - (rect.top + rect.bottom) / 2
+        );
+        if (score < targetSpanScore) {
+          targetSpanScore = score;
+          targetSpan = span;
+        }
+      }
+    }
+    if (!targetSpan) return;
+    const itemIndex = Number(targetSpan.dataset.pdfItemIndex);
+    if (!Number.isInteger(itemIndex)) return;
+
     let selected = null;
     let selectedScore = Infinity;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
       for (let wordIndex = 0; wordIndex < tokens.length; wordIndex++) {
         const token = tokens[wordIndex];
+        if (token.itemIndex !== itemIndex) continue;
         const span = pageInfo.model.textDivs[token.itemIndex];
         const textNode = span?.firstChild;
         if (!textNode || textNode.nodeType !== Node.TEXT_NODE ||
@@ -328,8 +349,6 @@
           const dy = event.clientY < rect.top ? rect.top - event.clientY :
             event.clientY > rect.bottom ? event.clientY - rect.bottom : 0;
           const distance = Math.hypot(dx, dy);
-          // If two transformed word rectangles touch, prefer the word whose
-          // visual centre is closest to the actual tap point.
           const score = distance === 0
             ? Math.hypot(event.clientX - (rect.left + rect.right) / 2,
                 event.clientY - (rect.top + rect.bottom) / 2) / 1000
@@ -342,7 +361,7 @@
       }
     }
 
-    // A tap outside mapped text must not trigger a guessed neighbouring word.
+    // No fallback to another span: a tap outside a mapped word is ignored.
     if (selected && selectedScore <= 18) {
       startAt(selected.sentenceIndex, selected.wordIndex);
     }
@@ -380,7 +399,27 @@
         setStatus("الصفحتان الأصليتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
       pageNodes.forEach(info => {
-        info.layer.addEventListener("click", event => handlePageTap(info, event));
+        // Mobile Safari's touch-generated click can be retargeted or omitted
+        // after text selection. Handle the actual touch pointer release.
+        info.lastTouchPoint = null;
+        info.layer.addEventListener("pointerup", event => {
+          if (event.pointerType !== "touch") return;
+          info.lastTouchPoint = { x: event.clientX, y: event.clientY };
+          handlePageTap(info, event);
+        });
+        // Keep ordinary mouse/keyboard activation, but do not process the
+        // synthetic click that follows a touch pointerup.
+        info.layer.addEventListener("click", event => {
+          if (info.lastTouchPoint) {
+            const sameTouch = Math.hypot(
+              event.clientX - info.lastTouchPoint.x,
+              event.clientY - info.lastTouchPoint.y
+            ) <= 3;
+            info.lastTouchPoint = null;
+            if (sameTouch) return;
+          }
+          handlePageTap(info, event);
+        });
       });
       const hash = decodeURIComponent(location.hash.slice(1));
       if (hash.startsWith("sentence-")) {
