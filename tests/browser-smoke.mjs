@@ -528,28 +528,14 @@ async function main() {
           }
           throw new Error("Could not locate WebKit PDF word: " + word);
         }, { pageNumber: testCase.page, word: testCase.word });
-        // Capture the actual DOM span receiving the native touch-generated click.
-        await safariPage.evaluate(() => {
-          window.__lastTappedPdfSpan = null;
-          document.addEventListener("click", event => {
-            const span = event.target.closest?.(".textLayer span[data-pdf-item-index]");
-            window.__lastTappedPdfSpan = span ? {
-              itemIndex: span.dataset.pdfItemIndex,
-              text: span.textContent
-            } : null;
-          }, { capture: true, once: true });
-        });
-        // Use Playwright's real touch input (touchstart/end -> pointer -> click),
-        // not a synthetic MouseEvent. This exercises WebKit's mobile hit path.
+        // Use Playwright's real touch input (touchstart/end -> pointer -> click).
+        // The app resolves the source span from touch coordinates, not event.target,
+        // because WebKit may retarget the generated click to a wrapper element.
         await safariPage.touchscreen.tap(tapPoint.x, tapPoint.y);
         const result = await safariPage.evaluate(() => ({
           spoken: window.__spoken.at(-1)?.text || "",
-          highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || "",
-          tappedSpan: window.__lastTappedPdfSpan
+          highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || ""
         }));
-        assert.ok(result.tappedSpan && result.tappedSpan.text.toLowerCase().includes(testCase.word.toLowerCase()),
-          "WebKit must deliver the touch to the PDF.js span containing " + testCase.word +
-          "; received " + JSON.stringify(result.tappedSpan));
         const expectedStart = testCase.sentence.slice(testCase.sentence.toLowerCase().indexOf(testCase.word.toLowerCase()));
         assert.equal(result.highlighted.toLowerCase(), testCase.word.toLowerCase(),
           "WebKit touch tap must highlight the exact word " + testCase.word + "; got " + result.highlighted);
