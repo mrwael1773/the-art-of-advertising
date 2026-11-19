@@ -504,6 +504,25 @@ async function main() {
         "; tap=" + JSON.stringify(tapped) + "; got=" + result.spoken);
     }
 
+    // A delayed word-boundary callback from a completed sentence must not
+    // overwrite the first-word highlight of the next sentence. Some speech
+    // engines dispatch boundary events late around utterance transitions.
+    const staleBoundaryResult = await realPdfPage.evaluate(() => {
+      const previous = window.__lastUtterance;
+      if (typeof previous?.onend !== "function" || typeof previous?.onboundary !== "function") {
+        throw new Error("The speech test utterance must expose end and boundary callbacks.");
+      }
+      previous.onend();
+      const next = window.__lastUtterance;
+      if (!next || next === previous) throw new Error("The next sentence utterance did not start.");
+      const before = document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || "";
+      previous.onboundary({ name: "word", charIndex: 8 });
+      const after = document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || "";
+      return { before, after, nextText: next.text };
+    });
+    assert.equal(staleBoundaryResult.after, staleBoundaryResult.before,
+      "A stale boundary from the previous sentence must not replace the next sentence's active highlight.");
+
     const firstTwoLineWordCount = await verifyFirstTwoPrintedLines(realPdfPage, "mouse");
     assert.ok(firstTwoLineWordCount >= 5, "All words in the first two printed lines must be tested.");
     await realPdfPage.evaluate(() => {
