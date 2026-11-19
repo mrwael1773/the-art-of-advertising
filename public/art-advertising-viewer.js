@@ -129,7 +129,7 @@
 
   function addRangeHighlights(pageInfo, tokens) {
     const pageRect = pageInfo.root.getBoundingClientRect();
-    const rects = [];
+    const wordRects = [];
     tokens.forEach(token => {
       const span = pageInfo.model.textDivs[token.itemIndex];
       const textNode = span?.firstChild;
@@ -138,22 +138,48 @@
       try {
         range.setStart(textNode, Math.min(token.start, textNode.length));
         range.setEnd(textNode, Math.min(token.end, textNode.length));
-        rects.push(...Array.from(range.getClientRects()));
+        wordRects.push(...Array.from(range.getClientRects()));
       } catch {
         // Ignore malformed PDF text offsets instead of drawing an approximate highlight.
       }
     });
-    rects.forEach(rect => {
-      if (rect.width < 1 || rect.height < 1) return;
+
+    // Join the word rectangles into one continuous band for each visual line of this sentence.
+    const lines = [];
+    wordRects
+      .filter(rect => rect.width >= 1 && rect.height >= 1)
+      .sort((a, b) => a.top - b.top || a.left - b.left)
+      .forEach(rect => {
+        const line = lines.find(candidate =>
+          Math.abs(candidate.top - rect.top) <= Math.max(2, Math.min(candidate.height, rect.height) * 0.35)
+        );
+        if (!line) {
+          lines.push({
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            bottom: rect.bottom,
+            height: rect.height
+          });
+          return;
+        }
+        line.left = Math.min(line.left, rect.left);
+        line.right = Math.max(line.right, rect.right);
+        line.top = Math.min(line.top, rect.top);
+        line.bottom = Math.max(line.bottom, rect.bottom);
+        line.height = Math.max(line.height, rect.height);
+      });
+
+    lines.sort((a, b) => a.top - b.top).forEach(line => {
       const mark = document.createElement("span");
-      mark.className = "sentence-highlight";
-      mark.style.left = (rect.left - pageRect.left - 1) + "px";
-      mark.style.top = (rect.top - pageRect.top - 1) + "px";
-      mark.style.width = (rect.width + 2) + "px";
-      mark.style.height = (rect.height + 2) + "px";
+      mark.className = "sentence-highlight sentence-highlight-line";
+      mark.style.left = (line.left - pageRect.left - 2) + "px";
+      mark.style.top = (line.top - pageRect.top - 2) + "px";
+      mark.style.width = (line.right - line.left + 4) + "px";
+      mark.style.height = (line.bottom - line.top + 4) + "px";
       pageInfo.highlightLayer.append(mark);
     });
-    return rects;
+    return lines;
   }
 
   function highlightSentence(index) {
