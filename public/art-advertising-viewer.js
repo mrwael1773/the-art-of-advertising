@@ -127,29 +127,17 @@
     pageNodes.forEach(info => info.highlightLayer?.replaceChildren());
   }
 
-  function addRangeHighlights(pageInfo, tokens) {
+  function addWordHighlight(pageInfo, token) {
     const pageRect = pageInfo.root.getBoundingClientRect();
-    const wordRects = [];
-    tokens.forEach(token => {
-      const span = pageInfo.model.textDivs[token.itemIndex];
-      const textNode = span?.firstChild;
-      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
-      const range = document.createRange();
-      try {
-        range.setStart(textNode, Math.min(token.start, textNode.length));
-        range.setEnd(textNode, Math.min(token.end, textNode.length));
-        wordRects.push(...Array.from(range.getClientRects()));
-      } catch {
-        // Ignore malformed PDF text offsets instead of drawing an approximate highlight.
-      }
-    });
-
-    // Draw one independent mark for each spoken word; never join words into a line or sentence band.
-    const words = wordRects
-      .filter(rect => rect.width >= 1 && rect.height >= 1)
-      .sort((a, b) => a.top - b.top || a.left - b.left);
-
-    words.forEach(rect => {
+    const span = pageInfo.model.textDivs[token.itemIndex];
+    const textNode = span?.firstChild;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return false;
+    const range = document.createRange();
+    try {
+      range.setStart(textNode, Math.min(token.start, textNode.length));
+      range.setEnd(textNode, Math.min(token.end, textNode.length));
+      const rect = Array.from(range.getClientRects()).find(rect => rect.width >= 1 && rect.height >= 1);
+      if (!rect) return false;
       const mark = document.createElement("span");
       mark.className = "sentence-highlight sentence-highlight-word";
       mark.style.left = (rect.left - pageRect.left - 1) + "px";
@@ -157,31 +145,40 @@
       mark.style.width = (rect.width + 2) + "px";
       mark.style.height = (rect.height + 2) + "px";
       pageInfo.highlightLayer.append(mark);
-    });
-    return words;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function highlightSpokenWord(sentenceIndex, wordIndex) {
+    clearHighlight();
+    const sentence = sentences[sentenceIndex];
+    if (!sentence) return false;
+    const pageInfo = pageNodes.find(info => info.number === Number(sentence.page));
+    const tokens = pageInfo?.model?.sentenceMatches.get(sentenceIndex);
+    if (!pageInfo || !tokens?.length || wordIndex < 0 || wordIndex >= tokens.length) return false;
+    const success = addWordHighlight(pageInfo, tokens[wordIndex]);
+    if (!success) {
+      setStatus("تعذر تحديد موضع الكلمة الحالية بدقة في الصفحة الأصلية.");
+      return false;
+    }
+    return true;
   }
 
   function highlightSentence(index) {
-    clearHighlight();
-    const sentence = sentences[index];
-    if (!sentence) return false;
-    const pageInfo = pageNodes.find(info => info.number === Number(sentence.page));
-    const tokens = pageInfo?.model?.sentenceMatches.get(index);
-    if (!pageInfo || !tokens?.length) {
-      setStatus("تعذر تحديد موضع الجملة بدقة في الصفحة الأصلية.");
-      return false;
-    }
-    const rects = addRangeHighlights(pageInfo, tokens);
-    if (!rects.length) {
-      setStatus("تعذر رسم التظليل فوق كلمات الجملة في الصفحة الأصلية.");
-      return false;
-    }
-    const first = rects[0];
-    const pageRect = pageInfo.root.getBoundingClientRect();
-    if (first.top < pageRect.top || first.bottom > pageRect.bottom) {
-      pageInfo.root.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    return true;
+    // Before the first speech boundary, show only the first spoken word.
+    return highlightSpokenWord(index, 0);
+  }
+
+  function spokenWordIndex(sentenceText, charIndex) {
+    const pattern = /[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi;
+    const matches = Array.from(String(sentenceText || "").matchAll(pattern));
+    if (!matches.length) return -1;
+    const position = Math.max(0, Number(charIndex) || 0);
+    let found = matches.findIndex(match => position >= match.index && position < match.index + match[0].length);
+    if (found < 0) found = matches.findIndex(match => match.index >= position);
+    return found < 0 ? matches.length - 1 : found;
   }
 
   const getRate = () => {
@@ -204,6 +201,14 @@
     const utterance = new SpeechSynthesisUtterance(sentences[index].text);
     utterance.lang = "en-US";
     utterance.rate = getRate();
+    utterance.onstart = () => {
+      if (token === queueToken) highlightSpokenWord(index, 0);
+    };
+    utterance.onboundary = event => {
+      if (token !== queueToken || event.name !== "word") return;
+      const wordIndex = spokenWordIndex(sentences[index].text, event.charIndex);
+      if (wordIndex >= 0) highlightSpokenWord(index, wordIndex);
+    };
     utterance.onend = () => {
       if (token === queueToken) speakFrom(index + 1, token);
     };
