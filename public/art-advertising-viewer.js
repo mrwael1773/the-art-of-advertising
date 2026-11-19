@@ -8,6 +8,7 @@
     canvas: document.querySelector("#pdf-page-" + number + " canvas"),
     layer: document.querySelector("#pdf-page-" + number + " .textLayer"),
     highlightLayer: document.querySelector("#pdf-page-" + number + " .sentence-highlight-layer"),
+    activeWordMark: null,
     model: null
   }));
   const status = document.getElementById("speech-status");
@@ -124,11 +125,19 @@
   }
 
   function clearHighlight() {
-    pageNodes.forEach(info => info.highlightLayer?.replaceChildren());
+    pageNodes.forEach(info => {
+      const mark = info.activeWordMark;
+      if (mark?.parentNode) {
+        const parent = mark.parentNode;
+        while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+        mark.remove();
+      }
+      info.activeWordMark = null;
+      info.highlightLayer?.replaceChildren();
+    });
   }
 
   function addWordHighlight(pageInfo, token) {
-    const pageRect = pageInfo.root.getBoundingClientRect();
     const span = pageInfo.model.textDivs[token.itemIndex];
     const textNode = span?.firstChild;
     if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return false;
@@ -136,22 +145,15 @@
     try {
       range.setStart(textNode, Math.min(token.start, textNode.length));
       range.setEnd(textNode, Math.min(token.end, textNode.length));
-      const rects = Array.from(range.getClientRects()).filter(item => item.width >= 1 && item.height >= 1);
-      const rect = rects[0];
-      if (!rect) return false;
-      // Safari's range rectangle includes extra inline line-box space.
-      // Tighten the visual mark around the word and keep it centered.
-      const width = rect.width * 0.82;
-      const height = rect.height * 0.72;
-      const left = rect.left + (rect.width - width) / 2;
-      const top = rect.top + (rect.height - height) / 2;
-      const mark = document.createElement("span");
-      mark.className = "sentence-highlight sentence-highlight-word";
-      mark.style.left = (left - pageRect.left) + "px";
-      mark.style.top = (top - pageRect.top) + "px";
-      mark.style.width = width + "px";
-      mark.style.height = height + "px";
-      pageInfo.highlightLayer.append(mark);
+      if (!range.toString()) return false;
+
+      // Wrap the actual source-text characters. The browser paints the inline
+      // background using the PDF text's own font metrics and transforms.
+      const mark = document.createElement("mark");
+      mark.className = "active-spoken-word";
+      mark.setAttribute("aria-hidden", "true");
+      range.surroundContents(mark);
+      pageInfo.activeWordMark = mark;
       return true;
     } catch {
       return false;
