@@ -57,6 +57,7 @@
 .pdf-page .textLayer span,.pdf-page .textLayer br{position:absolute;color:transparent;white-space:pre;transform-origin:0% 0%;cursor:pointer;pointer-events:auto;user-select:text;-webkit-user-select:text;touch-action:pan-y pinch-zoom}
 .pdf-page .sentence-highlight-layer{position:absolute;z-index:3;inset:0;overflow:hidden;pointer-events:none}
 .pdf-page .sentence-highlight{position:absolute;display:block;box-sizing:border-box;margin:0;padding:0;background:rgba(255,218,75,.28);border:0;border-radius:2px;box-shadow:none;mix-blend-mode:multiply;pointer-events:none}
+.pdf-page .textLayer mark.active-spoken-word{position:static!important;display:inline!important;margin:0!important;padding:0!important;border:0!important;border-radius:2px;background:rgba(255,218,75,.48)!important;color:transparent!important;box-shadow:none!important;-webkit-box-decoration-break:clone;box-decoration-break:clone;pointer-events:auto}
 .reader-footnote{margin:14px 0;color:var(--muted);font-size:12px;line-height:1.8}
 .reader-controls .art-controls button{min-height:42px;padding:9px 15px}
 .reader-controls .art-controls button:first-child{background:#315f96;color:#fff;border-color:#6f9bd0;font-weight:800}
