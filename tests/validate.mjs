@@ -87,8 +87,13 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /playEvidenceSentence/);
   assert.match(viewer, /locateSentenceTokens/);
   assert.match(worker, /script-src/);
-  assert.match(worker, /worker-src/);
-  assert.match(headers, /script-src/);
+  assert.match(worker, /connect-src 'self' https:\\/\\/cdnjs\\.cloudflare\\.com/);
+  assert.match(worker, /worker-src 'self' blob:/);
+  assert.match(headers, /connect-src 'self' https:\\/\\/cdnjs\\.cloudflare\\.com/);
+  assert.match(headers, /worker-src 'self' blob:/);
+  assert.match(viewer, /async function configurePdfWorker/);
+  assert.match(viewer, /new Blob\\(\\[workerSource\\]/);
+  assert.match(viewer, /await configurePdfWorker\\(\\)/);
 });
 
 
