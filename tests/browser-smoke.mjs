@@ -189,7 +189,7 @@ async function main() {
     ), /255, 218, 75/);
     assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").first().evaluate(el =>
       getComputedStyle(el.querySelector(".spoken-word-fragment")).position
-    ), "static");
+    ), "absolute");
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -275,6 +275,25 @@ async function main() {
     );
     assert.ok(widestHighlight < realPageWidth * 0.75,
       `A sentence highlight must not bridge the two separate textbook columns (widest=${widestHighlight.toFixed(1)}px, page=${realPageWidth.toFixed(1)}px).`);
+
+    const geometry = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
+      const page = group.closest(".pdf-page");
+      const textSpan = page.querySelectorAll(".textLayer span")[Number(group.dataset.itemIndex)];
+      const textNode = textSpan?.firstChild;
+      const range = document.createRange();
+      range.setStart(textNode, Number(group.dataset.start));
+      range.setEnd(textNode, Number(group.dataset.end));
+      const source = range.getBoundingClientRect();
+      const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
+      return {
+        left: Math.abs(source.left - overlay.left),
+        top: Math.abs(source.top - overlay.top),
+        width: Math.abs(source.width - overlay.width),
+        height: Math.abs(source.height - overlay.height)
+      };
+    });
+    assert.ok(Object.values(geometry).every(delta => delta < 0.75),
+      `Word overlay must match the measured PDF text bounds without guessed offsets: ${JSON.stringify(geometry)}`);
 
     // A responsive re-render must keep the exact word currently spoken,
     // rather than jumping back to the first word of the sentence.
