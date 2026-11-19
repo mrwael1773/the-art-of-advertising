@@ -78,7 +78,11 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(styles, /touch-action:pan-y pinch-zoom/);
   assert.match(styles, /background:rgba\(255,218,75,\.48\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
-  assert.match(viewer, /addEventListener\("click", event => handlePageTap/);
+  assert.match(viewer, /addEventListener\("pointerup", event => \{/);
+  assert.match(viewer, /if \(event\.pointerType !== "touch"\) return/);
+  assert.match(viewer, /addEventListener\("click", event => \{/);
+  assert.match(viewer, /handlePageTap\(info, event\)/);
+  assert.match(viewer, /sameTouch/);
   assert.match(viewer, /Resolve the touched PDF\.js source item from the physical viewport/);
   assert.match(viewer, /selectedScore <= 18/);
   assert.doesNotMatch(viewer, /caretPositionFromPoint|caretRangeFromPoint/);
