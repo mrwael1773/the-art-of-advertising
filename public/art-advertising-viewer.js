@@ -131,6 +131,9 @@
         const parent = mark.parentNode;
         while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
         mark.remove();
+        // Range.surroundContents splits the source text node into fragments.
+        // Merge them before the next word's original character offsets are used.
+        parent.normalize();
       }
       info.activeWordMark = null;
       info.highlightLayer?.replaceChildren();
