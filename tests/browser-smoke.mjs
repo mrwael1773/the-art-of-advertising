@@ -234,11 +234,14 @@ async function main() {
     // Exercise hit-testing at different positions within the same printed
     // sentence. Each tap must highlight and speak the exact word under it.
     for (const expectedWord of ["tiny", "classic", "back", "measuring", "centimeters", "tall"]) {
-      await firstSentenceTextSpan.evaluate((span, word) => {
+      await page.locator("#pdf-page-1 .textLayer span").evaluateAll((spans, word) => {
+        const span = spans.find(item => item.firstChild?.nodeType === Node.TEXT_NODE &&
+          Array.from(item.firstChild.textContent.matchAll(/[a-z0-9]+/gi))
+            .some(match => match[0].toLowerCase() === word));
+        if (!span) throw new Error("Could not find target word in rendered PDF spans: " + word);
         const textNode = span.firstChild;
         const match = Array.from(textNode.textContent.matchAll(/[a-z0-9]+/gi))
           .find(item => item[0].toLowerCase() === word);
-        if (!match) throw new Error("Could not find target word: " + word);
         const range = document.createRange();
         range.setStart(textNode, match.index);
         range.setEnd(textNode, match.index + match[0].length);
