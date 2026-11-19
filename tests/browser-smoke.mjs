@@ -165,6 +165,14 @@ async function main() {
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
     assert.equal(await page.locator(".sentence-highlight-layer .sentence-highlight").count(), 0);
+    const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
+    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
+    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
+    await firstTextSpan.click();
+    assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text,
+      "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
+      "Tapping original textbook text should start the sentence and highlight its word ranges.");
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -242,8 +250,8 @@ async function main() {
       "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
-    assert.ok(await realPdfPage.locator(".textLayer .sentence-speaking").count() > 0,
-      "Real PDF.js text spans should receive the active sentence highlight.");
+    assert.ok(await realPdfPage.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
+      "Exact spoken word ranges should be highlighted over the real PDF.js text layer.");
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
