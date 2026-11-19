@@ -278,7 +278,7 @@ async function main() {
 
     const geometry = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
       const page = group.closest(".pdf-page");
-      const textSpan = page.querySelectorAll(".textLayer span")[Number(group.dataset.itemIndex)];
+      const textSpan = page.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
       const textNode = textSpan?.firstChild;
       const range = document.createRange();
       range.setStart(textNode, Number(group.dataset.start));
