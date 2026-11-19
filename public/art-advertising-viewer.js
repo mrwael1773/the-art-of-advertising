@@ -110,6 +110,7 @@
       textDivs
     });
     await textLayerTask.promise;
+    textDivs.forEach((div, index) => { div.dataset.pdfItemIndex = String(index); });
     pageInfo.model = {
       page,
       viewport,
