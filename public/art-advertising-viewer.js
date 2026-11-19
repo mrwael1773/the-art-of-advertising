@@ -300,15 +300,22 @@
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
 
-    // Do not trust caret offsets here: on touch browsers the caret API may
-    // return an element-child offset (not a character offset), or choose a
-    // neighbouring line in PDF.js's transformed text layer. Resolve the tap
-    // against the actual client rectangles of every mapped source word.
+    // The browser already resolved the physical tap to a PDF.js text span.
+    // Restrict hit testing to that exact source item: comparing every word on
+    // the page can select a nearby line/sentence when transformed text ranges
+    // overlap in Safari's touch layout.
+    const target = event.target instanceof Element ? event.target : null;
+    const targetSpan = target?.closest(".textLayer span[data-pdf-item-index]");
+    if (!targetSpan || !pageInfo.layer.contains(targetSpan)) return;
+    const itemIndex = Number(targetSpan.dataset.pdfItemIndex);
+    if (!Number.isInteger(itemIndex)) return;
+
     let selected = null;
     let selectedScore = Infinity;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
       for (let wordIndex = 0; wordIndex < tokens.length; wordIndex++) {
         const token = tokens[wordIndex];
+        if (token.itemIndex !== itemIndex) continue;
         const span = pageInfo.model.textDivs[token.itemIndex];
         const textNode = span?.firstChild;
         if (!textNode || textNode.nodeType !== Node.TEXT_NODE ||
@@ -328,8 +335,6 @@
           const dy = event.clientY < rect.top ? rect.top - event.clientY :
             event.clientY > rect.bottom ? event.clientY - rect.bottom : 0;
           const distance = Math.hypot(dx, dy);
-          // If two transformed word rectangles touch, prefer the word whose
-          // visual centre is closest to the actual tap point.
           const score = distance === 0
             ? Math.hypot(event.clientX - (rect.left + rect.right) / 2,
                 event.clientY - (rect.top + rect.bottom) / 2) / 1000
@@ -342,7 +347,7 @@
       }
     }
 
-    // A tap outside mapped text must not trigger a guessed neighbouring word.
+    // No fallback to another span: a tap outside a mapped word is ignored.
     if (selected && selectedScore <= 18) {
       startAt(selected.sentenceIndex, selected.wordIndex);
     }
