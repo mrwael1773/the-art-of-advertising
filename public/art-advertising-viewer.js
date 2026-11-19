@@ -151,7 +151,6 @@
       // background using the PDF text's own font metrics and transforms.
       const mark = document.createElement("mark");
       mark.className = "active-spoken-word";
-      mark.setAttribute("aria-hidden", "true");
       range.surroundContents(mark);
       pageInfo.activeWordMark = mark;
       return true;
