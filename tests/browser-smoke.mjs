@@ -502,6 +502,17 @@ async function main() {
 
     const firstTwoLineWordCount = await verifyFirstTwoPrintedLines(realPdfPage, "mouse");
     assert.ok(firstTwoLineWordCount >= 5, "All words in the first two printed lines must be tested.");
+    await realPdfPage.evaluate(() => {
+      const root = document.querySelector("#pdf-page-1");
+      root.style.transformOrigin = "top left";
+      root.style.transform = "scale(1.35)";
+    });
+    const zoomedFirstTwoLineWordCount = await verifyFirstTwoPrintedLines(realPdfPage, "mouse");
+    assert.equal(zoomedFirstTwoLineWordCount, firstTwoLineWordCount,
+      "Zoom must not change which words are covered by the first-two-lines regression test.");
+    await realPdfPage.evaluate(() => {
+      document.querySelector("#pdf-page-1").style.transform = "";
+    });
 
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").count() > 0,
@@ -720,6 +731,14 @@ async function main() {
       const safariFirstTwoLineWordCount = await verifyFirstTwoPrintedLines(safariPage, "touch");
       assert.ok(safariFirstTwoLineWordCount >= 5,
         "WebKit touch must verify every word in the first two printed lines.");
+      await safariPage.evaluate(() => {
+        const root = document.querySelector("#pdf-page-1");
+        root.style.transformOrigin = "top left";
+        root.style.transform = "scale(1.35)";
+      });
+      const zoomedSafariWordCount = await verifyFirstTwoPrintedLines(safariPage, "touch");
+      assert.equal(zoomedSafariWordCount, safariFirstTwoLineWordCount,
+        "WebKit zoom must preserve first-two-lines touch coverage.");
       await webkitContext.close();
     } finally {
       await webkitBrowser.close();
