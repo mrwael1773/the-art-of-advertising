@@ -47,6 +47,117 @@ async function auditAccessibility(page) {
   assert.deepEqual(violations, [], `Accessibility violations: ${JSON.stringify(violations)}`);
 }
 
+async function verifyFirstTwoPrintedLines(page, inputMode = "mouse") {
+  // Earlier real-PDF checks may leave page 1 outside the viewport. Bring it
+  // into view before deriving viewport-relative tap coordinates; otherwise
+  // a stale/negative Y coordinate can hit text on page 2 instead.
+  await page.locator("#pdf-page-1").scrollIntoViewIfNeeded();
+  const targets = await page.evaluate(() => {
+    const sentence = window.ART_AD_CONFIG.passageSentences[0];
+    const root = document.querySelector("#pdf-page-1");
+    const rendered = [];
+    for (const span of root.querySelectorAll(".textLayer span[data-pdf-item-index]")) {
+      const node = span.firstChild;
+      if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+      for (const match of node.textContent.matchAll(/[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi)) {
+        const range = document.createRange();
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + match[0].length);
+        const rect = range.getBoundingClientRect();
+        if (rect.width && rect.height) rendered.push({
+          value: match[0].replace(/ﬁ/g, "fi").replace(/ﬂ/g, "fl").replace(/[’‘]/g, "'").toLowerCase(),
+          x: rect.left + rect.width / 2, y: rect.top + rect.height / 2
+        });
+      }
+    }
+    const expected = Array.from(sentence.text.matchAll(/[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi));
+    const normalized = expected.map(match =>
+      match[0].replace(/ﬁ/g, "fi").replace(/ﬂ/g, "fl").replace(/[’‘]/g, "'").toLowerCase()
+    );
+    let start = -1;
+    for (let index = 0; index <= rendered.length - normalized.length; index++) {
+      if (normalized.every((word, offset) => rendered[index + offset].value === word)) {
+        start = index;
+        break;
+      }
+    }
+    if (start < 0) throw new Error("Could not map the first source sentence to rendered PDF words.");
+    const words = expected.map((match, offset) => ({
+      word: match[0], expectedStart: sentence.text.slice(match.index),
+      x: rendered[start + offset].x, y: rendered[start + offset].y
+    }));
+    const lineTops = [];
+    for (const item of [...words].sort((a, b) => a.y - b.y)) {
+      if (!lineTops.some(top => Math.abs(top - item.y) <= 3)) lineTops.push(item.y);
+    }
+    const firstTwo = lineTops.sort((a, b) => a - b).slice(0, 2);
+    return words.filter(item => firstTwo.some(top => Math.abs(top - item.y) <= 3));
+  });
+  assert.ok(targets.length >= 5, "The first two printed lines must expose at least five words.");
+  for (const target of targets) {
+    if (inputMode === "touch") await page.touchscreen.tap(target.x, target.y);
+    else await page.mouse.click(target.x, target.y);
+    const result = await page.evaluate(() => {
+      const group = document.querySelector(".sentence-highlight-layer .active-spoken-word");
+      if (!group) return null;
+      const root = group.closest(".pdf-page");
+      const canvas = root.querySelector("canvas");
+      const canvasRect = canvas.getBoundingClientRect();
+      const span = root.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
+      const range = document.createRange();
+      range.setStart(span.firstChild, Number(group.dataset.start));
+      range.setEnd(span.firstChild, Number(group.dataset.end));
+      const source = range.getBoundingClientRect();
+      const sx = canvas.width / canvasRect.width, sy = canvas.height / canvasRect.height;
+      const x0 = Math.max(0, Math.floor((source.left - canvasRect.left) * sx));
+      const y0 = Math.max(0, Math.floor((source.top - canvasRect.top) * sy));
+      const x1 = Math.min(canvas.width, Math.ceil((source.right - canvasRect.left) * sx));
+      const y1 = Math.min(canvas.height, Math.ceil((source.bottom - canvasRect.top) * sy));
+      const pixels = canvas.getContext("2d", { willReadFrequently: true }).getImageData(x0, y0, x1 - x0, y1 - y0);
+      const bands = [];
+      for (let y = 0; y < pixels.height; y++) {
+        let min = pixels.width, max = -1, count = 0;
+        for (let x = 0; x < pixels.width; x++) {
+          const i = (y * pixels.width + x) * 4;
+          const l = pixels.data[i] * .299 + pixels.data[i + 1] * .587 + pixels.data[i + 2] * .114;
+          if (pixels.data[i + 3] > 0 && l < 225) { min = Math.min(min, x); max = Math.max(max, x); count++; }
+        }
+        if (!count) continue;
+        let band = bands[bands.length - 1];
+        if (!band || y - band.bottom > 2) { band = { top: y, bottom: y, minX: min, maxX: max, ink: 0 }; bands.push(band); }
+        band.bottom = y; band.minX = Math.min(band.minX, min); band.maxX = Math.max(band.maxX, max); band.ink += count;
+      }
+      if (!bands.length) throw new Error("No printed ink for " + group.dataset.word);
+      const center = pixels.height / 2;
+      const glyph = bands.reduce((best, band) => {
+        const d = Math.abs((band.top + band.bottom + 1) / 2 - center);
+        const bd = Math.abs((best.top + best.bottom + 1) / 2 - center);
+        return d < bd || (d === bd && band.ink > best.ink) ? band : best;
+      });
+      const expected = {
+        left: canvasRect.left + (x0 + glyph.minX) / sx - 1,
+        top: canvasRect.top + (y0 + glyph.top) / sy - 1,
+        width: (glyph.maxX - glyph.minX + 1) / sx + 2,
+        height: (glyph.bottom - glyph.top + 1) / sy + 2
+      };
+      const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
+      return {
+        spoken: window.__spoken.at(-1)?.text || "", highlighted: group.dataset.word,
+        alignment: { left: Math.abs(overlay.left - expected.left), top: Math.abs(overlay.top - expected.top),
+          width: Math.abs(overlay.width - expected.width), height: Math.abs(overlay.height - expected.height) }
+      };
+    });
+    assert.ok(result, "Each first-two-lines tap must create a highlight.");
+    assert.equal(result.highlighted.toLowerCase(), target.word.toLowerCase(),
+      `Expected first-two-lines highlight "${target.word}", got "${result.highlighted}".`);
+    assert.equal(result.spoken, target.expectedStart,
+      `Expected speech to start at "${target.word}", got "${result.spoken}".`);
+    assert.ok(["left", "top", "width", "height"].every(key => result.alignment[key] < 1.5),
+      `First-two-lines glyph alignment failed for "${target.word}": ${JSON.stringify(result.alignment)}`);
+  }
+  return targets.length;
+}
+
 const pdfJsStub = `
 window.pdfjsLib = {
   GlobalWorkerOptions: {},
@@ -393,6 +504,20 @@ async function main() {
         "; tap=" + JSON.stringify(tapped) + "; got=" + result.spoken);
     }
 
+    const firstTwoLineWordCount = await verifyFirstTwoPrintedLines(realPdfPage, "mouse");
+    assert.ok(firstTwoLineWordCount >= 5, "All words in the first two printed lines must be tested.");
+    await realPdfPage.evaluate(() => {
+      const root = document.querySelector("#pdf-page-1");
+      root.style.transformOrigin = "top left";
+      root.style.transform = "scale(1.35)";
+    });
+    const zoomedFirstTwoLineWordCount = await verifyFirstTwoPrintedLines(realPdfPage, "mouse");
+    assert.equal(zoomedFirstTwoLineWordCount, firstTwoLineWordCount,
+      "Zoom must not change which words are covered by the first-two-lines regression test.");
+    await realPdfPage.evaluate(() => {
+      document.querySelector("#pdf-page-1").style.transform = "";
+    });
+
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").count() > 0,
       "Every spoken word should receive an independent highlight mark over the real PDF.js text layer.");
@@ -607,6 +732,17 @@ async function main() {
         assert.equal(result.spoken, expectedStart,
           "WebKit touch tap must use the sentence containing " + testCase.word + "; got " + result.spoken);
       }
+      const safariFirstTwoLineWordCount = await verifyFirstTwoPrintedLines(safariPage, "touch");
+      assert.ok(safariFirstTwoLineWordCount >= 5,
+        "WebKit touch must verify every word in the first two printed lines.");
+      await safariPage.evaluate(() => {
+        const root = document.querySelector("#pdf-page-1");
+        root.style.transformOrigin = "top left";
+        root.style.transform = "scale(1.35)";
+      });
+      const zoomedSafariWordCount = await verifyFirstTwoPrintedLines(safariPage, "touch");
+      assert.equal(zoomedSafariWordCount, safariFirstTwoLineWordCount,
+        "WebKit zoom must preserve first-two-lines touch coverage.");
       await webkitContext.close();
     } finally {
       await webkitBrowser.close();
