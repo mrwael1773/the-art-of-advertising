@@ -7,6 +7,7 @@
     root: document.getElementById("pdf-page-" + number),
     canvas: document.querySelector("#pdf-page-" + number + " canvas"),
     layer: document.querySelector("#pdf-page-" + number + " .textLayer"),
+    highlightLayer: document.querySelector("#pdf-page-" + number + " .sentence-highlight-layer"),
     model: null
   }));
   const status = document.getElementById("speech-status");
@@ -32,18 +33,29 @@
       if (button) button.disabled = !enabled;
     });
   };
-  const normalizedTokens = value => String(value || "")
-    .replace(/ﬁ/g, "fi").replace(/[’‘]/g, "'").toLowerCase()
-    .match(/[a-z0-9]+(?:'[a-z]+)?/g) || [];
-  const makeItemTokens = items => {
+  const normalizeToken = value => String(value || "")
+    .replace(/ﬁ/g, "fi").replace(/[’‘]/g, "'").toLowerCase();
+  const tokenPattern = /[a-z0-9]+(?:['’][a-z]+)?/gi;
+  const sentenceTokens = value => (String(value || "").match(tokenPattern) || []).map(normalizeToken);
+
+  function makeItemTokens(items) {
     const tokens = [];
     items.forEach((item, itemIndex) => {
-      normalizedTokens(item.str).forEach(token => tokens.push({ token, itemIndex }));
+      const value = String(item.str || "");
+      for (const match of value.matchAll(tokenPattern)) {
+        tokens.push({
+          token: normalizeToken(match[0]),
+          itemIndex,
+          start: match.index,
+          end: match.index + match[0].length
+        });
+      }
     });
     return tokens;
-  };
-  const locateSentenceItems = (sentence, tokens) => {
-    const wanted = normalizedTokens(sentence.text);
+  }
+
+  function locateSentenceTokens(sentence, tokens) {
+    const wanted = sentenceTokens(sentence.text);
     if (!wanted.length) return [];
     for (let start = 0; start <= tokens.length - wanted.length; start++) {
       let matched = true;
@@ -53,12 +65,10 @@
           break;
         }
       }
-      if (matched) {
-        return [...new Set(tokens.slice(start, start + wanted.length).map(token => token.itemIndex))];
-      }
+      if (matched) return tokens.slice(start, start + wanted.length);
     }
     return [];
-  };
+  }
 
   async function renderPage(pageInfo) {
     const page = await pdfDocument.getPage(pageInfo.number);
@@ -77,7 +87,10 @@
     pageInfo.root.style.height = viewport.height + "px";
     pageInfo.layer.style.width = viewport.width + "px";
     pageInfo.layer.style.height = viewport.height + "px";
+    pageInfo.highlightLayer.style.width = viewport.width + "px";
+    pageInfo.highlightLayer.style.height = viewport.height + "px";
     pageInfo.layer.replaceChildren();
+    pageInfo.highlightLayer.replaceChildren();
 
     await page.render({
       canvasContext: context,
@@ -99,16 +112,47 @@
       viewport,
       items: textContent.items,
       textDivs,
-      tokens: makeItemTokens(textContent.items)
+      tokens: makeItemTokens(textContent.items),
+      sentenceMatches: new Map()
     };
+    sentences.forEach((sentence, index) => {
+      if (Number(sentence.page) !== pageInfo.number) return;
+      const match = locateSentenceTokens(sentence, pageInfo.model.tokens);
+      if (match.length) pageInfo.model.sentenceMatches.set(index, match);
+    });
   }
 
   function clearHighlight() {
-    pageNodes.forEach(info => {
-      info.layer.querySelectorAll(".sentence-speaking").forEach(node => {
-        node.classList.remove("sentence-speaking");
-      });
+    pageNodes.forEach(info => info.highlightLayer?.replaceChildren());
+  }
+
+  function addRangeHighlights(pageInfo, tokens) {
+    const pageRect = pageInfo.root.getBoundingClientRect();
+    const rects = [];
+    tokens.forEach(token => {
+      const span = pageInfo.model.textDivs[token.itemIndex];
+      const textNode = span?.firstChild;
+      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+      const range = document.createRange();
+      try {
+        range.setStart(textNode, Math.min(token.start, textNode.length));
+        range.setEnd(textNode, Math.min(token.end, textNode.length));
+        rects.push(...Array.from(range.getClientRects()));
+      } catch {
+        // Ignore malformed PDF text offsets instead of drawing an approximate highlight.
+      }
     });
+    rects.forEach(rect => {
+      if (rect.width < 1 || rect.height < 1) return;
+      const mark = document.createElement("span");
+      mark.className = "sentence-highlight";
+      mark.style.left = (rect.left - pageRect.left - 1) + "px";
+      mark.style.top = (rect.top - pageRect.top - 1) + "px";
+      mark.style.width = (rect.width + 2) + "px";
+      mark.style.height = (rect.height + 2) + "px";
+      pageInfo.highlightLayer.append(mark);
+    });
+    return rects;
   }
 
   function highlightSentence(index) {
@@ -116,19 +160,20 @@
     const sentence = sentences[index];
     if (!sentence) return false;
     const pageInfo = pageNodes.find(info => info.number === Number(sentence.page));
-    if (!pageInfo || !pageInfo.model) return false;
-    const itemIndexes = locateSentenceItems(sentence, pageInfo.model.tokens);
-    const spans = itemIndexes.map(itemIndex => pageInfo.model.textDivs[itemIndex]).filter(Boolean);
-    if (!spans.length) {
-      setStatus("تعذر تحديد موضع إحدى الجمل في طبقة النص لهذه الصفحة.");
+    const tokens = pageInfo?.model?.sentenceMatches.get(index);
+    if (!pageInfo || !tokens?.length) {
+      setStatus("تعذر تحديد موضع الجملة بدقة في الصفحة الأصلية.");
       return false;
     }
-    spans.forEach(span => span.classList.add("sentence-speaking"));
-    const first = spans[0];
+    const rects = addRangeHighlights(pageInfo, tokens);
+    if (!rects.length) {
+      setStatus("تعذر رسم التظليل فوق كلمات الجملة في الصفحة الأصلية.");
+      return false;
+    }
+    const first = rects[0];
     const pageRect = pageInfo.root.getBoundingClientRect();
-    const spanRect = first.getBoundingClientRect();
-    if (spanRect.top < pageRect.top || spanRect.bottom > pageRect.bottom) {
-      first.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (first.top < pageRect.top || first.bottom > pageRect.bottom) {
+      pageInfo.root.scrollIntoView({ behavior: "smooth", block: "center" });
     }
     return true;
   }
@@ -171,13 +216,31 @@
     speakFrom(Math.max(0, index), queueToken);
   }
 
+  function handlePageTap(pageInfo, event) {
+    if (!supported || !pageInfo.model || window.getSelection()?.toString()) return;
+    const span = event.target.closest(".textLayer span");
+    if (!span || !pageInfo.layer.contains(span)) return;
+    const itemIndex = pageInfo.model.textDivs.indexOf(span);
+    if (itemIndex < 0) return;
+    let offset = -1;
+    const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+    if (caretRange && span.contains(caretRange.startContainer)) offset = caretRange.startOffset;
+    let candidate = -1;
+    for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
+      const token = tokens.find(item => item.itemIndex === itemIndex &&
+        (offset < 0 || (item.start <= offset && offset < item.end)));
+      if (token) {
+        candidate = sentenceIndex;
+        break;
+      }
+      if (candidate < 0 && tokens.some(item => item.itemIndex === itemIndex)) candidate = sentenceIndex;
+    }
+    if (candidate >= 0) startAt(candidate);
+  }
+
   async function initialize() {
     if (!window.pdfjsLib || !pdfUrl) {
       setStatus("تعذر تشغيل عارض صفحات الكتاب. افتح ملف الكتاب الأصلي من الرابط أعلاه.");
-      return;
-    }
-    if (!supported) {
-      setStatus("هذا المتصفح لا يدعم النطق الصوتي. يمكنك عرض صفحات الكتاب الأصلية.");
       return;
     }
     window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -190,27 +253,31 @@
         disableRange: true,
         disableStream: true
       }).promise;
-      if (pdfDocument.numPages < 2) {
-        throw new Error("ملف المصدر لا يحتوي على الصفحتين المطلوبتين.");
-      }
+      if (pdfDocument.numPages < 2) throw new Error("ملف المصدر لا يحتوي على الصفحتين المطلوبتين.");
       for (const pageInfo of pageNodes) await renderPage(pageInfo);
       const missing = sentences.filter(sentence => {
         const info = pageNodes.find(item => item.number === Number(sentence.page));
-        return !info?.model || !locateSentenceItems(sentence, info.model.tokens).length;
+        return !info?.model || !locateSentenceTokens(sentence, info.model.tokens).length;
       });
-      setButtons(true);
+      setButtons(supported);
       getRate();
       if (missing.length) {
         setStatus("تم عرض الصفحتين الأصليتين. تعذر ربط " + missing.length +
-          " جمل بمواضعها النصية؛ لن يتم عرض تظليل تخميني.");
+          " جمل بمواضعها النصية؛ لن يظهر لها تظليل تخميني.");
+      } else if (!supported) {
+        setStatus("الصفحتان الأصليتان جاهزتان. يمكنك الضغط على النص لتحديد الجملة، لكن هذا المتصفح لا يدعم النطق الصوتي.");
       } else {
-        setStatus("الصفحتان الأصليتان جاهزتان. سيظهر التظليل فوق الجملة نفسها أثناء النطق.");
+        setStatus("الصفحتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
+      pageNodes.forEach(info => {
+        info.layer.addEventListener("click", event => handlePageTap(info, event));
+      });
       const hash = decodeURIComponent(location.hash.slice(1));
       if (hash.startsWith("sentence-")) {
         const id = hash.slice("sentence-".length);
         const index = sentences.findIndex(sentence => sentence.id === id);
-        if (index >= 0) startAt(index);
+        if (index >= 0 && supported) startAt(index);
+        else if (index >= 0) setStatus("تم فتح موضع الجملة في الكتاب. النطق غير مدعوم في هذا المتصفح.");
       }
       lastWidth = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
     } catch (error) {
