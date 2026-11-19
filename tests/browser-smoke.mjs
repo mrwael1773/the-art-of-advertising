@@ -159,12 +159,12 @@ async function main() {
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
     assert.equal(spoken.text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0);
     await page.locator("#pause-reading").click();
     assert.match(await page.locator("#speech-status").textContent(), /متوقف مؤقتًا/);
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 0);
+    assert.equal(await page.locator(".sentence-highlight-layer .sentence-highlight").count(), 0);
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -213,9 +213,9 @@ async function main() {
     const firstEvidence = page.locator(".evidence-button").first();
     assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.querySelector(".textLayer .sentence-speaking"));
+    await page.waitForFunction(() => document.querySelector(".sentence-highlight-layer .sentence-highlight"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0);
     assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
     await auditAccessibility(page);
 
