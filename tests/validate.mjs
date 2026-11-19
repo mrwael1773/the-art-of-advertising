@@ -79,7 +79,9 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(styles, /background:rgba\(255,218,75,\.48\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
   assert.match(viewer, /addEventListener\("click", event => handlePageTap/);
-  assert.match(viewer, /caretPositionFromPoint/);
+  assert.match(viewer, /actual client rectangles of all mapped words/);
+  assert.match(viewer, /selectedScore <= 18/);
+  assert.doesNotMatch(viewer, /caretPositionFromPoint|caretRangeFromPoint/);
   assert.match(textbook, /sentence-highlight-layer/);
   assert.match(textbook, /اضغط على أي جملة/);
   assert.match(viewer, /SpeechSynthesisUtterance/);
