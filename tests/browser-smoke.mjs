@@ -511,7 +511,7 @@ async function main() {
         { page: 2, word: "invented", sentence: "Bicycles were invented in France in the 1790s." }
       ];
       for (const testCase of safariTapCases) {
-        await safariPage.evaluate(({ pageNumber, word }) => {
+        const tapPoint = await safariPage.evaluate(({ pageNumber, word }) => {
           const root = document.querySelector("#pdf-page-" + pageNumber);
           for (const span of root.querySelectorAll(".textLayer span")) {
             const node = span.firstChild;
@@ -523,22 +523,14 @@ async function main() {
             range.setStart(node, match.index);
             range.setEnd(node, match.index + match[0].length);
             const rect = range.getBoundingClientRect();
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            span.dispatchEvent(new PointerEvent("pointerdown", {
-              bubbles: true, pointerId: 1, pointerType: "touch", isPrimary: true
-            }));
-            span.dispatchEvent(new MouseEvent("click", {
-              bubbles: true, cancelable: true,
-              clientX: rect.left + rect.width / 2,
-              clientY: rect.top + rect.height / 2
-            }));
-            selection.removeAllRanges();
-            return;
+            window.getSelection().removeAllRanges();
+            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
           }
           throw new Error("Could not locate WebKit PDF word: " + word);
         }, { pageNumber: testCase.page, word: testCase.word });
+        // Use Playwright's real touch input (touchstart/end -> pointer -> click),
+        // not a synthetic MouseEvent. This exercises WebKit's mobile hit path.
+        await safariPage.touchscreen.tap(tapPoint.x, tapPoint.y);
         const result = await safariPage.evaluate(() => ({
           spoken: window.__spoken.at(-1)?.text || "",
           highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || ""
