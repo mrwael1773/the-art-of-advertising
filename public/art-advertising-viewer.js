@@ -26,6 +26,7 @@
   let pdfDocument = null;
   let resizeHandle = 0;
   let lastWidth = 0;
+  let selectionAtPointerDown = "";
 
   const setStatus = message => { if (status) status.textContent = message; };
   const setButtons = enabled => {
@@ -217,14 +218,20 @@
   }
 
   function handlePageTap(pageInfo, event) {
-    if (!supported || !pageInfo.model || window.getSelection()?.toString()) return;
+    if (!supported || !pageInfo.model) return;
+    const currentSelection = window.getSelection()?.toString() || "";
+    if (currentSelection && currentSelection !== selectionAtPointerDown) return;
     const span = event.target.closest(".textLayer span");
     if (!span || !pageInfo.layer.contains(span)) return;
     const itemIndex = pageInfo.model.textDivs.indexOf(span);
     if (itemIndex < 0) return;
     let offset = -1;
-    const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-    if (caretRange && span.contains(caretRange.startContainer)) offset = caretRange.startOffset;
+    const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+    if (caretPosition && span.contains(caretPosition.offsetNode)) offset = caretPosition.offset;
+    if (offset < 0) {
+      const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      if (caretRange && span.contains(caretRange.startContainer)) offset = caretRange.startOffset;
+    }
     let candidate = -1;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
       const token = tokens.find(item => item.itemIndex === itemIndex &&
@@ -270,6 +277,9 @@
         setStatus("الصفحتان الأصليتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
       pageNodes.forEach(info => {
+        info.layer.addEventListener("pointerdown", () => {
+          selectionAtPointerDown = window.getSelection()?.toString() || "";
+        }, { passive: true });
         info.layer.addEventListener("click", event => handlePageTap(info, event));
       });
       const hash = decodeURIComponent(location.hash.slice(1));
