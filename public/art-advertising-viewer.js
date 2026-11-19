@@ -26,7 +26,6 @@
   let currentWordIndex = 0;
   let queueToken = 0;
   let pdfDocument = null;
-  let pdfWorkerObjectUrl = null;
   let resizeHandle = 0;
   let lastWidth = 0;
 
@@ -335,25 +334,15 @@
     if (candidateIndex >= 0) startAt(candidateIndex);
   }
 
-  async function configurePdfWorker() {
-    const workerUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    const response = await fetch(workerUrl, { mode: "cors", credentials: "omit" });
-    if (!response.ok) throw new Error("تعذر تنزيل عامل PDF.js: HTTP " + response.status);
-    const workerSource = await response.text();
-    if (workerSource.length < 100000) throw new Error("ملف عامل PDF.js غير مكتمل.");
-    pdfWorkerObjectUrl = URL.createObjectURL(new Blob([workerSource], { type: "text/javascript" }));
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerObjectUrl;
-  }
-
   async function initialize() {
     if (!window.pdfjsLib || !pdfUrl) {
       setStatus("تعذر تشغيل عارض صفحات الكتاب. افتح ملف الكتاب الأصلي من الرابط أعلاه.");
       return;
     }
     try {
-      setStatus("جارٍ تجهيز عارض صفحات الكتاب…");
-      await configurePdfWorker();
       setStatus("جارٍ تحميل ملف الكتاب الأصلي…");
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        new URL("./vendor/pdf.worker.min.js", window.location.href).href;
       pdfDocument = await window.pdfjsLib.getDocument({
         url: pdfUrl,
         withCredentials: false,
