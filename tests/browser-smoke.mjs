@@ -146,7 +146,13 @@ async function main() {
     const textbookResponse = await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     const textbookCsp = textbookResponse.headers()["content-security-policy"] || "";
     assert.match(textbookCsp, /script-src[^;]*cdnjs\.cloudflare\.com/);
-    await page.waitForFunction(() => document.querySelectorAll(".pdf-page .textLayer span").length >= 23);
+    await page.waitForFunction(() => {
+      const status = document.querySelector("#speech-status")?.textContent || "";
+      const pages = Array.from(document.querySelectorAll(".pdf-page"));
+      return pages.length === 2 &&
+        pages.every(page => page.querySelector(".textLayer span")) &&
+        status !== "جارٍ تحميل ملف الكتاب الأصلي…";
+    }, { timeout: 60000 });
     assert.equal(await page.locator(".pdf-page").count(), 2);
     assert.equal(await page.locator(".pdf-page canvas").count(), 2);
     assert.ok(await page.locator(".pdf-page .textLayer span").count() >= 23);
