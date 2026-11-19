@@ -48,6 +48,10 @@ async function auditAccessibility(page) {
 }
 
 async function verifyFirstTwoPrintedLines(page, inputMode = "mouse") {
+  // Earlier real-PDF checks may leave page 1 outside the viewport. Bring it
+  // into view before deriving viewport-relative tap coordinates; otherwise
+  // a stale/negative Y coordinate can hit text on page 2 instead.
+  await page.locator("#pdf-page-1").scrollIntoViewIfNeeded();
   const targets = await page.evaluate(() => {
     const sentence = window.ART_AD_CONFIG.passageSentences[0];
     const root = document.querySelector("#pdf-page-1");
