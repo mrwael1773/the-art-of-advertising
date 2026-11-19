@@ -27,6 +27,15 @@
         '" value="' + esc(option.value) + '"> ' + esc(option.label) + '</label>'
       ).join("") + '</div>';
     }
+    const showSolution = prefix === "exercise" && expectedType === "true_false" && index >= 15 && index < 20;
+    const solutionId = "solution-" + prefix + "-" + (index + 1);
+    const solutionUI = showSolution
+      ? '<div class="answer-solution" id="' + solutionId + '"><strong>الحل الصحيح:</strong> ' +
+        (q.correctAnswer === "true" ? "صح" : "خطأ") + '</div>'
+      : "";
+    const solutionButton = showSolution
+      ? '<a class="solution-jump-button" href="#' + solutionId + '">انتقل إلى الحل</a>'
+      : "";
     const accepted = Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers : (q.correctAnswer ? [q.correctAnswer] : []);
     const typeValid = q.type === expectedType;
     const evidenceValid = evidenceIsValid(q);
@@ -39,7 +48,8 @@
       '<h3>' + esc(q.prompt || ("السؤال " + (index + 1))) + '</h3>' + answerUI +
       '<div class="question-actions"><button type="button" class="check-answer" ' +
       (answerValid ? "" : "disabled") + '>تحقق من الإجابة</button>' +
-      evidenceButton(q) + '</div><span class="question-feedback" aria-live="polite"></span></article>';
+      evidenceButton(q) + solutionButton + '</div>' + solutionUI +
+      '<span class="question-feedback" aria-live="polite"></span></article>';
   };
   const quick = Array.isArray(config.quickCheckQuestions) ? config.quickCheckQuestions : [];
   const exercises = Array.isArray(config.exercises) ? config.exercises : [];
