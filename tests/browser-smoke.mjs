@@ -178,8 +178,15 @@ async function main() {
     );
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
-    assert.ok(tapHighlightCount >= spokenWordCount,
-      "Each spoken word must have its own independent highlight mark.");
+    assert.equal(tapHighlightCount, 1,
+      "Only the currently spoken word must be highlighted, never every word in the sentence.");
+    const firstWordLeft = await page.locator(".sentence-highlight").first().evaluate(el => el.style.left);
+    await page.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
+    assert.equal(await page.locator(".sentence-highlight").count(), 1,
+      "A word boundary must replace the previous mark instead of adding another one.");
+    const nextWordLeft = await page.locator(".sentence-highlight").first().evaluate(el => el.style.left);
+    assert.notEqual(nextWordLeft, firstWordLeft,
+      "The highlight must move to the word identified by the speech boundary.");
     assert.match(await page.locator(".sentence-highlight").first().evaluate(el =>
       getComputedStyle(el).backgroundColor
     ), /255, 218, 75/);
