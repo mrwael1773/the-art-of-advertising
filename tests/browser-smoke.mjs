@@ -159,12 +159,20 @@ async function main() {
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
     assert.equal(spoken.text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0);
     await page.locator("#pause-reading").click();
     assert.match(await page.locator("#speech-status").textContent(), /متوقف مؤقتًا/);
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 0);
+    assert.equal(await page.locator(".sentence-highlight-layer .sentence-highlight").count(), 0);
+    const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
+    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
+    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
+    await firstTextSpan.click({ force: true });
+    const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
+    assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
+      "Tapping original textbook text should start the sentence and highlight its word ranges.");
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -213,9 +221,9 @@ async function main() {
     const firstEvidence = page.locator(".evidence-button").first();
     assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.querySelector(".textLayer .sentence-speaking"));
+    await page.waitForFunction(() => document.querySelector(".sentence-highlight-layer .sentence-highlight"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    assert.equal(await page.locator(".textLayer .sentence-speaking").count(), 1);
+    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0);
     assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
     await auditAccessibility(page);
 
@@ -242,8 +250,8 @@ async function main() {
       "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
-    assert.ok(await realPdfPage.locator(".textLayer .sentence-speaking").count() > 0,
-      "Real PDF.js text spans should receive the active sentence highlight.");
+    assert.ok(await realPdfPage.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
+      "Exact spoken word ranges should be highlighted over the real PDF.js text layer.");
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
