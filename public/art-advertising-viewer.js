@@ -41,10 +41,12 @@
   const tokenPattern = /[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi;
   const sentenceTokens = value => (String(value || "").match(tokenPattern) || []).map(normalizeToken);
 
-  function makeItemTokens(items) {
+  function makeItemTokens(items, textDivs) {
     const tokens = [];
     items.forEach((item, itemIndex) => {
-      const value = String(item.str || "");
+      // Offsets must be measured against the exact text PDF.js rendered into
+      // the selectable text layer, not the source item's pre-render string.
+      const value = String(textDivs[itemIndex]?.textContent ?? item.str ?? "");
       for (const match of value.matchAll(tokenPattern)) {
         tokens.push({
           token: normalizeToken(match[0]),
@@ -116,7 +118,7 @@
       viewport,
       items: textContent.items,
       textDivs,
-      tokens: makeItemTokens(textContent.items),
+      tokens: makeItemTokens(textContent.items, textDivs),
       sentenceMatches: new Map()
     };
     sentences.forEach((sentence, index) => {
