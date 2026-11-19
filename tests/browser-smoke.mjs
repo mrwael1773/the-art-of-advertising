@@ -486,7 +486,7 @@ async function main() {
           maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
         }
       }
-      assert.ok(maxX >= minX && maxY >= minY, "The tapped word must have visible PDF ink after zoom.");
+      if (maxX < minX || maxY < minY) throw new Error("The tapped word must have visible PDF ink after zoom.");
       const expected = {
         left: canvasRect.left + (x0 + minX) / scaleX - 1,
         top: canvasRect.top + (y0 + minY) / scaleY - 1,
