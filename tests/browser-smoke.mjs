@@ -193,36 +193,43 @@ async function main() {
     // Reproduce Safari/iOS behavior: a tap may create a temporary text
     // selection after pointerdown. It must still activate sentence playback.
     await firstSentenceTextSpan.evaluate(span => {
-      span.dispatchEvent(new PointerEvent("pointerdown", {
-        bubbles: true, pointerId: 1, pointerType: "touch", isPrimary: true
-      }));
       const textNode = span.firstChild;
+      const targetStart = textNode.textContent.indexOf("measuring");
       const range = document.createRange();
-      range.setStart(textNode, 0);
-      range.setEnd(textNode, Math.min(4, textNode.length));
+      range.setStart(textNode, targetStart);
+      range.setEnd(textNode, targetStart + "measuring".length);
+      const rect = range.getBoundingClientRect();
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
+      span.dispatchEvent(new PointerEvent("pointerdown", {
+        bubbles: true, pointerId: 1, pointerType: "touch", isPrimary: true
+      }));
       span.dispatchEvent(new MouseEvent("click", {
-        bubbles: true, cancelable: true, clientX: 5, clientY: 5
+        bubbles: true, cancelable: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2
       }));
       selection.removeAllRanges();
     });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
-    assert.equal(tappedSentence, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
-      "Tapping text inside the first source sentence should start that sentence.");
+    assert.equal(tappedSentence, "measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
+      "Tapping a word in the middle of a source sentence must speak from that exact word, not from the sentence beginning.");
     const tapHighlightCount = await page.locator(".sentence-highlight-layer .active-spoken-word").count();
-    assert.ok(tapHighlightCount > 0,
-      "Tapping original textbook text should start the sentence and highlight it.");
     assert.equal(tapHighlightCount, 1,
       "Only the currently spoken word must be highlighted, never every word in the sentence.");
-    const firstWordText = await page.locator(".sentence-highlight-layer .active-spoken-word").first().getAttribute("data-word");
-    await page.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
+    const tappedWordText = await page.locator(".sentence-highlight-layer .active-spoken-word").first().getAttribute("data-word");
+    assert.equal(tappedWordText.toLowerCase(), "measuring",
+      "The first highlight must be the exact word tapped.");
+    const firstWordText = tappedWordText;
+    await page.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 10 }));
     assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 1,
       "A word boundary must replace the previous mark instead of adding another one.");
     const nextWordText = await page.locator(".sentence-highlight-layer .active-spoken-word").first().getAttribute("data-word");
     assert.notEqual(nextWordText, firstWordText,
       "The highlight must move to the word identified by the speech boundary.");
+    assert.equal(nextWordText.toLowerCase(), "10",
+      "Speech boundary offsets from the shortened utterance must map to the correct original sentence word.");
     assert.match(await page.locator(".sentence-highlight-layer .active-spoken-word").first().evaluate(el =>
       getComputedStyle(el.querySelector(".spoken-word-fragment")).backgroundColor
     ), /255, 218, 75/);
