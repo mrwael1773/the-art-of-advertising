@@ -173,9 +173,6 @@ async function main() {
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
     assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
     const tapHighlightCount = await page.locator(".textLayer mark.active-spoken-word").count();
-    const spokenWordCount = await page.evaluate(() =>
-      (window.__spoken.at(-1)?.text.match(/[a-z0-9]+(?:['’][a-z]+)?/gi) || []).length
-    );
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
     assert.equal(tapHighlightCount, 1,
