@@ -300,13 +300,27 @@
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
 
-    // The browser already resolved the physical tap to a PDF.js text span.
-    // Restrict hit testing to that exact source item: comparing every word on
-    // the page can select a nearby line/sentence when transformed text ranges
-    // overlap in Safari's touch layout.
-    const target = event.target instanceof Element ? event.target : null;
-    const targetSpan = target?.closest(".textLayer span[data-pdf-item-index]");
-    if (!targetSpan || !pageInfo.layer.contains(targetSpan)) return;
+    // Resolve the touched PDF.js source item from the physical viewport
+    // coordinates. Mobile Safari may retarget a touch-generated click to a
+    // wrapper/canvas rather than the underlying text span, so event.target is
+    // not a reliable source of text identity.
+    let targetSpan = null;
+    let targetSpanScore = Infinity;
+    for (const span of pageInfo.layer.querySelectorAll("span[data-pdf-item-index]")) {
+      for (const rect of span.getClientRects()) {
+        if (event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top || event.clientY > rect.bottom) continue;
+        const score = Math.hypot(
+          event.clientX - (rect.left + rect.right) / 2,
+          event.clientY - (rect.top + rect.bottom) / 2
+        );
+        if (score < targetSpanScore) {
+          targetSpanScore = score;
+          targetSpan = span;
+        }
+      }
+    }
+    if (!targetSpan) return;
     const itemIndex = Number(targetSpan.dataset.pdfItemIndex);
     if (!Number.isInteger(itemIndex)) return;
 
