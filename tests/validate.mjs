@@ -68,7 +68,7 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /sentence-highlight/);
   assert.match(viewer, /getClientRects/);
   assert.match(viewer, /const wordRects = \[\]/);
-  assert.match(viewer, /Join the word rectangles into one continuous band/);
+  assert.match(viewer, /Group by visual line, then split distant text runs/);
   assert.match(viewer, /sentence-highlight-line/);
   assert.match(viewer, /const gapLimit = Math.max\(8, rect.height \* 1.25\)/);
   assert.match(viewer, /const bands = lines\.flatMap\(line => line\.segments\)/);
