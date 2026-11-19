@@ -92,6 +92,9 @@
     pageInfo.root.style.height = viewport.height + "px";
     pageInfo.layer.style.width = viewport.width + "px";
     pageInfo.layer.style.height = viewport.height + "px";
+    // PDF.js 3.11 reads this CSS variable while laying out text spans.
+    // Keep it identical to the viewport scale for accurate source geometry.
+    pageInfo.layer.style.setProperty("--scale-factor", String(viewport.scale));
     pageInfo.highlightLayer.style.width = viewport.width + "px";
     pageInfo.highlightLayer.style.height = viewport.height + "px";
     pageInfo.layer.replaceChildren();
