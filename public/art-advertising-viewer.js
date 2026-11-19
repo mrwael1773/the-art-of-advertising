@@ -28,7 +28,6 @@
   let pdfDocument = null;
   let resizeHandle = 0;
   let lastWidth = 0;
-  let selectionAtPointerDown = "";
 
   const setStatus = message => { if (status) status.textContent = message; };
   const setButtons = enabled => {
@@ -292,13 +291,6 @@
 
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
-    const currentSelection = window.getSelection()?.toString() || "";
-    // A normal tap on iOS/Safari can create a temporary text selection after
-    // pointerdown. Ignore only a drag that changed an already-existing
-    // selection; an initially empty selection must not cancel sentence taps.
-    if (selectionAtPointerDown && currentSelection &&
-        currentSelection !== selectionAtPointerDown) return;
-
     let span = null;
     let offset = -1;
     const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
@@ -374,9 +366,6 @@
         setStatus("الصفحتان الأصليتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
       pageNodes.forEach(info => {
-        info.layer.addEventListener("pointerdown", () => {
-          selectionAtPointerDown = window.getSelection()?.toString() || "";
-        }, { passive: true });
         info.layer.addEventListener("click", event => handlePageTap(info, event));
       });
       const hash = decodeURIComponent(location.hash.slice(1));
