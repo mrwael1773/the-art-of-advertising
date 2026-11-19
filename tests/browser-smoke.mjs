@@ -452,6 +452,40 @@ async function main() {
     assert.ok(geometry.inkHeight <= geometry.rangeHeight,
       `Ink-tight highlight must not exceed the PDF text line box: ${JSON.stringify(geometry)}`);
 
+    // Simulate a pinch-zoom scale on the original page. The overlay is
+    // absolutely positioned in page-local CSS pixels, whereas Range and
+    // canvas client rectangles are viewport pixels. They must remain aligned.
+    await realPdfPage.evaluate(() => {
+      const root = document.querySelector("#pdf-page-1");
+      root.style.transformOrigin = "top left";
+      root.style.transform = "scale(1.35)";
+      window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 });
+    });
+    const zoomedAlignment = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
+      const page = group.closest(".pdf-page");
+      const span = page.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
+      const range = document.createRange();
+      range.setStart(span.firstChild, Number(group.dataset.start));
+      range.setEnd(span.firstChild, Number(group.dataset.end));
+      const source = range.getBoundingClientRect();
+      const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
+      return {
+        topInsideLine: overlay.top >= source.top - 2 && overlay.top <= source.bottom,
+        bottomInsideLine: overlay.bottom >= source.top && overlay.bottom <= source.bottom + 2,
+        leftInsideWord: overlay.left >= source.left - 2 && overlay.left <= source.right,
+        rightInsideWord: overlay.right >= source.left && overlay.right <= source.right + 2,
+        overlay: { top: overlay.top, bottom: overlay.bottom, left: overlay.left, right: overlay.right },
+        source: { top: source.top, bottom: source.bottom, left: source.left, right: source.right }
+      };
+    });
+    assert.ok(zoomedAlignment.topInsideLine && zoomedAlignment.bottomInsideLine &&
+      zoomedAlignment.leftInsideWord && zoomedAlignment.rightInsideWord,
+      `Word highlight must stay attached to the printed word after zoom: ${JSON.stringify(zoomedAlignment)}`);
+    await realPdfPage.locator("#pdf-page-1").evaluate(el => {
+      el.style.transform = "";
+      el.style.transformOrigin = "";
+    });
+
     // A responsive re-render must keep the exact word currently spoken,
     // rather than jumping back to the first word of the sentence.
     await realPdfPage.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
