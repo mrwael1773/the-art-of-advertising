@@ -144,42 +144,55 @@
       }
     });
 
-    // Join the word rectangles into one continuous band for each visual line of this sentence.
+    // Group by visual line, then split distant text runs so adjacent PDF columns never merge.
     const lines = [];
     wordRects
       .filter(rect => rect.width >= 1 && rect.height >= 1)
       .sort((a, b) => a.top - b.top || a.left - b.left)
       .forEach(rect => {
-        const line = lines.find(candidate =>
+        let line = lines.find(candidate =>
           Math.abs(candidate.top - rect.top) <= Math.max(2, Math.min(candidate.height, rect.height) * 0.35)
         );
         if (!line) {
-          lines.push({
+          line = { top: rect.top, bottom: rect.bottom, height: rect.height, segments: [] };
+          lines.push(line);
+        }
+        // PDF columns are separated by only a small visual gap at mobile scale.
+        // Keep this threshold close to inter-word spacing, never column spacing.
+        const gapLimit = Math.max(3, rect.height * 0.28);
+        let segment = line.segments.find(candidate =>
+          rect.left <= candidate.right + gapLimit && rect.right >= candidate.left - gapLimit
+        );
+        if (!segment) {
+          segment = {
             left: rect.left,
             right: rect.right,
             top: rect.top,
-            bottom: rect.bottom,
-            height: rect.height
-          });
-          return;
+            bottom: rect.bottom
+          };
+          line.segments.push(segment);
+        } else {
+          segment.left = Math.min(segment.left, rect.left);
+          segment.right = Math.max(segment.right, rect.right);
+          segment.top = Math.min(segment.top, rect.top);
+          segment.bottom = Math.max(segment.bottom, rect.bottom);
         }
-        line.left = Math.min(line.left, rect.left);
-        line.right = Math.max(line.right, rect.right);
         line.top = Math.min(line.top, rect.top);
         line.bottom = Math.max(line.bottom, rect.bottom);
         line.height = Math.max(line.height, rect.height);
       });
 
-    lines.sort((a, b) => a.top - b.top).forEach(line => {
+    const bands = lines.flatMap(line => line.segments).sort((a, b) => a.top - b.top || a.left - b.left);
+    bands.forEach(band => {
       const mark = document.createElement("span");
       mark.className = "sentence-highlight sentence-highlight-line";
-      mark.style.left = (line.left - pageRect.left - 2) + "px";
-      mark.style.top = (line.top - pageRect.top - 2) + "px";
-      mark.style.width = (line.right - line.left + 4) + "px";
-      mark.style.height = (line.bottom - line.top + 4) + "px";
+      mark.style.left = (band.left - pageRect.left - 2) + "px";
+      mark.style.top = (band.top - pageRect.top - 2) + "px";
+      mark.style.width = (band.right - band.left + 4) + "px";
+      mark.style.height = (band.bottom - band.top + 4) + "px";
       pageInfo.highlightLayer.append(mark);
     });
-    return lines;
+    return bands;
   }
 
   function highlightSentence(index) {
