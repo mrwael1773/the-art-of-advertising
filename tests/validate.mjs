@@ -67,8 +67,11 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /renderTextLayer/);
   assert.match(viewer, /sentence-highlight/);
   assert.match(viewer, /getClientRects/);
-  assert.match(viewer, /const wordRects = \[\]/);
-  assert.match(viewer, /Draw one independent mark for each spoken word/);
+  assert.match(viewer, /function highlightSpokenWord/);
+  assert.match(viewer, /function spokenWordIndex/);
+  assert.match(viewer, /utterance\.onboundary/);
+  assert.match(viewer, /tokens\[wordIndex\]/);
+  assert.match(viewer, /Only the currently spoken word/);
   assert.match(viewer, /sentence-highlight-word/);
   assert.doesNotMatch(viewer, /sentence-highlight-line|const gapLimit|const bands = lines/);
   assert.match(styles, /touch-action:pan-y pinch-zoom/);
