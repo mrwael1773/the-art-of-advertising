@@ -275,6 +275,19 @@ async function main() {
     );
     assert.ok(widestHighlight < realPageWidth * 0.75,
       `A sentence highlight must not bridge the two separate textbook columns (widest=${widestHighlight.toFixed(1)}px, page=${realPageWidth.toFixed(1)}px).`);
+
+    // A responsive re-render must keep the exact word currently spoken,
+    // rather than jumping back to the first word of the sentence.
+    await realPdfPage.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
+    const spokenWordBeforeResize = await realPdfPage.locator(".active-spoken-word").textContent();
+    await realPdfPage.setViewportSize({ width: 360, height: 844 });
+    await realPdfPage.waitForFunction(expected =>
+      document.querySelector(".active-spoken-word")?.textContent === expected,
+      spokenWordBeforeResize
+    );
+    assert.equal(await realPdfPage.locator(".active-spoken-word").count(), 1);
+    assert.equal(await realPdfPage.locator(".active-spoken-word").textContent(), spokenWordBeforeResize,
+      "Resizing the original PDF page must preserve the currently spoken word.");
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
