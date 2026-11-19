@@ -66,15 +66,15 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /pdfjsLib\.getDocument/);
   assert.match(viewer, /renderTextLayer/);
   assert.match(viewer, /sentence-highlight/);
-  assert.match(viewer, /getClientRects/);
+  assert.match(viewer, /range\.surroundContents\(mark\)/);
   assert.match(viewer, /function highlightSpokenWord/);
   assert.match(viewer, /function spokenWordIndex/);
   assert.match(viewer, /utterance\.onboundary/);
   assert.match(viewer, /tokens\[wordIndex\]/);
-  assert.match(viewer, /sentence-highlight-word/);
+  assert.match(viewer, /active-spoken-word/);
   assert.doesNotMatch(viewer, /sentence-highlight-line|const gapLimit|const bands = lines/);
   assert.match(styles, /touch-action:pan-y pinch-zoom/);
-  assert.match(styles, /background:rgba\(255,218,75,\.34\)/);
+  assert.match(styles, /background:rgba\(255,218,75,\.48\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
   assert.match(viewer, /pointerdown/);
   assert.match(viewer, /caretPositionFromPoint/);
