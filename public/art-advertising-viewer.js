@@ -152,6 +152,9 @@
       const group = document.createElement("span");
       group.className = "active-spoken-word";
       group.dataset.word = range.toString();
+      group.dataset.itemIndex = String(token.itemIndex);
+      group.dataset.start = String(token.start);
+      group.dataset.end = String(token.end);
       rects.forEach(rect => {
         const fragment = document.createElement("span");
         fragment.className = "spoken-word-fragment";
