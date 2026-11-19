@@ -79,7 +79,7 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(styles, /background:rgba\(255,218,75,\.48\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
   assert.match(viewer, /addEventListener\("click", event => handlePageTap/);
-  assert.match(viewer, /Restrict hit testing to that exact source item/);
+  assert.match(viewer, /Resolve the touched PDF\.js source item from the physical viewport/);
   assert.match(viewer, /selectedScore <= 18/);
   assert.doesNotMatch(viewer, /caretPositionFromPoint|caretRangeFromPoint/);
   assert.match(textbook, /sentence-highlight-layer/);
