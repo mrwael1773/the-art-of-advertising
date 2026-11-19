@@ -463,24 +463,48 @@ async function main() {
     });
     const zoomedAlignment = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
       const page = group.closest(".pdf-page");
+      const canvas = page.querySelector("canvas");
+      const canvasRect = canvas.getBoundingClientRect();
       const span = page.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
       const range = document.createRange();
       range.setStart(span.firstChild, Number(group.dataset.start));
       range.setEnd(span.firstChild, Number(group.dataset.end));
       const source = range.getBoundingClientRect();
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      const x0 = Math.max(0, Math.floor((source.left - canvasRect.left) * scaleX));
+      const y0 = Math.max(0, Math.floor((source.top - canvasRect.top) * scaleY));
+      const x1 = Math.min(canvas.width, Math.ceil((source.right - canvasRect.left) * scaleX));
+      const y1 = Math.min(canvas.height, Math.ceil((source.bottom - canvasRect.top) * scaleY));
+      const pixels = canvas.getContext("2d", { willReadFrequently: true }).getImageData(x0, y0, x1 - x0, y1 - y0);
+      let minX = pixels.width, minY = pixels.height, maxX = -1, maxY = -1;
+      for (let y = 0; y < pixels.height; y++) for (let x = 0; x < pixels.width; x++) {
+        const i = (y * pixels.width + x) * 4;
+        const luminance = pixels.data[i] * .299 + pixels.data[i + 1] * .587 + pixels.data[i + 2] * .114;
+        if (pixels.data[i + 3] > 0 && luminance < 225) {
+          minX = Math.min(minX, x); minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+        }
+      }
+      assert.ok(maxX >= minX && maxY >= minY, "The tapped word must have visible PDF ink after zoom.");
+      const expected = {
+        left: canvasRect.left + (x0 + minX) / scaleX - 1,
+        top: canvasRect.top + (y0 + minY) / scaleY - 1,
+        width: (maxX - minX + 1) / scaleX + 2,
+        height: (maxY - minY + 1) / scaleY + 2
+      };
       const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
       return {
-        topInsideLine: overlay.top >= source.top - 2 && overlay.top <= source.bottom,
-        bottomInsideLine: overlay.bottom >= source.top && overlay.bottom <= source.bottom + 2,
-        leftInsideWord: overlay.left >= source.left - 2 && overlay.left <= source.right,
-        rightInsideWord: overlay.right >= source.left && overlay.right <= source.right + 2,
+        left: Math.abs(overlay.left - expected.left),
+        top: Math.abs(overlay.top - expected.top),
+        width: Math.abs(overlay.width - expected.width),
+        height: Math.abs(overlay.height - expected.height),
         overlay: { top: overlay.top, bottom: overlay.bottom, left: overlay.left, right: overlay.right },
-        source: { top: source.top, bottom: source.bottom, left: source.left, right: source.right }
+        expected
       };
     });
-    assert.ok(zoomedAlignment.topInsideLine && zoomedAlignment.bottomInsideLine &&
-      zoomedAlignment.leftInsideWord && zoomedAlignment.rightInsideWord,
-      `Word highlight must stay attached to the printed word after zoom: ${JSON.stringify(zoomedAlignment)}`);
+    assert.ok(["left", "top", "width", "height"].every(key => zoomedAlignment[key] < 1.5),
+      `Word highlight must stay aligned to the actual printed ink after zoom: ${JSON.stringify(zoomedAlignment)}`);
     await realPdfPage.locator("#pdf-page-1").evaluate(el => {
       el.style.transform = "";
       el.style.transformOrigin = "";
