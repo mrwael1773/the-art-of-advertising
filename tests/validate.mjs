@@ -70,7 +70,7 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /const wordRects = \[\]/);
   assert.match(viewer, /Group by visual line, then split distant text runs/);
   assert.match(viewer, /sentence-highlight-line/);
-  assert.match(viewer, /const gapLimit = Math.max\(8, rect.height \* 1.25\)/);
+  assert.match(viewer, /const gapLimit = Math.max\(3, rect.height \* 0\.28\)/);
   assert.match(viewer, /const bands = lines\.flatMap\(line => line\.segments\)/);
   assert.match(styles, /touch-action:pan-y pinch-zoom/);
   assert.match(styles, /background:rgba\(100,190,230,\.22\)/);
