@@ -398,6 +398,18 @@ async function main() {
     assert.equal(await page.locator("#extra-exercises [data-type='true_false']").count(), 5);
     assert.equal(await page.locator(".evidence-button").count(), 26);
     assert.equal(await page.locator(".evidence-button:disabled").count(), 0);
+    const trueFalseCards = page.locator("#extra-exercises [data-type='true_false']");
+    assert.equal(await page.locator("#extra-exercises .solution-jump-button").count(), 5);
+    assert.equal(await page.locator("#extra-exercises .answer-solution").count(), 5);
+    for (let index = 0; index < 5; index++) {
+      const card = trueFalseCards.nth(index);
+      const expected = await card.getAttribute("data-correct") === "true" ? "صح" : "خطأ";
+      assert.match(await card.locator(".answer-solution").textContent(), new RegExp(expected));
+      assert.equal(await card.locator(".solution-jump-button").getAttribute("href"),
+        "#solution-exercise-" + (index + 16));
+    }
+    await trueFalseCards.first().locator(".solution-jump-button").click();
+    assert.equal(new URL(page.url()).hash, "#solution-exercise-16");
 
     const evidenceTargets = await page.locator(".evidence-button").evaluateAll(links =>
       links.map(link => decodeURIComponent(new URL(link.href).hash.replace(/^#sentence-/, "")))
