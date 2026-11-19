@@ -155,6 +155,13 @@
       // modifying PDF.js text spans or inheriting their inline transforms.
       const pageRect = pageInfo.root.getBoundingClientRect();
       const canvasRect = pageInfo.canvas.getBoundingClientRect();
+      // Convert viewport coordinates back into the PDF page's local CSS-pixel
+      // space. getBoundingClientRect() includes pinch zoom/CSS transforms,
+      // while absolutely positioned overlay children use untransformed local
+      // coordinates. Omitting this inverse scale makes highlights drift,
+      // especially after zooming the page on mobile Safari.
+      const pageScaleX = pageRect.width / Math.max(1, pageInfo.root.offsetWidth);
+      const pageScaleY = pageRect.height / Math.max(1, pageInfo.root.offsetHeight);
       const scaleX = pageInfo.canvas.width / canvasRect.width;
       const scaleY = pageInfo.canvas.height / canvasRect.height;
       const group = document.createElement("span");
@@ -197,10 +204,10 @@
         const bottom = canvasRect.top + (y0 + maxY + 1) / scaleY;
         const fragment = document.createElement("span");
         fragment.className = "spoken-word-fragment";
-        fragment.style.left = (left - pageRect.left - 1) + "px";
-        fragment.style.top = (top - pageRect.top - 1) + "px";
-        fragment.style.width = (right - left + 2) + "px";
-        fragment.style.height = (bottom - top + 2) + "px";
+        fragment.style.left = ((left - pageRect.left) / pageScaleX - 1) + "px";
+        fragment.style.top = ((top - pageRect.top) / pageScaleY - 1) + "px";
+        fragment.style.width = ((right - left) / pageScaleX + 2) + "px";
+        fragment.style.height = ((bottom - top) / pageScaleY + 2) + "px";
         group.appendChild(fragment);
       });
       if (!group.childElementCount) return false;
