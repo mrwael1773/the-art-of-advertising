@@ -125,7 +125,7 @@ async function main() {
     });
     page.on("response", response => {
       const pathname = new URL(response.url()).pathname;
-      if (pathname === "/vendor/pdf.worker.min.js") workerResponses.push({ status: response.status(), contentType: response.headers()["content-type"] || "" });
+      if (pathname.endsWith("/vendor/pdf.worker.min.js")) workerResponses.push({ status: response.status(), contentType: response.headers()["content-type"] || "" });
       if (pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
     });
     page.on("requestfailed", request => console.log("Browser request failed:", request.url(), request.failure()?.errorText));
