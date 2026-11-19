@@ -136,15 +136,21 @@
     try {
       range.setStart(textNode, Math.min(token.start, textNode.length));
       range.setEnd(textNode, Math.min(token.end, textNode.length));
-      const rect = range.getBoundingClientRect();
-      if (!rect || rect.width < 1 || rect.height < 1) return false;
+      const rects = Array.from(range.getClientRects()).filter(item => item.width >= 1 && item.height >= 1);
+      const rect = rects[0];
+      if (!rect) return false;
+      // Safari's range rectangle includes extra inline line-box space.
+      // Tighten the visual mark around the word and keep it centered.
+      const width = rect.width * 0.82;
+      const height = rect.height * 0.72;
+      const left = rect.left + (rect.width - width) / 2;
+      const top = rect.top + (rect.height - height) / 2;
       const mark = document.createElement("span");
       mark.className = "sentence-highlight sentence-highlight-word";
-      // Use the measured glyph rectangle without adding artificial padding.
-      mark.style.left = (rect.left - pageRect.left) + "px";
-      mark.style.top = (rect.top - pageRect.top) + "px";
-      mark.style.width = rect.width + "px";
-      mark.style.height = rect.height + "px";
+      mark.style.left = (left - pageRect.left) + "px";
+      mark.style.top = (top - pageRect.top) + "px";
+      mark.style.width = width + "px";
+      mark.style.height = height + "px";
       pageInfo.highlightLayer.append(mark);
       return true;
     } catch {
