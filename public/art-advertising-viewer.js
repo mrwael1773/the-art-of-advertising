@@ -249,7 +249,7 @@
     return rate;
   };
 
-  function speakFrom(index, token) {
+  function speakFrom(index, token, startWordIndex = 0) {
     if (!supported || token !== queueToken || index >= sentences.length) {
       if (index >= sentences.length) {
         currentIndex = -1;
@@ -259,34 +259,42 @@
       return;
     }
     currentIndex = index;
-    if (!highlightSentence(index)) return;
-    const utterance = new SpeechSynthesisUtterance(sentences[index].text);
+    const sentenceText = sentences[index].text;
+    const words = Array.from(sentenceText.matchAll(/[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi));
+    const firstWord = words[startWordIndex];
+    if (!firstWord || !highlightSpokenWord(index, startWordIndex)) return;
+
+    // Start the utterance at the tapped word itself. Speech boundary offsets
+    // are relative to this substring, so translate them back to sentence offsets.
+    const startChar = firstWord.index;
+    const spokenText = sentenceText.slice(startChar);
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.lang = "en-US";
     utterance.rate = getRate();
     utterance.onstart = () => {
-      if (token === queueToken) highlightSpokenWord(index, 0);
+      if (token === queueToken) highlightSpokenWord(index, startWordIndex);
     };
     utterance.onboundary = event => {
       if (token !== queueToken || event.name !== "word") return;
-      const wordIndex = spokenWordIndex(sentences[index].text, event.charIndex);
-      if (wordIndex >= 0) highlightSpokenWord(index, wordIndex);
+      const wordIndex = spokenWordIndex(sentenceText, startChar + event.charIndex);
+      if (wordIndex >= startWordIndex) highlightSpokenWord(index, wordIndex);
     };
     utterance.onend = () => {
-      if (token === queueToken) speakFrom(index + 1, token);
+      if (token === queueToken) speakFrom(index + 1, token, 0);
     };
     utterance.onerror = event => {
       if (token !== queueToken || event.error === "canceled" || event.error === "interrupted") return;
       setStatus("توقف النطق بسبب مشكلة في خدمة الصوت. يمكنك الضغط على تشغيل للمحاولة مجددًا.");
     };
-    setStatus("يُنطق النص الأصلي — الجملة " + (index + 1) + " من " + sentences.length + ".");
+    setStatus("يُنطق النص الأصلي من الكلمة المحددة — الجملة " + (index + 1) + " من " + sentences.length + ".");
     synth.speak(utterance);
   }
 
-  function startAt(index) {
+  function startAt(index, wordIndex = 0) {
     if (!supported || !pdfDocument || !sentences.length) return;
     queueToken++;
     synth.cancel();
-    speakFrom(Math.max(0, index), queueToken);
+    speakFrom(Math.max(0, index), queueToken, Math.max(0, wordIndex));
   }
 
   function handlePageTap(pageInfo, event) {
@@ -319,19 +327,37 @@
     const itemIndex = pageInfo.model.textDivs.indexOf(span);
     if (itemIndex < 0) return;
 
-    let candidateIndex = -1;
+    let selected = null;
+    let selectedDistance = Infinity;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
-      const token = tokens.find(item => item.itemIndex === itemIndex &&
-        (offset < 0 || (item.start <= offset && offset < item.end)));
-      if (token) {
-        candidateIndex = sentenceIndex;
-        break;
-      }
-      if (candidateIndex < 0 && tokens.some(item => item.itemIndex === itemIndex)) {
-        candidateIndex = sentenceIndex;
+      for (let wordIndex = 0; wordIndex < tokens.length; wordIndex++) {
+        const item = tokens[wordIndex];
+        if (item.itemIndex !== itemIndex) continue;
+        let distance;
+        if (offset >= 0) {
+          distance = offset >= item.start && offset < item.end
+            ? 0
+            : Math.min(Math.abs(offset - item.start), Math.abs(offset - item.end)) + 1;
+        } else {
+          const textNode = span.firstChild;
+          if (!textNode || textNode.nodeType !== Node.TEXT_NODE) continue;
+          const range = document.createRange();
+          range.setStart(textNode, item.start);
+          range.setEnd(textNode, item.end);
+          const rect = range.getBoundingClientRect();
+          const dx = event.clientX < rect.left ? rect.left - event.clientX :
+            event.clientX > rect.right ? event.clientX - rect.right : 0;
+          const dy = event.clientY < rect.top ? rect.top - event.clientY :
+            event.clientY > rect.bottom ? event.clientY - rect.bottom : 0;
+          distance = Math.hypot(dx, dy);
+        }
+        if (distance < selectedDistance) {
+          selectedDistance = distance;
+          selected = { sentenceIndex, wordIndex };
+        }
       }
     }
-    if (candidateIndex >= 0) startAt(candidateIndex);
+    if (selected) startAt(selected.sentenceIndex, selected.wordIndex);
   }
 
   async function initialize() {
