@@ -118,12 +118,15 @@ async function main() {
     // Use the real pinned PDF.js build with the original PDF asset here.
     // The deterministic stub has no glyph pixels and cannot test ink geometry.
     const apiRequests = [];
+    const workerResponses = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
       if (new URL(request.url()).pathname.endsWith(".pdf")) console.log("PDF request:", request.url());
     });
     page.on("response", response => {
-      if (new URL(response.url()).pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
+      const pathname = new URL(response.url()).pathname;
+      if (pathname === "/vendor/pdf.worker.min.js") workerResponses.push({ status: response.status(), contentType: response.headers()["content-type"] || "" });
+      if (pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
     });
     page.on("requestfailed", request => console.log("Browser request failed:", request.url(), request.failure()?.errorText));
     page.on("pageerror", error => console.log("Browser page error:", error.message));
@@ -149,6 +152,8 @@ async function main() {
     assert.ok(await page.locator(".pdf-page .textLayer span").count() >= 23);
     assert.equal(await page.locator("#passage-sentences").count(), 0);
     assert.equal(await page.locator(".passage-text").count(), 0);
+    assert.ok(workerResponses.some(item => item.status === 200 && item.contentType.includes("javascript")),
+      "PDF.js worker must load successfully from the same origin.");
     assert.match(await page.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/);
     assert.equal(await page.locator(".source-pdf-link").getAttribute("href"),
       "./assets/art-advertising-source.pdf");
