@@ -165,13 +165,17 @@ async function main() {
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
     assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0);
-    const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
-    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
-    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
-    assert.match(await firstTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
-    await firstTextSpan.click({ force: true });
+    // Tap a span known to belong to the first source sentence, rather than
+    // an arbitrary leading page/header span that may not be part of a passage.
+    const firstSentenceTextSpan = page.locator("#pdf-page-1 .textLayer span").filter({ hasText: /tiny/i }).first();
+    assert.ok(await firstSentenceTextSpan.count() > 0, "The first source sentence must have a rendered text span.");
+    assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
+    assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
+    assert.match(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
+    await firstSentenceTextSpan.click({ force: true });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
-    assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
+    assert.equal(tappedSentence, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
+      "Tapping text inside the first source sentence should start that sentence.");
     const tapHighlightCount = await page.locator(".sentence-highlight-layer .active-spoken-word").count();
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
