@@ -136,14 +136,15 @@
     try {
       range.setStart(textNode, Math.min(token.start, textNode.length));
       range.setEnd(textNode, Math.min(token.end, textNode.length));
-      const rect = Array.from(range.getClientRects()).find(rect => rect.width >= 1 && rect.height >= 1);
-      if (!rect) return false;
+      const rect = range.getBoundingClientRect();
+      if (!rect || rect.width < 1 || rect.height < 1) return false;
       const mark = document.createElement("span");
       mark.className = "sentence-highlight sentence-highlight-word";
-      mark.style.left = (rect.left - pageRect.left - 1) + "px";
-      mark.style.top = (rect.top - pageRect.top - 1) + "px";
-      mark.style.width = (rect.width + 2) + "px";
-      mark.style.height = (rect.height + 2) + "px";
+      // Use the measured glyph rectangle without adding artificial padding.
+      mark.style.left = (rect.left - pageRect.left) + "px";
+      mark.style.top = (rect.top - pageRect.top) + "px";
+      mark.style.width = rect.width + "px";
+      mark.style.height = rect.height + "px";
       pageInfo.highlightLayer.append(mark);
       return true;
     } catch {
