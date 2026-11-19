@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript, headers, styles] = await Promise.all([
+const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript, headers, styles, workerDownloader] = await Promise.all([
   read("../src/worker.js"),
   read("../wrangler.toml"),
   read("../public/index.html"),
@@ -13,7 +13,8 @@ const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript,
   read("../public/art-advertising-viewer.js"),
   read("../public/art-advertising-quiz.js"),
   read("../public/_headers"),
-  read("../public/art-advertising.css")
+  read("../public/art-advertising.css"),
+  read("../scripts/download-pdf-worker.mjs")
 ]);
 
 const configMatch = configSource.match(/window\.ART_AD_CONFIG\s*=\s*([\s\S]*);\s*$/);
@@ -90,6 +91,9 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.doesNotMatch(worker, /cdnjs\\.cloudflare\\.com\\/ajax\\/libs\\/pdf\\.js/);
   assert.ok(headers.includes("worker-src 'self' blob:"));
   assert.ok(viewer.includes('new URL("./vendor/pdf.worker.min.js", window.location.href).href'));
+  assert.match(workerDownloader, /pdf\.worker\.min\.js/);
+  assert.match(workerDownloader, /3\.11\.174/);
+  assert.match(workerDownloader, /public\/vendor/);
 });
 
 
