@@ -270,7 +270,7 @@ async function main() {
       Math.max(...elements.map(el => el.getBoundingClientRect().width))
     );
     assert.ok(widestHighlight < realPageWidth * 0.75,
-      "A sentence highlight must not bridge the two separate textbook columns.");
+      `A sentence highlight must not bridge the two separate textbook columns (widest=${widestHighlight.toFixed(1)}px, page=${realPageWidth.toFixed(1)}px).`);
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
