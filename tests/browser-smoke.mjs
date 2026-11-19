@@ -283,17 +283,26 @@ async function main() {
       const range = document.createRange();
       range.setStart(textNode, Number(group.dataset.start));
       range.setEnd(textNode, Number(group.dataset.end));
-      const source = range.getBoundingClientRect();
+      const selectedText = range.toString();
       const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
+      const sourceRects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
+      const source = sourceRects[0];
       return {
+        selectedText,
+        expectedWord: group.dataset.word,
+        rectCount: sourceRects.length,
         left: Math.abs(source.left - overlay.left),
         top: Math.abs(source.top - overlay.top),
         width: Math.abs(source.width - overlay.width),
         height: Math.abs(source.height - overlay.height)
       };
     });
-    assert.ok(Object.values(geometry).every(delta => delta < 0.75),
-      `Word overlay must match the measured PDF text bounds without guessed offsets: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.selectedText, geometry.expectedWord,
+      `Highlight offsets must select exactly the intended rendered word: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.rectCount, 1,
+      `A single spoken word must produce one tight text rectangle: ${JSON.stringify(geometry)}`);
+    assert.ok(["left", "top", "width", "height"].every(key => geometry[key] < 0.75),
+      `Word overlay must match the exact rendered word bounds: ${JSON.stringify(geometry)}`);
 
     // A responsive re-render must keep the exact word currently spoken,
     // rather than jumping back to the first word of the sentence.
