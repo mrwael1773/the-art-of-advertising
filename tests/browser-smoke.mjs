@@ -120,7 +120,14 @@ async function main() {
     const apiRequests = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
+      if (new URL(request.url()).pathname.endsWith(".pdf")) console.log("PDF request:", request.url());
     });
+    page.on("response", response => {
+      if (new URL(response.url()).pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
+    });
+    page.on("requestfailed", request => console.log("Browser request failed:", request.url(), request.failure()?.errorText));
+    page.on("pageerror", error => console.log("Browser page error:", error.message));
+    page.on("console", message => { if (message.type() === "error") console.log("Browser console error:", message.text()); });
 
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
