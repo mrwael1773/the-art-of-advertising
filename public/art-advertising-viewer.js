@@ -127,15 +127,7 @@
 
   function clearHighlight() {
     pageNodes.forEach(info => {
-      const mark = info.activeWordMark;
-      if (mark?.parentNode) {
-        const parent = mark.parentNode;
-        while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
-        mark.remove();
-        // Range.surroundContents splits the source text node into fragments.
-        // Merge them before the next word's original character offsets are used.
-        parent.normalize();
-      }
+      info.activeWordMark?.remove();
       info.activeWordMark = null;
       info.highlightLayer?.replaceChildren();
     });
@@ -144,19 +136,33 @@
   function addWordHighlight(pageInfo, token) {
     const span = pageInfo.model.textDivs[token.itemIndex];
     const textNode = span?.firstChild;
-    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return false;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE ||
+        token.start < 0 || token.end > textNode.length || token.end <= token.start) return false;
     const range = document.createRange();
     try {
-      range.setStart(textNode, Math.min(token.start, textNode.length));
-      range.setEnd(textNode, Math.min(token.end, textNode.length));
-      if (!range.toString()) return false;
+      range.setStart(textNode, token.start);
+      range.setEnd(textNode, token.end);
+      const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
+      if (!rects.length) return false;
 
-      // Wrap the actual source-text characters. The browser paints the inline
-      // background using the PDF text's own font metrics and transforms.
-      const mark = document.createElement("mark");
-      mark.className = "active-spoken-word";
-      range.surroundContents(mark);
-      pageInfo.activeWordMark = mark;
+      // Measure the selected source characters in viewport CSS pixels, then
+      // translate them into the page's own coordinate space. This avoids
+      // modifying PDF.js text spans or inheriting their inline transforms.
+      const pageRect = pageInfo.root.getBoundingClientRect();
+      const group = document.createElement("span");
+      group.className = "active-spoken-word";
+      group.dataset.word = range.toString();
+      rects.forEach(rect => {
+        const fragment = document.createElement("span");
+        fragment.className = "spoken-word-fragment";
+        fragment.style.left = (rect.left - pageRect.left) + "px";
+        fragment.style.top = (rect.top - pageRect.top) + "px";
+        fragment.style.width = rect.width + "px";
+        fragment.style.height = rect.height + "px";
+        group.appendChild(fragment);
+      });
+      pageInfo.highlightLayer.appendChild(group);
+      pageInfo.activeWordMark = group;
       return true;
     } catch {
       return false;
