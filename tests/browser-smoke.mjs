@@ -115,8 +115,8 @@ async function main() {
       });
     });
     const page = await context.newPage();
-    await page.route("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", route =>
-      route.fulfill({ status: 200, contentType: "application/javascript", body: pdfJsStub }));
+    // Use the real pinned PDF.js build with the original PDF asset here.
+    // The deterministic stub has no glyph pixels and cannot test ink geometry.
     const apiRequests = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
