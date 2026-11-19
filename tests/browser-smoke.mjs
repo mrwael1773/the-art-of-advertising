@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 import axe from "axe-core";
 
 const wranglerVersion = "4.159.0";
@@ -465,6 +465,94 @@ async function main() {
     assert.equal(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").getAttribute("data-word"), spokenWordBeforeResize,
       "Resizing the original PDF page must preserve the currently spoken word.");
     await realPdfPage.close();
+
+    // Safari uses WebKit. Run the same real-PDF hit test there, with a
+    // touch-style pointer and an iOS-like selection-before-click sequence.
+    const webkitBrowser = await webkit.launch({ headless: true });
+    try {
+      const webkitContext = await webkitBrowser.newContext({
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true
+      });
+      await webkitContext.addInitScript(() => {
+        window.__spoken = [];
+        class TestUtterance {
+          constructor(text) { this.text = text; this.lang = ""; this.rate = 1; }
+        }
+        Object.defineProperty(window, "SpeechSynthesisUtterance", {
+          configurable: true, value: TestUtterance
+        });
+        Object.defineProperty(window, "speechSynthesis", {
+          configurable: true,
+          value: {
+            cancel() {}, pause() {}, resume() {},
+            speak(utterance) {
+              window.__spoken.push({ text: utterance.text, lang: utterance.lang, rate: utterance.rate });
+              window.__lastUtterance = utterance;
+            },
+            get speaking() { return Boolean(window.__lastUtterance); },
+            get paused() { return false; }
+          }
+        });
+      });
+      const safariPage = await webkitContext.newPage();
+      await safariPage.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+      await safariPage.waitForFunction(() =>
+        (document.querySelector("#speech-status")?.textContent || "").includes("الصفحتان الأصليتان جاهزتان"),
+      { timeout: 60000 });
+
+      const safariTapCases = [
+        { page: 1, word: "measuring", sentence: "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall." },
+        { page: 1, word: "triumph", sentence: "The new FIAT 500 is a triumph of Italian design." },
+        { page: 1, word: "introduced", sentence: "The FIAT 500 two-seater was introduced in 1957, and it became an automotive legend." },
+        { page: 1, word: "According", sentence: "According to Forbes magazine, Henk is the most expensive suitcase in the world." },
+        { page: 2, word: "portable", sentence: "It looks like an ordinary bike, but it’s portable." },
+        { page: 2, word: "invented", sentence: "Bicycles were invented in France in the 1790s." }
+      ];
+      for (const testCase of safariTapCases) {
+        await safariPage.evaluate(({ pageNumber, word }) => {
+          const root = document.querySelector("#pdf-page-" + pageNumber);
+          for (const span of root.querySelectorAll(".textLayer span")) {
+            const node = span.firstChild;
+            if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+            const match = Array.from(node.textContent.matchAll(/[a-z0-9]+(?:['’][a-z]+)?/gi))
+              .find(item => item[0].toLowerCase() === word.toLowerCase());
+            if (!match) continue;
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const rect = range.getBoundingClientRect();
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            span.dispatchEvent(new PointerEvent("pointerdown", {
+              bubbles: true, pointerId: 1, pointerType: "touch", isPrimary: true
+            }));
+            span.dispatchEvent(new MouseEvent("click", {
+              bubbles: true, cancelable: true,
+              clientX: rect.left + rect.width / 2,
+              clientY: rect.top + rect.height / 2
+            }));
+            selection.removeAllRanges();
+            return;
+          }
+          throw new Error("Could not locate WebKit PDF word: " + word);
+        }, { pageNumber: testCase.page, word: testCase.word });
+        const result = await safariPage.evaluate(() => ({
+          spoken: window.__spoken.at(-1)?.text || "",
+          highlighted: document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word || ""
+        }));
+        const expectedStart = testCase.sentence.slice(testCase.sentence.toLowerCase().indexOf(testCase.word.toLowerCase()));
+        assert.equal(result.highlighted.toLowerCase(), testCase.word.toLowerCase(),
+          "WebKit touch tap must highlight the exact word " + testCase.word + "; got " + result.highlighted);
+        assert.equal(result.spoken, expectedStart,
+          "WebKit touch tap must use the sentence containing " + testCase.word + "; got " + result.spoken);
+      }
+      await webkitContext.close();
+    } finally {
+      await webkitBrowser.close();
+    }
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const unsupportedPage = await unsupportedContext.newPage();
