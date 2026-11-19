@@ -230,6 +230,35 @@ async function main() {
       "The highlight must move to the word identified by the speech boundary.");
     assert.equal(nextWordText.toLowerCase(), "10",
       "Speech boundary offsets from the shortened utterance must map to the correct original sentence word.");
+
+    // Exercise hit-testing at different positions within the same printed
+    // sentence. Each tap must highlight and speak the exact word under it.
+    for (const expectedWord of ["tiny", "classic", "back", "measuring", "centimeters", "tall"]) {
+      await page.locator("#pdf-page-1 .textLayer span").evaluateAll((spans, word) => {
+        const span = spans.find(item => item.firstChild?.nodeType === Node.TEXT_NODE &&
+          Array.from(item.firstChild.textContent.matchAll(/[a-z0-9]+/gi))
+            .some(match => match[0].toLowerCase() === word));
+        if (!span) throw new Error("Could not find target word in rendered PDF spans: " + word);
+        const textNode = span.firstChild;
+        const match = Array.from(textNode.textContent.matchAll(/[a-z0-9]+/gi))
+          .find(item => item[0].toLowerCase() === word);
+        const range = document.createRange();
+        range.setStart(textNode, match.index);
+        range.setEnd(textNode, match.index + match[0].length);
+        const rect = range.getBoundingClientRect();
+        span.dispatchEvent(new MouseEvent("click", {
+          bubbles: true, cancelable: true,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2
+        }));
+      }, expectedWord);
+      const utteranceText = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
+      const highlightedWord = await page.locator(".sentence-highlight-layer .active-spoken-word").getAttribute("data-word");
+      assert.equal(highlightedWord.toLowerCase(), expectedWord,
+        `Tap hit-testing must highlight the exact visual word: expected ${expectedWord}, got ${highlightedWord}.`);
+      assert.ok(utteranceText.toLowerCase().startsWith(expectedWord),
+        `Speech must start at the tapped word ${expectedWord}, got: ${utteranceText}`);
+    }
     assert.match(await page.locator(".sentence-highlight-layer .active-spoken-word").first().evaluate(el =>
       getComputedStyle(el.querySelector(".spoken-word-fragment")).backgroundColor
     ), /255, 218, 75/);

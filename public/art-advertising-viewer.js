@@ -299,65 +299,53 @@
 
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
-    let span = null;
-    let offset = -1;
-    const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-    if (caretPosition) {
-      const node = caretPosition.offsetNode;
-      const candidate = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-      if (candidate && pageInfo.layer.contains(candidate)) {
-        span = candidate.closest(".textLayer span");
-        offset = caretPosition.offset;
-      }
-    }
-    if (!span) {
-      const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-      if (caretRange) {
-        const node = caretRange.startContainer;
-        const candidate = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-        if (candidate && pageInfo.layer.contains(candidate)) {
-          span = candidate.closest(".textLayer span");
-          offset = caretRange.startOffset;
-        }
-      }
-    }
-    // Some browsers do not expose caret hit-testing; use the topmost PDF.js span as a fallback.
-    if (!span) span = event.target.closest(".textLayer span");
-    if (!span || !pageInfo.layer.contains(span)) return;
-    const itemIndex = pageInfo.model.textDivs.indexOf(span);
-    if (itemIndex < 0) return;
 
+    // Do not trust caret offsets here: on touch browsers the caret API may
+    // return an element-child offset (not a character offset), or choose a
+    // neighbouring line in PDF.js's transformed text layer. Resolve the tap
+    // against the actual client rectangles of every mapped source word.
     let selected = null;
-    let selectedDistance = Infinity;
+    let selectedScore = Infinity;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
       for (let wordIndex = 0; wordIndex < tokens.length; wordIndex++) {
-        const item = tokens[wordIndex];
-        if (item.itemIndex !== itemIndex) continue;
-        let distance;
-        if (offset >= 0) {
-          distance = offset >= item.start && offset < item.end
-            ? 0
-            : Math.min(Math.abs(offset - item.start), Math.abs(offset - item.end)) + 1;
-        } else {
-          const textNode = span.firstChild;
-          if (!textNode || textNode.nodeType !== Node.TEXT_NODE) continue;
-          const range = document.createRange();
-          range.setStart(textNode, item.start);
-          range.setEnd(textNode, item.end);
-          const rect = range.getBoundingClientRect();
+        const token = tokens[wordIndex];
+        const span = pageInfo.model.textDivs[token.itemIndex];
+        const textNode = span?.firstChild;
+        if (!textNode || textNode.nodeType !== Node.TEXT_NODE ||
+            token.start < 0 || token.end > textNode.length || token.end <= token.start) continue;
+
+        const range = document.createRange();
+        try {
+          range.setStart(textNode, token.start);
+          range.setEnd(textNode, token.end);
+        } catch {
+          continue;
+        }
+        const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
+        for (const rect of rects) {
           const dx = event.clientX < rect.left ? rect.left - event.clientX :
             event.clientX > rect.right ? event.clientX - rect.right : 0;
           const dy = event.clientY < rect.top ? rect.top - event.clientY :
             event.clientY > rect.bottom ? event.clientY - rect.bottom : 0;
-          distance = Math.hypot(dx, dy);
-        }
-        if (distance < selectedDistance) {
-          selectedDistance = distance;
-          selected = { sentenceIndex, wordIndex };
+          const distance = Math.hypot(dx, dy);
+          // If two transformed word rectangles touch, prefer the word whose
+          // visual centre is closest to the actual tap point.
+          const score = distance === 0
+            ? Math.hypot(event.clientX - (rect.left + rect.right) / 2,
+                event.clientY - (rect.top + rect.bottom) / 2) / 1000
+            : distance;
+          if (score < selectedScore) {
+            selectedScore = score;
+            selected = { sentenceIndex, wordIndex };
+          }
         }
       }
     }
-    if (selected) startAt(selected.sentenceIndex, selected.wordIndex);
+
+    // A tap outside mapped text must not trigger a guessed neighbouring word.
+    if (selected && selectedScore <= 18) {
+      startAt(selected.sentenceIndex, selected.wordIndex);
+    }
   }
 
   async function initialize() {
