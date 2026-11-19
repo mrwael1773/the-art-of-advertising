@@ -221,28 +221,48 @@
     if (!supported || !pageInfo.model) return;
     const currentSelection = window.getSelection()?.toString() || "";
     if (currentSelection && currentSelection !== selectionAtPointerDown) return;
-    const span = event.target.closest(".textLayer span");
+
+    let span = null;
+    let offset = -1;
+    const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+    if (caretPosition) {
+      const node = caretPosition.offsetNode;
+      const candidate = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+      if (candidate && pageInfo.layer.contains(candidate)) {
+        span = candidate.closest(".textLayer span");
+        offset = caretPosition.offset;
+      }
+    }
+    if (!span) {
+      const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      if (caretRange) {
+        const node = caretRange.startContainer;
+        const candidate = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+        if (candidate && pageInfo.layer.contains(candidate)) {
+          span = candidate.closest(".textLayer span");
+          offset = caretRange.startOffset;
+        }
+      }
+    }
+    // Some browsers do not expose caret hit-testing; use the topmost PDF.js span as a fallback.
+    if (!span) span = event.target.closest(".textLayer span");
     if (!span || !pageInfo.layer.contains(span)) return;
     const itemIndex = pageInfo.model.textDivs.indexOf(span);
     if (itemIndex < 0) return;
-    let offset = -1;
-    const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-    if (caretPosition && span.contains(caretPosition.offsetNode)) offset = caretPosition.offset;
-    if (offset < 0) {
-      const caretRange = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-      if (caretRange && span.contains(caretRange.startContainer)) offset = caretRange.startOffset;
-    }
-    let candidate = -1;
+
+    let candidateIndex = -1;
     for (const [sentenceIndex, tokens] of pageInfo.model.sentenceMatches) {
       const token = tokens.find(item => item.itemIndex === itemIndex &&
         (offset < 0 || (item.start <= offset && offset < item.end)));
       if (token) {
-        candidate = sentenceIndex;
+        candidateIndex = sentenceIndex;
         break;
       }
-      if (candidate < 0 && tokens.some(item => item.itemIndex === itemIndex)) candidate = sentenceIndex;
+      if (candidateIndex < 0 && tokens.some(item => item.itemIndex === itemIndex)) {
+        candidateIndex = sentenceIndex;
+      }
     }
-    if (candidate >= 0) startAt(candidate);
+    if (candidateIndex >= 0) startAt(candidateIndex);
   }
 
   async function initialize() {
