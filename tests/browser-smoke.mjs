@@ -118,12 +118,15 @@ async function main() {
     // Use the real pinned PDF.js build with the original PDF asset here.
     // The deterministic stub has no glyph pixels and cannot test ink geometry.
     const apiRequests = [];
+    const workerResponses = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
       if (new URL(request.url()).pathname.endsWith(".pdf")) console.log("PDF request:", request.url());
     });
     page.on("response", response => {
-      if (new URL(response.url()).pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
+      const pathname = new URL(response.url()).pathname;
+      if (pathname.endsWith("/vendor/pdf.worker.min.js")) workerResponses.push({ status: response.status(), contentType: response.headers()["content-type"] || "" });
+      if (pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
     });
     page.on("requestfailed", request => console.log("Browser request failed:", request.url(), request.failure()?.errorText));
     page.on("pageerror", error => console.log("Browser page error:", error.message));
@@ -149,6 +152,8 @@ async function main() {
     assert.ok(await page.locator(".pdf-page .textLayer span").count() >= 23);
     assert.equal(await page.locator("#passage-sentences").count(), 0);
     assert.equal(await page.locator(".passage-text").count(), 0);
+    assert.ok(workerResponses.some(item => item.status === 200 && item.contentType.includes("javascript")),
+      "PDF.js worker must load successfully from the same origin.");
     assert.match(await page.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/);
     assert.equal(await page.locator(".source-pdf-link").getAttribute("href"),
       "./assets/art-advertising-source.pdf");
@@ -179,7 +184,24 @@ async function main() {
     assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
     assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
     assert.match(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
-    await firstSentenceTextSpan.click({ force: true });
+    // Reproduce Safari/iOS behavior: a tap may create a temporary text
+    // selection after pointerdown. It must still activate sentence playback.
+    await firstSentenceTextSpan.evaluate(span => {
+      span.dispatchEvent(new PointerEvent("pointerdown", {
+        bubbles: true, pointerId: 1, pointerType: "touch", isPrimary: true
+      }));
+      const textNode = span.firstChild;
+      const range = document.createRange();
+      range.setStart(textNode, 0);
+      range.setEnd(textNode, Math.min(4, textNode.length));
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      span.dispatchEvent(new MouseEvent("click", {
+        bubbles: true, cancelable: true, clientX: 5, clientY: 5
+      }));
+      selection.removeAllRanges();
+    });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
     assert.equal(tappedSentence, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
       "Tapping text inside the first source sentence should start that sentence.");

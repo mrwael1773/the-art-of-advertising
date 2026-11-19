@@ -28,6 +28,8 @@ jobs:
           node-version: "22"
       - name: Download and verify original textbook PDF
         run: node scripts/download-source-pdf.mjs
+      - name: Download and verify pinned PDF.js worker
+        run: node scripts/download-pdf-worker.mjs
       - name: Upload static website
         uses: actions/upload-pages-artifact@v3
         with:

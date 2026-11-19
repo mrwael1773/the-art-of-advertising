@@ -28,7 +28,6 @@
   let pdfDocument = null;
   let resizeHandle = 0;
   let lastWidth = 0;
-  let selectionAtPointerDown = "";
 
   const setStatus = message => { if (status) status.textContent = message; };
   const setButtons = enabled => {
@@ -292,9 +291,6 @@
 
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
-    const currentSelection = window.getSelection()?.toString() || "";
-    if (currentSelection && currentSelection !== selectionAtPointerDown) return;
-
     let span = null;
     let offset = -1;
     const caretPosition = document.caretPositionFromPoint?.(event.clientX, event.clientY);
@@ -343,10 +339,10 @@
       setStatus("تعذر تشغيل عارض صفحات الكتاب. افتح ملف الكتاب الأصلي من الرابط أعلاه.");
       return;
     }
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     try {
       setStatus("جارٍ تحميل ملف الكتاب الأصلي…");
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        new URL("./vendor/pdf.worker.min.js", window.location.href).href;
       pdfDocument = await window.pdfjsLib.getDocument({
         url: pdfUrl,
         withCredentials: false,
@@ -370,9 +366,6 @@
         setStatus("الصفحتان الأصليتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
       pageNodes.forEach(info => {
-        info.layer.addEventListener("pointerdown", () => {
-          selectionAtPointerDown = window.getSelection()?.toString() || "";
-        }, { passive: true });
         info.layer.addEventListener("click", event => handlePageTap(info, event));
       });
       const hash = decodeURIComponent(location.hash.slice(1));
