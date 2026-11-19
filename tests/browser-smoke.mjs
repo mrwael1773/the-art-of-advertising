@@ -178,11 +178,11 @@ async function main() {
     );
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
-    assert.ok(tapHighlightCount < spokenWordCount,
-      "The spoken sentence should be shown as a few continuous line bands, not separate word boxes.");
+    assert.ok(tapHighlightCount >= spokenWordCount,
+      "Each spoken word must have its own independent highlight mark.");
     assert.match(await page.locator(".sentence-highlight").first().evaluate(el =>
       getComputedStyle(el).backgroundColor
-    ), /100, 190, 230/);
+    ), /255, 218, 75/);
     assert.equal(await page.locator(".sentence-highlight").first().evaluate(el =>
       getComputedStyle(el).mixBlendMode
     ), "multiply");
@@ -264,7 +264,7 @@ async function main() {
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
-      "The currently spoken sentence should be highlighted as continuous line bands over the real PDF.js text layer.");
+      "Every spoken word should receive an independent highlight mark over the real PDF.js text layer.");
     const realPageWidth = await realPdfPage.locator("#pdf-page-1").evaluate(el => el.getBoundingClientRect().width);
     const widestHighlight = await realPdfPage.locator(".sentence-highlight").evaluateAll(elements =>
       Math.max(...elements.map(el => el.getBoundingClientRect().width))
