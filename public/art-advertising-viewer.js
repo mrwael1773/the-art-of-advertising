@@ -399,7 +399,27 @@
         setStatus("الصفحتان الأصليتان جاهزتان. اضغط أي جملة في الصفحة للاستماع إليها، أو استخدم أزرار التشغيل.");
       }
       pageNodes.forEach(info => {
-        info.layer.addEventListener("click", event => handlePageTap(info, event));
+        // Mobile Safari's touch-generated click can be retargeted or omitted
+        // after text selection. Handle the actual touch pointer release.
+        info.lastTouchPoint = null;
+        info.layer.addEventListener("pointerup", event => {
+          if (event.pointerType !== "touch") return;
+          info.lastTouchPoint = { x: event.clientX, y: event.clientY };
+          handlePageTap(info, event);
+        });
+        // Keep ordinary mouse/keyboard activation, but do not process the
+        // synthetic click that follows a touch pointerup.
+        info.layer.addEventListener("click", event => {
+          if (info.lastTouchPoint) {
+            const sameTouch = Math.hypot(
+              event.clientX - info.lastTouchPoint.x,
+              event.clientY - info.lastTouchPoint.y
+            ) <= 3;
+            info.lastTouchPoint = null;
+            if (sameTouch) return;
+          }
+          handlePageTap(info, event);
+        });
       });
       const hash = decodeURIComponent(location.hash.slice(1));
       if (hash.startsWith("sentence-")) {
