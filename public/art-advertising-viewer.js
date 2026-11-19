@@ -92,6 +92,9 @@
     pageInfo.root.style.height = viewport.height + "px";
     pageInfo.layer.style.width = viewport.width + "px";
     pageInfo.layer.style.height = viewport.height + "px";
+    // PDF.js 3.11 reads this CSS variable while laying out text spans.
+    // Keep it identical to the viewport scale for accurate source geometry.
+    pageInfo.layer.style.setProperty("--scale-factor", String(viewport.scale));
     pageInfo.highlightLayer.style.width = viewport.width + "px";
     pageInfo.highlightLayer.style.height = viewport.height + "px";
     pageInfo.layer.replaceChildren();
@@ -152,6 +155,9 @@
       // translate them into the page's own coordinate space. This avoids
       // modifying PDF.js text spans or inheriting their inline transforms.
       const pageRect = pageInfo.root.getBoundingClientRect();
+      const canvasRect = pageInfo.canvas.getBoundingClientRect();
+      const scaleX = pageInfo.canvas.width / canvasRect.width;
+      const scaleY = pageInfo.canvas.height / canvasRect.height;
       const group = document.createElement("span");
       group.className = "active-spoken-word";
       group.dataset.word = range.toString();
@@ -159,14 +165,46 @@
       group.dataset.start = String(token.start);
       group.dataset.end = String(token.end);
       rects.forEach(rect => {
+        // DOM Range rectangles follow the PDF.js text line box, which can be
+        // much taller than the printed glyphs. Tighten the box against the
+        // actual pixels rendered from the original Google Drive PDF.
+        const x0 = Math.max(0, Math.floor((rect.left - canvasRect.left) * scaleX));
+        const y0 = Math.max(0, Math.floor((rect.top - canvasRect.top) * scaleY));
+        const x1 = Math.min(pageInfo.canvas.width, Math.ceil((rect.right - canvasRect.left) * scaleX));
+        const y1 = Math.min(pageInfo.canvas.height, Math.ceil((rect.bottom - canvasRect.top) * scaleY));
+        if (x1 <= x0 || y1 <= y0) return;
+        const pixels = pageInfo.canvas.getContext("2d", { willReadFrequently: true })
+          .getImageData(x0, y0, x1 - x0, y1 - y0);
+        let minX = x1 - x0, minY = y1 - y0, maxX = -1, maxY = -1;
+        for (let y = 0; y < pixels.height; y++) {
+          for (let x = 0; x < pixels.width; x++) {
+            const offset = (y * pixels.width + x) * 4;
+            const luminance = (pixels.data[offset] * 0.299) +
+              (pixels.data[offset + 1] * 0.587) + (pixels.data[offset + 2] * 0.114);
+            if (pixels.data[offset + 3] > 0 && luminance < 225) {
+              if (x < minX) minX = x;
+              if (y < minY) minY = y;
+              if (x > maxX) maxX = x;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        if (maxX < minX || maxY < minY) return;
+        // One device-pixel breathing room keeps the yellow mark visible
+        // without inheriting the PDF text line's excessive vertical metrics.
+        const left = canvasRect.left + (x0 + minX) / scaleX;
+        const top = canvasRect.top + (y0 + minY) / scaleY;
+        const right = canvasRect.left + (x0 + maxX + 1) / scaleX;
+        const bottom = canvasRect.top + (y0 + maxY + 1) / scaleY;
         const fragment = document.createElement("span");
         fragment.className = "spoken-word-fragment";
-        fragment.style.left = (rect.left - pageRect.left) + "px";
-        fragment.style.top = (rect.top - pageRect.top) + "px";
-        fragment.style.width = rect.width + "px";
-        fragment.style.height = rect.height + "px";
+        fragment.style.left = (left - pageRect.left - 1) + "px";
+        fragment.style.top = (top - pageRect.top - 1) + "px";
+        fragment.style.width = (right - left + 2) + "px";
+        fragment.style.height = (bottom - top + 2) + "px";
         group.appendChild(fragment);
       });
+      if (!group.childElementCount) return false;
       pageInfo.highlightLayer.appendChild(group);
       pageInfo.activeWordMark = group;
       return true;

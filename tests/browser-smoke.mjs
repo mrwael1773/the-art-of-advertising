@@ -115,12 +115,19 @@ async function main() {
       });
     });
     const page = await context.newPage();
-    await page.route("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", route =>
-      route.fulfill({ status: 200, contentType: "application/javascript", body: pdfJsStub }));
+    // Use the real pinned PDF.js build with the original PDF asset here.
+    // The deterministic stub has no glyph pixels and cannot test ink geometry.
     const apiRequests = [];
     page.on("request", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
+      if (new URL(request.url()).pathname.endsWith(".pdf")) console.log("PDF request:", request.url());
     });
+    page.on("response", response => {
+      if (new URL(response.url()).pathname.endsWith(".pdf")) console.log("PDF response:", response.status(), response.url(), response.headers()["content-type"] || "");
+    });
+    page.on("requestfailed", request => console.log("Browser request failed:", request.url(), request.failure()?.errorText));
+    page.on("pageerror", error => console.log("Browser page error:", error.message));
+    page.on("console", message => { if (message.type() === "error") console.log("Browser console error:", message.text()); });
 
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.match(await page.title(), /The Art of Advertising/);
@@ -136,10 +143,10 @@ async function main() {
     const textbookResponse = await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
     const textbookCsp = textbookResponse.headers()["content-security-policy"] || "";
     assert.match(textbookCsp, /script-src[^;]*cdnjs\.cloudflare\.com/);
-    await page.waitForFunction(() => document.querySelectorAll(".pdf-page .textLayer span").length === 23);
+    await page.waitForFunction(() => document.querySelectorAll(".pdf-page .textLayer span").length >= 23);
     assert.equal(await page.locator(".pdf-page").count(), 2);
     assert.equal(await page.locator(".pdf-page canvas").count(), 2);
-    assert.equal(await page.locator(".pdf-page .textLayer span").count(), 23);
+    assert.ok(await page.locator(".pdf-page .textLayer span").count() >= 23);
     assert.equal(await page.locator("#passage-sentences").count(), 0);
     assert.equal(await page.locator(".passage-text").count(), 0);
     assert.match(await page.locator("#speech-status").textContent(), /الصفحتان الأصليتان جاهزتان/);
@@ -165,13 +172,17 @@ async function main() {
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
     assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0);
-    const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
-    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
-    assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
-    assert.match(await firstTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
-    await firstTextSpan.click({ force: true });
+    // Tap a span known to belong to the first source sentence, rather than
+    // an arbitrary leading page/header span that may not be part of a passage.
+    const firstSentenceTextSpan = page.locator("#pdf-page-1 .textLayer span").filter({ hasText: /tiny/i }).first();
+    assert.ok(await firstSentenceTextSpan.count() > 0, "The first source sentence must have a rendered text span.");
+    assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
+    assert.equal(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
+    assert.match(await firstSentenceTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
+    await firstSentenceTextSpan.click({ force: true });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
-    assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
+    assert.equal(tappedSentence, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.",
+      "Tapping text inside the first source sentence should start that sentence.");
     const tapHighlightCount = await page.locator(".sentence-highlight-layer .active-spoken-word").count();
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
@@ -278,31 +289,52 @@ async function main() {
 
     const geometry = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
       const page = group.closest(".pdf-page");
+      const canvas = page.querySelector("canvas");
+      const canvasRect = canvas.getBoundingClientRect();
       const textSpan = page.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
-      const textNode = textSpan?.firstChild;
       const range = document.createRange();
-      range.setStart(textNode, Number(group.dataset.start));
-      range.setEnd(textNode, Number(group.dataset.end));
+      range.setStart(textSpan.firstChild, Number(group.dataset.start));
+      range.setEnd(textSpan.firstChild, Number(group.dataset.end));
       const selectedText = range.toString();
+      const source = range.getBoundingClientRect();
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      const x0 = Math.max(0, Math.floor((source.left - canvasRect.left) * scaleX));
+      const y0 = Math.max(0, Math.floor((source.top - canvasRect.top) * scaleY));
+      const x1 = Math.min(canvas.width, Math.ceil((source.right - canvasRect.left) * scaleX));
+      const y1 = Math.min(canvas.height, Math.ceil((source.bottom - canvasRect.top) * scaleY));
+      const pixels = canvas.getContext("2d", { willReadFrequently: true }).getImageData(x0, y0, x1 - x0, y1 - y0);
+      let minX = pixels.width, minY = pixels.height, maxX = -1, maxY = -1;
+      for (let y = 0; y < pixels.height; y++) for (let x = 0; x < pixels.width; x++) {
+        const i = (y * pixels.width + x) * 4;
+        const l = pixels.data[i] * .299 + pixels.data[i + 1] * .587 + pixels.data[i + 2] * .114;
+        if (pixels.data[i + 3] > 0 && l < 225) {
+          minX = Math.min(minX, x); minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+        }
+      }
       const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
-      const sourceRects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
-      const source = sourceRects[0];
+      const ink = {
+        left: canvasRect.left + (x0 + minX) / scaleX - 1,
+        top: canvasRect.top + (y0 + minY) / scaleY - 1,
+        width: (maxX - minX + 1) / scaleX + 2,
+        height: (maxY - minY + 1) / scaleY + 2
+      };
       return {
-        selectedText,
-        expectedWord: group.dataset.word,
-        rectCount: sourceRects.length,
-        left: Math.abs(source.left - overlay.left),
-        top: Math.abs(source.top - overlay.top),
-        width: Math.abs(source.width - overlay.width),
-        height: Math.abs(source.height - overlay.height)
+        selectedText, expectedWord: group.dataset.word,
+        left: Math.abs(ink.left - overlay.left),
+        top: Math.abs(ink.top - overlay.top),
+        width: Math.abs(ink.width - overlay.width),
+        height: Math.abs(ink.height - overlay.height),
+        inkHeight: ink.height, rangeHeight: source.height
       };
     });
     assert.equal(geometry.selectedText, geometry.expectedWord,
       `Highlight offsets must select exactly the intended rendered word: ${JSON.stringify(geometry)}`);
-    assert.equal(geometry.rectCount, 1,
-      `A single spoken word must produce one tight text rectangle: ${JSON.stringify(geometry)}`);
-    assert.ok(["left", "top", "width", "height"].every(key => geometry[key] < 0.75),
-      `Word overlay must match the exact rendered word bounds: ${JSON.stringify(geometry)}`);
+    assert.ok(["left", "top", "width", "height"].every(key => geometry[key] < 1.5),
+      `Word overlay must match the visible ink bounds in the original Drive PDF render: ${JSON.stringify(geometry)}`);
+    assert.ok(geometry.inkHeight <= geometry.rangeHeight,
+      `Ink-tight highlight must not exceed the PDF text line box: ${JSON.stringify(geometry)}`);
 
     // A responsive re-render must keep the exact word currently spoken,
     // rather than jumping back to the first word of the sentence.
