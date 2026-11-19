@@ -66,7 +66,8 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /pdfjsLib\.getDocument/);
   assert.match(viewer, /renderTextLayer/);
   assert.match(viewer, /sentence-highlight/);
-  assert.match(viewer, /range\.surroundContents\(mark\)/);
+  assert.match(viewer, /range\.getClientRects\(\)/);
+  assert.match(viewer, /pageRect = pageInfo\.root\.getBoundingClientRect\(\)/);
   assert.match(viewer, /function highlightSpokenWord/);
   assert.match(viewer, /function spokenWordIndex/);
   assert.match(viewer, /utterance\.onboundary/);

@@ -159,12 +159,12 @@ async function main() {
     assert.equal(spoken.lang, "en-US");
     assert.equal(spoken.rate, 0.25);
     assert.equal(spoken.text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
-    assert.ok(await page.locator(".textLayer mark.active-spoken-word").count() > 0);
+    assert.ok(await page.locator(".sentence-highlight-layer .active-spoken-word").count() > 0);
     await page.locator("#pause-reading").click();
     assert.match(await page.locator("#speech-status").textContent(), /متوقف مؤقتًا/);
     await page.locator("#resume-reading").click();
     await page.locator("#stop-reading").click();
-    assert.equal(await page.locator(".textLayer mark.active-spoken-word").count(), 0);
+    assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0);
     const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
     assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
     assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
@@ -172,24 +172,24 @@ async function main() {
     await firstTextSpan.click({ force: true });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
     assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
-    const tapHighlightCount = await page.locator(".textLayer mark.active-spoken-word").count();
+    const tapHighlightCount = await page.locator(".sentence-highlight-layer .active-spoken-word").count();
     assert.ok(tapHighlightCount > 0,
       "Tapping original textbook text should start the sentence and highlight it.");
     assert.equal(tapHighlightCount, 1,
       "Only the currently spoken word must be highlighted, never every word in the sentence.");
-    const firstWordText = await page.locator(".active-spoken-word").first().textContent();
+    const firstWordText = await page.locator(".sentence-highlight-layer .active-spoken-word").first().getAttribute("data-word");
     await page.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
-    assert.equal(await page.locator(".active-spoken-word").count(), 1,
+    assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 1,
       "A word boundary must replace the previous mark instead of adding another one.");
-    const nextWordText = await page.locator(".active-spoken-word").first().textContent();
+    const nextWordText = await page.locator(".sentence-highlight-layer .active-spoken-word").first().getAttribute("data-word");
     assert.notEqual(nextWordText, firstWordText,
       "The highlight must move to the word identified by the speech boundary.");
-    assert.match(await page.locator(".active-spoken-word").first().evaluate(el =>
-      getComputedStyle(el).backgroundColor
+    assert.match(await page.locator(".sentence-highlight-layer .active-spoken-word").first().evaluate(el =>
+      getComputedStyle(el.querySelector(".spoken-word-fragment")).backgroundColor
     ), /255, 218, 75/);
-    assert.equal(await page.locator(".active-spoken-word").first().evaluate(el =>
-      getComputedStyle(el).position
-    ), "static");
+    assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").first().evaluate(el =>
+      getComputedStyle(el.querySelector(".spoken-word-fragment")).position
+    ), "absolute");
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -238,9 +238,9 @@ async function main() {
     const firstEvidence = page.locator(".evidence-button").first();
     assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.querySelector(".textLayer mark.active-spoken-word"));
+    await page.waitForFunction(() => document.querySelector(".sentence-highlight-layer .active-spoken-word"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    assert.ok(await page.locator(".textLayer mark.active-spoken-word").count() > 0);
+    assert.ok(await page.locator(".sentence-highlight-layer .active-spoken-word").count() > 0);
     assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
     await auditAccessibility(page);
 
@@ -267,26 +267,45 @@ async function main() {
       "The locally hosted original textbook PDF must load through PDF.js, and every passage sentence must map to its page text.");
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
-    assert.ok(await realPdfPage.locator(".textLayer mark.active-spoken-word").count() > 0,
+    assert.ok(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").count() > 0,
       "Every spoken word should receive an independent highlight mark over the real PDF.js text layer.");
     const realPageWidth = await realPdfPage.locator("#pdf-page-1").evaluate(el => el.getBoundingClientRect().width);
-    const widestHighlight = await realPdfPage.locator(".active-spoken-word").evaluateAll(elements =>
+    const widestHighlight = await realPdfPage.locator(".sentence-highlight-layer .spoken-word-fragment").evaluateAll(elements =>
       Math.max(...elements.map(el => el.getBoundingClientRect().width))
     );
     assert.ok(widestHighlight < realPageWidth * 0.75,
       `A sentence highlight must not bridge the two separate textbook columns (widest=${widestHighlight.toFixed(1)}px, page=${realPageWidth.toFixed(1)}px).`);
 
+    const geometry = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").evaluate(group => {
+      const page = group.closest(".pdf-page");
+      const textSpan = page.querySelector(`.textLayer [data-pdf-item-index="${group.dataset.itemIndex}"]`);
+      const textNode = textSpan?.firstChild;
+      const range = document.createRange();
+      range.setStart(textNode, Number(group.dataset.start));
+      range.setEnd(textNode, Number(group.dataset.end));
+      const source = range.getBoundingClientRect();
+      const overlay = group.querySelector(".spoken-word-fragment").getBoundingClientRect();
+      return {
+        left: Math.abs(source.left - overlay.left),
+        top: Math.abs(source.top - overlay.top),
+        width: Math.abs(source.width - overlay.width),
+        height: Math.abs(source.height - overlay.height)
+      };
+    });
+    assert.ok(Object.values(geometry).every(delta => delta < 0.75),
+      `Word overlay must match the measured PDF text bounds without guessed offsets: ${JSON.stringify(geometry)}`);
+
     // A responsive re-render must keep the exact word currently spoken,
     // rather than jumping back to the first word of the sentence.
     await realPdfPage.evaluate(() => window.__lastUtterance.onboundary?.({ name: "word", charIndex: 5 }));
-    const spokenWordBeforeResize = await realPdfPage.locator(".active-spoken-word").textContent();
+    const spokenWordBeforeResize = await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").getAttribute("data-word");
     await realPdfPage.setViewportSize({ width: 360, height: 844 });
     await realPdfPage.waitForFunction(expected =>
-      document.querySelector(".active-spoken-word")?.textContent === expected,
+      document.querySelector(".sentence-highlight-layer .active-spoken-word")?.dataset.word === expected,
       spokenWordBeforeResize
     );
-    assert.equal(await realPdfPage.locator(".active-spoken-word").count(), 1);
-    assert.equal(await realPdfPage.locator(".active-spoken-word").textContent(), spokenWordBeforeResize,
+    assert.equal(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").count(), 1);
+    assert.equal(await realPdfPage.locator(".sentence-highlight-layer .active-spoken-word").getAttribute("data-word"), spokenWordBeforeResize,
       "Resizing the original PDF page must preserve the currently spoken word.");
     await realPdfPage.close();
 
