@@ -10,19 +10,16 @@ An independent learning website for Unit 4 Reading.
 
 ## Current implementation
 - Responsive Arabic RTL learning page in `public/`.
-- Reading lesson, sentence and paragraph speech, adjustable speed, Arabic translations, vocabulary, and quiz activities.
-- Quiz results are stored in browser `localStorage` under a versioned application key.
-- No progress API or student identity is sent to the Worker.
+- Original textbook PDF pages with speech playback, word-level highlighting, and adjustable speed.
+- Six Quick Check questions and twenty evidence-linked exercises.
+- Answers are evaluated in the current page only and are not saved after leaving or reloading the page.
+- No student accounts, progress API, or student identity are sent to the Worker.
 - Cloudflare Worker serves static assets and applies browser security headers.
 - `wrangler.toml` has no D1 binding or database ID.
 
 ## Local progress and privacy
-- Progress remains available on the same device, browser, and site origin.
-- Different browsers or separate browser profiles keep separate local progress stores.
-- Clearing site data, using private browsing, changing device/browser, or resetting the browser can remove or hide saved progress.
-- A shared browser profile is not a secure boundary between students. For a shared school computer, each student must use a separate OS/browser profile; do not use one shared browser profile for multiple students.
-- Because there is no account or cloud backup, progress does not synchronize between devices and cannot be recovered by a teacher or administrator.
-- The app stores only lesson scores, completion state, and selected answers; it does not collect a student name, username, password, email, or other identity field.
+- The current exercise page does not store answers or student progress between visits.
+- The site does not collect a student name, username, password, email, or other identity field.
 
 ## Verification
 - Run `node --test tests/validate.mjs` for local storage behavior, reload persistence, invalid-record rejection, and static security/configuration checks.
