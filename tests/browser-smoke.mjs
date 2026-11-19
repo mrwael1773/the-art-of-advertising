@@ -519,12 +519,19 @@ async function main() {
             const match = Array.from(node.textContent.matchAll(/[a-z0-9]+(?:['’][a-z]+)?/gi))
               .find(item => item[0].toLowerCase() === word.toLowerCase());
             if (!match) continue;
+            // A real student taps only visible text. Scroll the original PDF word
+            // into the mobile viewport before measuring its physical touch point.
+            span.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
             const range = document.createRange();
             range.setStart(node, match.index);
             range.setEnd(node, match.index + match[0].length);
             const rect = range.getBoundingClientRect();
             window.getSelection().removeAllRanges();
-            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            if (point.x < 0 || point.x > window.innerWidth || point.y < 0 || point.y > window.innerHeight) {
+              throw new Error("WebKit tap target is outside the visible viewport: " + JSON.stringify(point));
+            }
+            return point;
           }
           throw new Error("Could not locate WebKit PDF word: " + word);
         }, { pageNumber: testCase.page, word: testCase.word });
