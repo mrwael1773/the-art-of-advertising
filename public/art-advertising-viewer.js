@@ -181,21 +181,51 @@
         if (x1 <= x0 || y1 <= y0) return;
         const pixels = pageInfo.canvas.getContext("2d", { willReadFrequently: true })
           .getImageData(x0, y0, x1 - x0, y1 - y0);
-        let minX = x1 - x0, minY = y1 - y0, maxX = -1, maxY = -1;
+        // A DOM Range can be taller than the printed glyphs. Its box may
+        // overlap the next PDF line, so a single min/max scan can accidentally
+        // merge ink from two separate lines and move the highlight downward.
+        // Build horizontal ink bands, then keep only the band nearest this
+        // word's own Range center. This isolates the glyph row for the word.
+        const rowInk = [];
         for (let y = 0; y < pixels.height; y++) {
+          let min = pixels.width, max = -1, count = 0;
           for (let x = 0; x < pixels.width; x++) {
             const offset = (y * pixels.width + x) * 4;
             const luminance = (pixels.data[offset] * 0.299) +
               (pixels.data[offset + 1] * 0.587) + (pixels.data[offset + 2] * 0.114);
             if (pixels.data[offset + 3] > 0 && luminance < 225) {
-              if (x < minX) minX = x;
-              if (y < minY) minY = y;
-              if (x > maxX) maxX = x;
-              if (y > maxY) maxY = y;
+              min = Math.min(min, x);
+              max = Math.max(max, x);
+              count++;
             }
           }
+          rowInk.push({ min, max, count });
         }
-        if (maxX < minX || maxY < minY) return;
+        const bands = [];
+        rowInk.forEach((row, y) => {
+          if (!row.count) return;
+          let band = bands[bands.length - 1];
+          if (!band || y - band.bottom > 2) {
+            band = { top: y, bottom: y, minX: row.min, maxX: row.max, ink: 0 };
+            bands.push(band);
+          }
+          band.bottom = y;
+          band.minX = Math.min(band.minX, row.min);
+          band.maxX = Math.max(band.maxX, row.max);
+          band.ink += row.count;
+        });
+        if (!bands.length) return;
+        const rangeCenterY = pixels.height / 2;
+        const glyphBand = bands.reduce((best, band) => {
+          const distance = Math.abs((band.top + band.bottom + 1) / 2 - rangeCenterY);
+          const bestDistance = Math.abs((best.top + best.bottom + 1) / 2 - rangeCenterY);
+          return distance < bestDistance ||
+            (distance === bestDistance && band.ink > best.ink) ? band : best;
+        });
+        const minX = glyphBand.minX;
+        const maxX = glyphBand.maxX;
+        const minY = glyphBand.top;
+        const maxY = glyphBand.bottom;
         // One device-pixel breathing room keeps the yellow mark visible
         // without inheriting the PDF text line's excessive vertical metrics.
         const left = canvasRect.left + (x0 + minX) / scaleX;
