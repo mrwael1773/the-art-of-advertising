@@ -25,6 +25,10 @@
   let currentIndex = -1;
   let currentWordIndex = 0;
   let queueToken = 0;
+  // Speech engines can deliver a delayed boundary event from the previous
+  // utterance after onend has already started the next sentence. Track the
+  // exact utterance object so stale events can never move the new highlight.
+  let activeUtterance = null;
   let pdfDocument = null;
   let resizeHandle = 0;
   let lastWidth = 0;
@@ -308,19 +312,29 @@
     const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.lang = "en-US";
     utterance.rate = getRate();
+    activeUtterance = utterance;
     utterance.onstart = () => {
-      if (token === queueToken) highlightSpokenWord(index, startWordIndex);
+      if (token === queueToken && activeUtterance === utterance) {
+        highlightSpokenWord(index, startWordIndex);
+      }
     };
     utterance.onboundary = event => {
-      if (token !== queueToken || event.name !== "word") return;
+      // Ignore late events from a sentence that has already ended. Checking
+      // only queueToken is insufficient because the queue token is shared
+      // by every sentence in one continuous playback session.
+      if (token !== queueToken || activeUtterance !== utterance || event.name !== "word") return;
       const wordIndex = spokenWordIndex(sentenceText, startChar + event.charIndex);
       if (wordIndex >= startWordIndex) highlightSpokenWord(index, wordIndex);
     };
     utterance.onend = () => {
-      if (token === queueToken) speakFrom(index + 1, token, 0);
+      if (token !== queueToken || activeUtterance !== utterance) return;
+      activeUtterance = null;
+      speakFrom(index + 1, token, 0);
     };
     utterance.onerror = event => {
-      if (token !== queueToken || event.error === "canceled" || event.error === "interrupted") return;
+      if (token !== queueToken || activeUtterance !== utterance ||
+          event.error === "canceled" || event.error === "interrupted") return;
+      activeUtterance = null;
       setStatus("توقف النطق بسبب مشكلة في خدمة الصوت. يمكنك الضغط على تشغيل للمحاولة مجددًا.");
     };
     setStatus("يُنطق النص الأصلي من الكلمة المحددة — الجملة " + (index + 1) + " من " + sentences.length + ".");
@@ -330,6 +344,7 @@
   function startAt(index, wordIndex = 0) {
     if (!supported || !pdfDocument || !sentences.length) return;
     queueToken++;
+    activeUtterance = null;
     synth.cancel();
     speakFrom(Math.max(0, index), queueToken, Math.max(0, wordIndex));
   }
@@ -488,6 +503,7 @@
   });
   stopButton?.addEventListener("click", () => {
     queueToken++;
+    activeUtterance = null;
     synth?.cancel();
     currentIndex = -1;
     clearHighlight();
