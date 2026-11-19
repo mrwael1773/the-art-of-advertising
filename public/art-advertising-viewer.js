@@ -34,8 +34,8 @@
     });
   };
   const normalizeToken = value => String(value || "")
-    .replace(/ﬁ/g, "fi").replace(/[’‘]/g, "'").toLowerCase();
-  const tokenPattern = /[a-z0-9]+(?:['’][a-z]+)?/gi;
+    .replace(/ﬁ/g, "fi").replace(/ﬂ/g, "fl").replace(/[’‘]/g, "'").toLowerCase();
+  const tokenPattern = /[a-z0-9ﬁﬂ]+(?:['’][a-zﬁﬂ]+)?/gi;
   const sentenceTokens = value => (String(value || "").match(tokenPattern) || []).map(normalizeToken);
 
   function makeItemTokens(items) {
