@@ -293,7 +293,11 @@
   function handlePageTap(pageInfo, event) {
     if (!supported || !pageInfo.model) return;
     const currentSelection = window.getSelection()?.toString() || "";
-    if (currentSelection && currentSelection !== selectionAtPointerDown) return;
+    // A normal tap on iOS/Safari can create a temporary text selection after
+    // pointerdown. Ignore only a drag that changed an already-existing
+    // selection; an initially empty selection must not cancel sentence taps.
+    if (selectionAtPointerDown && currentSelection &&
+        currentSelection !== selectionAtPointerDown) return;
 
     let span = null;
     let offset = -1;
