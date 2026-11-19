@@ -9,19 +9,6 @@ function secureResponse(response) {
 }
 export default {
   async fetch(request, env) {
-    const requestUrl = new URL(request.url);
-    if (request.method === "GET" && requestUrl.pathname === "/vendor/pdf.worker.min.js") {
-      const upstream = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
-      if (!upstream.ok) return secureResponse(new Response("تعذر تحميل مكوّن قراءة الكتاب.", { status: 502 }));
-      const headers = new Headers(upstream.headers);
-      headers.set("content-type", "application/javascript; charset=utf-8");
-      headers.set("cache-control", "public, max-age=86400");
-      return secureResponse(new Response(upstream.body, {
-        status: upstream.status,
-        statusText: upstream.statusText,
-        headers
-      }));
-    }
     if (!env.ASSETS) {
       return secureResponse(new Response("الخدمة غير مهيأة.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } }));
     }
