@@ -23,6 +23,7 @@
     typeof window.SpeechSynthesisUtterance === "function";
   const synth = supported ? window.speechSynthesis : null;
   let currentIndex = -1;
+  let currentWordIndex = 0;
   let queueToken = 0;
   let pdfDocument = null;
   let resizeHandle = 0;
@@ -174,6 +175,7 @@
       setStatus("تعذر تحديد موضع الكلمة الحالية بدقة في الصفحة الأصلية.");
       return false;
     }
+    currentWordIndex = wordIndex;
     return true;
   }
 
@@ -376,7 +378,7 @@
       lastWidth = width;
       try {
         for (const pageInfo of pageNodes) await renderPage(pageInfo);
-        if (currentIndex >= 0) highlightSentence(currentIndex);
+        if (currentIndex >= 0) highlightSpokenWord(currentIndex, currentWordIndex);
       } catch (error) {
         console.error("Page resize failed:", error);
       }
