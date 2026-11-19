@@ -70,6 +70,9 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /const wordRects = \[\]/);
   assert.match(viewer, /Join the word rectangles into one continuous band/);
   assert.match(viewer, /sentence-highlight-line/);
+  assert.match(viewer, /const gapLimit = Math.max\(8, rect.height \* 1.25\)/);
+  assert.match(viewer, /const bands = lines\.flatMap\(line => line\.segments\)/);
+  assert.match(styles, /touch-action:pan-y pinch-zoom/);
   assert.match(styles, /background:rgba\(100,190,230,\.22\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
   assert.match(viewer, /pointerdown/);
