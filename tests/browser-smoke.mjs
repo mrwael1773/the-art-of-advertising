@@ -168,6 +168,7 @@ async function main() {
     const firstTextSpan = page.locator("#pdf-page-1 .textLayer span").first();
     assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
     assert.equal(await firstTextSpan.evaluate(el => getComputedStyle(el).userSelect), "text");
+    assert.match(await firstTextSpan.evaluate(el => getComputedStyle(el).touchAction), /pinch-zoom/);
     await firstTextSpan.click({ force: true });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
     assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
@@ -264,6 +265,12 @@ async function main() {
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
       "The currently spoken sentence should be highlighted as continuous line bands over the real PDF.js text layer.");
+    const realPageWidth = await realPdfPage.locator("#pdf-page-1").evaluate(el => el.getBoundingClientRect().width);
+    const widestHighlight = await realPdfPage.locator(".sentence-highlight").evaluateAll(elements =>
+      Math.max(...elements.map(el => el.getBoundingClientRect().width))
+    );
+    assert.ok(widestHighlight < realPageWidth * 0.75,
+      "A sentence highlight must not bridge the two separate textbook columns.");
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
