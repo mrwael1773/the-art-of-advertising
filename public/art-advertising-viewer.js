@@ -157,7 +157,9 @@
           line = { top: rect.top, bottom: rect.bottom, height: rect.height, segments: [] };
           lines.push(line);
         }
-        const gapLimit = Math.max(8, rect.height * 1.25);
+        // PDF columns are separated by only a small visual gap at mobile scale.
+        // Keep this threshold close to inter-word spacing, never column spacing.
+        const gapLimit = Math.max(3, rect.height * 0.28);
         let segment = line.segments.find(candidate =>
           rect.left <= candidate.right + gapLimit && rect.right >= candidate.left - gapLimit
         );
