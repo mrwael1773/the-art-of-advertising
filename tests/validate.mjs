@@ -77,7 +77,7 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(styles, /touch-action:pan-y pinch-zoom/);
   assert.match(styles, /background:rgba\(255,218,75,\.48\)/);
   assert.match(styles, /mix-blend-mode:multiply/);
-  assert.match(viewer, /pointerdown/);
+  assert.match(viewer, /addEventListener\("click", event => handlePageTap/);
   assert.match(viewer, /caretPositionFromPoint/);
   assert.match(textbook, /sentence-highlight-layer/);
   assert.match(textbook, /اضغط على أي جملة/);
