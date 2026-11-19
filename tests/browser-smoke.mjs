@@ -171,8 +171,20 @@ async function main() {
     await firstTextSpan.click({ force: true });
     const tappedSentence = await page.evaluate(() => window.__spoken.at(-1)?.text || "");
     assert.ok(tappedSentence.length > 0, "Tapping a textbook text position should start a sentence.");
-    assert.ok(await page.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
-      "Tapping original textbook text should start the sentence and highlight its word ranges.");
+    const tapHighlightCount = await page.locator(".sentence-highlight-layer .sentence-highlight").count();
+    const spokenWordCount = await page.evaluate(() =>
+      (window.__spoken.at(-1)?.text.match(/[a-z0-9]+(?:['’][a-z]+)?/gi) || []).length
+    );
+    assert.ok(tapHighlightCount > 0,
+      "Tapping original textbook text should start the sentence and highlight it.");
+    assert.ok(tapHighlightCount < spokenWordCount,
+      "The spoken sentence should be shown as a few continuous line bands, not separate word boxes.");
+    assert.match(await page.locator(".sentence-highlight").first().evaluate(el =>
+      getComputedStyle(el).backgroundColor
+    ), /100, 190, 230/);
+    assert.equal(await page.locator(".sentence-highlight").first().evaluate(el =>
+      getComputedStyle(el).mixBlendMode
+    ), "multiply");
 
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -251,7 +263,7 @@ async function main() {
     assert.ok(await realPdfPage.locator(".pdf-page .textLayer span").count() > 23);
     await realPdfPage.locator("#play-reading").click();
     assert.ok(await realPdfPage.locator(".sentence-highlight-layer .sentence-highlight").count() > 0,
-      "Exact spoken word ranges should be highlighted over the real PDF.js text layer.");
+      "The currently spoken sentence should be highlighted as continuous line bands over the real PDF.js text layer.");
     await realPdfPage.close();
 
     const unsupportedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
