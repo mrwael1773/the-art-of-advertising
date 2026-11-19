@@ -69,6 +69,10 @@ test("reading page renders original textbook pages with audio and source-positio
   assert.match(viewer, /sentence-highlight/);
   assert.match(viewer, /range\.getClientRects\(\)/);
   assert.match(viewer, /pageRect = pageInfo\.root\.getBoundingClientRect\(\)/);
+  assert.match(viewer, /pageScaleX = pageRect\.width \/ Math\.max\(1, pageInfo\.root\.offsetWidth\)/);
+  assert.match(viewer, /pageScaleY = pageRect\.height \/ Math\.max\(1, pageInfo\.root\.offsetHeight\)/);
+  assert.match(viewer, /left - pageRect\.left\) \/ pageScaleX/);
+  assert.match(viewer, /top - pageRect\.top\) \/ pageScaleY/);
   assert.match(viewer, /function highlightSpokenWord/);
   assert.match(viewer, /function spokenWordIndex/);
   assert.match(viewer, /utterance\.onboundary/);
