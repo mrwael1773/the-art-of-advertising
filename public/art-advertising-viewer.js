@@ -144,55 +144,21 @@
       }
     });
 
-    // Group by visual line, then split distant text runs so adjacent PDF columns never merge.
-    const lines = [];
-    wordRects
+    // Draw one independent mark for each spoken word; never join words into a line or sentence band.
+    const words = wordRects
       .filter(rect => rect.width >= 1 && rect.height >= 1)
-      .sort((a, b) => a.top - b.top || a.left - b.left)
-      .forEach(rect => {
-        let line = lines.find(candidate =>
-          Math.abs(candidate.top - rect.top) <= Math.max(2, Math.min(candidate.height, rect.height) * 0.35)
-        );
-        if (!line) {
-          line = { top: rect.top, bottom: rect.bottom, height: rect.height, segments: [] };
-          lines.push(line);
-        }
-        // PDF columns are separated by only a small visual gap at mobile scale.
-        // Keep this threshold close to inter-word spacing, never column spacing.
-        const gapLimit = Math.max(3, rect.height * 0.28);
-        let segment = line.segments.find(candidate =>
-          rect.left <= candidate.right + gapLimit && rect.right >= candidate.left - gapLimit
-        );
-        if (!segment) {
-          segment = {
-            left: rect.left,
-            right: rect.right,
-            top: rect.top,
-            bottom: rect.bottom
-          };
-          line.segments.push(segment);
-        } else {
-          segment.left = Math.min(segment.left, rect.left);
-          segment.right = Math.max(segment.right, rect.right);
-          segment.top = Math.min(segment.top, rect.top);
-          segment.bottom = Math.max(segment.bottom, rect.bottom);
-        }
-        line.top = Math.min(line.top, rect.top);
-        line.bottom = Math.max(line.bottom, rect.bottom);
-        line.height = Math.max(line.height, rect.height);
-      });
+      .sort((a, b) => a.top - b.top || a.left - b.left);
 
-    const bands = lines.flatMap(line => line.segments).sort((a, b) => a.top - b.top || a.left - b.left);
-    bands.forEach(band => {
+    words.forEach(rect => {
       const mark = document.createElement("span");
-      mark.className = "sentence-highlight sentence-highlight-line";
-      mark.style.left = (band.left - pageRect.left - 2) + "px";
-      mark.style.top = (band.top - pageRect.top - 2) + "px";
-      mark.style.width = (band.right - band.left + 4) + "px";
-      mark.style.height = (band.bottom - band.top + 4) + "px";
+      mark.className = "sentence-highlight sentence-highlight-word";
+      mark.style.left = (rect.left - pageRect.left - 1) + "px";
+      mark.style.top = (rect.top - pageRect.top - 1) + "px";
+      mark.style.width = (rect.width + 2) + "px";
+      mark.style.height = (rect.height + 2) + "px";
       pageInfo.highlightLayer.append(mark);
     });
-    return bands;
+    return words;
   }
 
   function highlightSentence(index) {
