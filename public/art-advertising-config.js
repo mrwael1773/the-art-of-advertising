@@ -1,4 +1,4 @@
-/* Exact source sentences from the supplied textbook PDF (pages 54–55). */
+/* Exact source sentences and question keys from the supplied textbook PDF (pages 54–55). */
 window.ART_AD_CONFIG = {
   "passageSentences": [
     {
@@ -499,7 +499,10 @@ window.ART_AD_CONFIG = {
         "1839"
       ],
       "evidenceId": "history-3"
-    },
+    }
+  ],
+  "pdfDownloadUrl": "./assets/art-advertising-source.pdf",
+  "pageTwoQuestions": [
     {
       "type": "true_false",
       "prompt": "The earliest bicycles were made of metal.",
@@ -580,6 +583,5 @@ window.ART_AD_CONFIG = {
       "correctAnswer": "false",
       "evidenceId": "bike-4"
     }
-  ],
-  "pdfDownloadUrl": "./assets/art-advertising-source.pdf"
+  ]
 };
