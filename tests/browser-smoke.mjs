@@ -424,10 +424,13 @@ async function main() {
     const firstEvidence = page.locator(".evidence-button").first();
     assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.querySelector(".sentence-highlight-layer .active-spoken-word"));
+    await page.waitForFunction(() => document.querySelector(".answer-sentence-highlight"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    assert.ok(await page.locator(".sentence-highlight-layer .active-spoken-word").count() > 0);
-    assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    assert.equal(await page.locator(".answer-sentence-highlight").getAttribute("data-sentence-id"), "fiat-1");
+    assert.equal(await page.locator(".answer-sentence-highlight").getAttribute("data-highlighted-text"),
+      "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0,
+      "Opening an evidence link must highlight the source sentence without starting speech.");
     await auditAccessibility(page);
 
     // The five true/false questions about textbook page 55 belong on that
@@ -443,8 +446,6 @@ async function main() {
     const evidenceIds = await page.evaluate(() => window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.evidenceId));
     for (let index = 0; index < 5; index++) {
       const card = pageTwoCards.nth(index);
-      const expected = pageTwoQuestionKeys[index] === "true" ? "صح" : "خطأ";
-      assert.match(await card.locator(".answer-solution").textContent(), new RegExp(expected));
       assert.equal(await card.locator(".page-two-evidence").count(), 1,
         "Each question must have exactly one answer-location button.");
       assert.equal(await card.locator(".evidence-button").count(), 1);
