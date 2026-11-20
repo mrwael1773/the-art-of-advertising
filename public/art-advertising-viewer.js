@@ -8,6 +8,7 @@
     canvas: document.querySelector("#pdf-page-" + number + " canvas"),
     layer: document.querySelector("#pdf-page-" + number + " .textLayer"),
     highlightLayer: document.querySelector("#pdf-page-" + number + " .sentence-highlight-layer"),
+    answerHighlightLayer: document.querySelector("#pdf-page-" + number + " .answer-highlight-layer"),
     activeWordMark: null,
     model: null
   }));
@@ -100,8 +101,11 @@
     pageInfo.layer.style.setProperty("--scale-factor", String(viewport.scale));
     pageInfo.highlightLayer.style.width = viewport.width + "px";
     pageInfo.highlightLayer.style.height = viewport.height + "px";
+    pageInfo.answerHighlightLayer.style.width = viewport.width + "px";
+    pageInfo.answerHighlightLayer.style.height = viewport.height + "px";
     pageInfo.layer.replaceChildren();
     pageInfo.highlightLayer.replaceChildren();
+    pageInfo.answerHighlightLayer.replaceChildren();
 
     await page.render({
       canvasContext: context,
@@ -252,6 +256,57 @@
       return false;
     }
   }
+
+
+  function showEvidenceSentence(id) {
+    const index = sentences.findIndex(sentence => String(sentence.id) === String(id));
+    if (index < 0) return false;
+    const sentence = sentences[index];
+    const pageInfo = pageNodes.find(info => info.number === Number(sentence.page));
+    const tokens = pageInfo?.model?.sentenceMatches.get(index);
+    if (!pageInfo || !tokens?.length || !pageInfo.answerHighlightLayer) {
+      setStatus("تعذر تحديد الجملة المطلوبة في صفحة الكتاب الأصلية.");
+      return false;
+    }
+    queueToken++;
+    activeUtterance = null;
+    synth?.cancel();
+    clearHighlight();
+    pageNodes.forEach(info => info.answerHighlightLayer?.replaceChildren());
+    const first = tokens[0], last = tokens[tokens.length - 1];
+    const firstNode = pageInfo.model.textDivs[first.itemIndex]?.firstChild;
+    const lastNode = pageInfo.model.textDivs[last.itemIndex]?.firstChild;
+    if (!firstNode || !lastNode || firstNode.nodeType !== Node.TEXT_NODE ||
+        lastNode.nodeType !== Node.TEXT_NODE) return false;
+    const range = document.createRange();
+    try {
+      range.setStart(firstNode, first.start);
+      range.setEnd(lastNode, last.end);
+    } catch { return false; }
+    const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
+    if (!rects.length) return false;
+    const pageRect = pageInfo.root.getBoundingClientRect();
+    const pageScaleX = pageRect.width / Math.max(1, pageInfo.root.offsetWidth);
+    const pageScaleY = pageRect.height / Math.max(1, pageInfo.root.offsetHeight);
+    const group = document.createElement("span");
+    group.className = "answer-sentence-highlight";
+    group.dataset.sentenceId = sentence.id;
+    group.dataset.highlightedText = range.toString();
+    rects.forEach(rect => {
+      const fragment = document.createElement("span");
+      fragment.className = "answer-sentence-fragment";
+      fragment.style.left = ((rect.left - pageRect.left) / pageScaleX - 2) + "px";
+      fragment.style.top = ((rect.top - pageRect.top) / pageScaleY - 1) + "px";
+      fragment.style.width = (rect.width / pageScaleX + 4) + "px";
+      fragment.style.height = (rect.height / pageScaleY + 2) + "px";
+      group.appendChild(fragment);
+    });
+    pageInfo.answerHighlightLayer.appendChild(group);
+    window.scrollTo({ top: Math.max(0, window.scrollY + rects[0].top - 120), behavior: "smooth" });
+    setStatus("تم الانتقال إلى الجملة التي توضح الإجابة، وتم تظليل الجملة كاملة.");
+    return true;
+  }
+  window.showEvidenceSentence = showEvidenceSentence;
 
   function highlightSpokenWord(sentenceIndex, wordIndex) {
     clearHighlight();
@@ -474,12 +529,7 @@
         });
       });
       const hash = decodeURIComponent(location.hash.slice(1));
-      if (hash.startsWith("sentence-")) {
-        const id = hash.slice("sentence-".length);
-        const index = sentences.findIndex(sentence => sentence.id === id);
-        if (index >= 0 && supported) startAt(index);
-        else if (index >= 0) setStatus("تم فتح موضع الجملة في الكتاب. النطق غير مدعوم في هذا المتصفح.");
-      }
+      if (hash.startsWith("sentence-")) showEvidenceSentence(hash.slice("sentence-".length));
       lastWidth = Math.max(260, (pageNodes[0].root.parentElement?.clientWidth || 900) - 28);
     } catch (error) {
       console.error("Original textbook PDF could not be rendered:", error);
