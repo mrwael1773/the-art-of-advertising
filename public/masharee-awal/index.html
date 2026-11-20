@@ -86,7 +86,8 @@ lines.forEach((line,i)=>{
  });
  spots.push(group);
 });
-let voices=[],token=0,current=-1,mode="idle",activeRow=-1;
+let voices=[],token=0,current=-1,mode="idle",activeRow=-1,audioFrame=0,resumeTicker=null;
+function stopAudioTicker(){if(audioFrame)cancelAnimationFrame(audioFrame);audioFrame=0;resumeTicker=null;}
 const omarAudio=$("#omarAudio"),adnanAudio=$("#adnanAudio");
 const omarRanges={1:[0,1.30],3:[1.35,7.92],5:[8.15,21.14],7:[21.45,38.65]};
 const adnanRanges={0:[0,2.197],2:[2.20,3.712],4:[3.75,4.864],6:[4.80,5.75]};
@@ -113,7 +114,7 @@ function controls(active){pauseBtn.disabled=!active;stopBtn.disabled=!active;pau
 function clearActive(){spots.flat().forEach(b=>b.classList.remove("active","selected"));clearWordMarks();activeRow=-1;}
 function mark(i,row=0){if(activeRow!==row||!spots[i][row]?.classList.contains("active")){clearActive();spots[i][row]?.classList.add("active","selected");activeRow=row;}status.textContent=lines[i][0]+" — الجملة "+(i+1);}
 function lineAtProgress(i,progress){const weights=lines[i][3]||spots[i].map(()=>1/spots[i].length);let total=0;for(let r=0;r<weights.length;r++){total+=weights[r];if(progress<=total||r===weights.length-1)return r;}return 0;}
-function finish(t,msg){if(t!==token)return;token++;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
+function finish(t,msg){if(t!==token)return;token++;stopAudioTicker();mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
 function say(i,t,onDone){
  current=i;mark(i);
  const isOmar=lines[i][0]==="Omar";
@@ -121,22 +122,28 @@ function say(i,t,onDone){
  const range=(isOmar?omarRanges:adnanRanges)[i];
  if(!range){finish(t,"تعذر تحديد مقطع الصوت.");return;}
  const end=range[1],start=range[0];
- audio.pause();audio.currentTime=start;audio.playbackRate=Number(speed.value);
+ stopAudioTicker();audio.pause();audio.currentTime=start;audio.playbackRate=Number(speed.value);
  const tick=()=>{
-  if(t!==token)return;
-  if(!audio.paused){
-   const progress=Math.max(0,Math.min(1,(audio.currentTime-start)/(end-start)));
-   mark(i,lineAtProgress(i,progress));markWordProgress(i,progress);
-   if(audio.currentTime>=end){audio.pause();audio.currentTime=end;onDone?.();return;}
+  if(t!==token){stopAudioTicker();return;}
+  if(audio.paused){audioFrame=0;return;}
+  const progress=Math.max(0,Math.min(1,(audio.currentTime-start)/(end-start)));
+  mark(i,lineAtProgress(i,progress));markWordProgress(i,progress);
+  if(audio.currentTime>=end){
+   stopAudioTicker();audio.pause();audio.currentTime=end;onDone?.();return;
   }
-  requestAnimationFrame(tick);
+  audioFrame=requestAnimationFrame(tick);
  };
- requestAnimationFrame(tick);
- audio.play().catch(()=>{
+ const startTicker=()=>{
+  if(t!==token||audio.paused)return;
+  if(audioFrame)cancelAnimationFrame(audioFrame);
+  audioFrame=requestAnimationFrame(tick);
+ };
+ resumeTicker=startTicker;
+ audio.play().then(startTicker).catch(()=>{
   finish(t,"تعذر تحميل التسجيل الصوتي. تحقق من الاتصال ثم أعد المحاولة.");
  });
 }
-function stop(){token++;speechSynthesis.cancel();omarAudio.pause();adnanAudio.pause();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
+function stop(){token++;stopAudioTicker();speechSynthesis.cancel();omarAudio.pause();adnanAudio.pause();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
 function speak(i){stop();const t=++token;mode="single";controls(true);say(i,t,()=>finish(t,"انتهى الاستماع إلى الجملة المحددة."));}
 function play(){stop();const t=++token;let i=0;mode="all";controls(true);
  const next=()=>{if(t!==token)return;if(i>=lines.length){finish(t,"انتهت المحادثة كاملة.");return;}say(i,t,()=>{i++;next()});};next();
@@ -145,8 +152,8 @@ $("#play").addEventListener("click",play);stopBtn.addEventListener("click",stop)
 pauseBtn.addEventListener("click",()=>{
  const paused=omarAudio.paused&&adnanAudio.paused&&!speechSynthesis.paused;
  if(paused){
-  if(current>=0&&lines[current][0]==="Omar")omarAudio.play().catch(()=>{});
-  else if(current>=0)adnanAudio.play().catch(()=>{});
+  if(current>=0&&lines[current][0]==="Omar")omarAudio.play().then(()=>resumeTicker?.()).catch(()=>{});
+  else if(current>=0)adnanAudio.play().then(()=>resumeTicker?.()).catch(()=>{});
   else speechSynthesis.resume();
   pauseBtn.textContent="إيقاف مؤقت";status.textContent="تمت متابعة الاستماع.";
  }else{
