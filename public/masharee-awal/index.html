@@ -13,7 +13,8 @@ main{max-width:850px;margin:auto}header{display:flex;justify-content:space-betwe
 .hot{position:absolute;border:0;border-radius:1px;background:transparent;padding:0;min-width:0;min-height:0;cursor:pointer;opacity:1;mix-blend-mode:normal}
 .hot:focus-visible{outline:2px solid #2563eb;outline-offset:1px}
 .hot.selected{background:transparent}
-.hot.active{background:rgba(255,220,35,.25);mix-blend-mode:multiply;box-shadow:none}
+.hot.active{background:transparent;mix-blend-mode:normal;box-shadow:none}
+.word-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}.word-highlight{fill:rgba(35,35,35,.24);stroke:none;rx:2}
 .status{max-width:790px;margin:12px auto;padding:12px;background:white;border-radius:10px;color:#475569;line-height:1.6}
 .note{font-size:.88rem;color:#64748b;margin:8px 0}
 </style></head>
@@ -43,6 +44,38 @@ const lines=[
 ["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[[19.1,37.1,60.0,1.35],[19.1,38.8,58.0,1.35],[19.1,40.4,56.5,1.35],[19.1,42.1,58.5,1.35],[19.1,43.8,14.8,1.35]],[0.24,0.22,0.20,0.22,0.12]]
 ];
 const $=s=>document.querySelector(s),page=$("#page"),status=$("#status"),pauseBtn=$("#pause"),stopBtn=$("#stop"),spots=[];
+const wordRows=[
+["Hi, Omar. What are you up to?"],
+["I'm turning off my alarm."],
+["What on earth is that?"],
+["It's the new flying helicopter alarm. It runs on rechargeable","batteries! It's the best alarm clock I've ever had."],
+["How does it work?"],
+["You see, the top part, in other words the flying part, is placed on a base. The","alarm is set and when it goes off the top part flies off the base. It is made to","fly in order to make you get up, catch it, and put it back on its base."],
+["And why is it here?"],
+["Well, you know how it is when you have a lot to do at work and you also","have to attend meetings. I don't have an assistant so if I am working on an","important project I forget. The flying alarm can solve the problem. I set it in","time for any meeting or conference that I have and I don't have to worry.","What do you think?"]
+];
+const wordSvg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+wordSvg.setAttribute("class","word-layer");wordSvg.setAttribute("viewBox","0 0 790 1024");wordSvg.setAttribute("preserveAspectRatio","none");page.append(wordSvg);
+const measureCanvas=document.createElement("canvas"),measure=measureCanvas.getContext("2d");
+const wordMarks=[],rowY=[171,190,208,226,244,263,281,299,317,335,353,371,389,407,425];
+measure.font="12px Arial";
+let globalRow=0;
+wordRows.forEach((rows,lineIndex)=>{const marks=[];rows.forEach(rowText=>{
+ let x=153;const words=[...rowText.matchAll(/\S+/g)];
+ words.forEach((m,index)=>{const w=measure.measureText(m[0]).width;const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+ rect.setAttribute("class","word-highlight");rect.setAttribute("x",x.toFixed(2));rect.setAttribute("y",(rowY[globalRow]-10).toFixed(2));rect.setAttribute("width",Math.max(3,w).toFixed(2));rect.setAttribute("height","14");rect.style.display="none";wordSvg.append(rect);
+ marks.push({rect,start:globalRow,word:m[0]});x+=w+measure.measureText(" ").width;
+ });globalRow++;
+ });wordMarks.push(marks);});
+function markWordProgress(i,progress){
+ const marks=wordMarks[i]||[];if(!marks.length)return;
+ const all=marks.map(m=>m.word),total=all.reduce((n,w)=>n+w.length,0);
+ let target=Math.min(total-1,Math.floor(Math.max(0,Math.min(.999,progress))*total)),cursor=0,chosen=0;
+ for(let n=0;n<all.length;n++){cursor+=all[n].length;if(target<cursor){chosen=n;break;}}
+ marks.forEach((m,n)=>m.rect.style.display=n===chosen?"":"none");
+}
+function clearWordMarks(){wordMarks.flat().forEach(m=>m.rect.style.display="none");}
+
 lines.forEach((line,i)=>{
  const group=[];
  line[2].forEach(([x,y,w,h],row)=>{
@@ -53,7 +86,8 @@ lines.forEach((line,i)=>{
  });
  spots.push(group);
 });
-let voices=[],token=0,current=-1,mode="idle",activeRow=-1;
+let voices=[],token=0,current=-1,mode="idle",activeRow=-1,audioFrame=0,resumeTicker=null;
+function stopAudioTicker(){if(audioFrame)cancelAnimationFrame(audioFrame);audioFrame=0;resumeTicker=null;}
 const omarAudio=$("#omarAudio"),adnanAudio=$("#adnanAudio");
 const omarRanges={1:[0,1.30],3:[1.35,7.92],5:[8.15,21.14],7:[21.45,38.65]};
 const adnanRanges={0:[0,2.197],2:[2.20,3.712],4:[3.75,4.864],6:[4.80,5.75]};
@@ -77,10 +111,10 @@ function chosenVoice(role){
 }
 loadVoices();speechSynthesis.addEventListener?.("voiceschanged",loadVoices);
 function controls(active){pauseBtn.disabled=!active;stopBtn.disabled=!active;pauseBtn.textContent="إيقاف مؤقت";}
-function clearActive(){spots.flat().forEach(b=>b.classList.remove("active","selected"));activeRow=-1;}
+function clearActive(){spots.flat().forEach(b=>b.classList.remove("active","selected"));clearWordMarks();activeRow=-1;}
 function mark(i,row=0){if(activeRow!==row||!spots[i][row]?.classList.contains("active")){clearActive();spots[i][row]?.classList.add("active","selected");activeRow=row;}status.textContent=lines[i][0]+" — الجملة "+(i+1);}
 function lineAtProgress(i,progress){const weights=lines[i][3]||spots[i].map(()=>1/spots[i].length);let total=0;for(let r=0;r<weights.length;r++){total+=weights[r];if(progress<=total||r===weights.length-1)return r;}return 0;}
-function finish(t,msg){if(t!==token)return;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
+function finish(t,msg){if(t!==token)return;token++;stopAudioTicker();mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
 function say(i,t,onDone){
  current=i;mark(i);
  const isOmar=lines[i][0]==="Omar";
@@ -88,22 +122,28 @@ function say(i,t,onDone){
  const range=(isOmar?omarRanges:adnanRanges)[i];
  if(!range){finish(t,"تعذر تحديد مقطع الصوت.");return;}
  const end=range[1],start=range[0];
- audio.pause();audio.currentTime=start;audio.playbackRate=Number(speed.value);
+ stopAudioTicker();audio.pause();audio.currentTime=start;audio.playbackRate=Number(speed.value);
  const tick=()=>{
-  if(t!==token)return;
-  if(!audio.paused){
-   const progress=Math.max(0,Math.min(1,(audio.currentTime-start)/(end-start)));
-   mark(i,lineAtProgress(i,progress));
-   if(audio.currentTime>=end){audio.pause();audio.currentTime=end;onDone?.();return;}
+  if(t!==token){stopAudioTicker();return;}
+  if(audio.paused){audioFrame=0;return;}
+  const progress=Math.max(0,Math.min(1,(audio.currentTime-start)/(end-start)));
+  mark(i,lineAtProgress(i,progress));markWordProgress(i,progress);
+  if(audio.currentTime>=end){
+   stopAudioTicker();audio.pause();audio.currentTime=end;onDone?.();return;
   }
-  requestAnimationFrame(tick);
+  audioFrame=requestAnimationFrame(tick);
  };
- requestAnimationFrame(tick);
- audio.play().catch(()=>{
+ const startTicker=()=>{
+  if(t!==token||audio.paused)return;
+  if(audioFrame)cancelAnimationFrame(audioFrame);
+  audioFrame=requestAnimationFrame(tick);
+ };
+ resumeTicker=startTicker;
+ audio.play().then(startTicker).catch(()=>{
   finish(t,"تعذر تحميل التسجيل الصوتي. تحقق من الاتصال ثم أعد المحاولة.");
  });
 }
-function stop(){token++;speechSynthesis.cancel();omarAudio.pause();adnanAudio.pause();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
+function stop(){token++;stopAudioTicker();speechSynthesis.cancel();omarAudio.pause();adnanAudio.pause();mode="idle";current=-1;clearActive();controls(false);status.textContent="تم إيقاف الاستماع.";}
 function speak(i){stop();const t=++token;mode="single";controls(true);say(i,t,()=>finish(t,"انتهى الاستماع إلى الجملة المحددة."));}
 function play(){stop();const t=++token;let i=0;mode="all";controls(true);
  const next=()=>{if(t!==token)return;if(i>=lines.length){finish(t,"انتهت المحادثة كاملة.");return;}say(i,t,()=>{i++;next()});};next();
@@ -112,8 +152,8 @@ $("#play").addEventListener("click",play);stopBtn.addEventListener("click",stop)
 pauseBtn.addEventListener("click",()=>{
  const paused=omarAudio.paused&&adnanAudio.paused&&!speechSynthesis.paused;
  if(paused){
-  if(current>=0&&lines[current][0]==="Omar")omarAudio.play().catch(()=>{});
-  else if(current>=0)adnanAudio.play().catch(()=>{});
+  if(current>=0&&lines[current][0]==="Omar")omarAudio.play().then(()=>resumeTicker?.()).catch(()=>{});
+  else if(current>=0)adnanAudio.play().then(()=>resumeTicker?.()).catch(()=>{});
   else speechSynthesis.resume();
   pauseBtn.textContent="إيقاف مؤقت";status.textContent="تمت متابعة الاستماع.";
  }else{
