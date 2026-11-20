@@ -577,6 +577,43 @@ window.ART_AD_CONFIG = {
       "correctAnswer": "1839"
     }
   ],
+    ,
+    {
+      "type": "true_false",
+      "prompt": "The FIAT 500 had a top speed of about 85 kilometers per hour.",
+      "options": [{"value":"true","label":"صح"},{"value":"false","label":"خطأ"}],
+      "correctAnswer": "true",
+      "evidenceId": "fiat-5"
+    },
+    {
+      "type": "true_false",
+      "prompt": "Every Henk suitcase is made in a large factory batch with identical specifications.",
+      "options": [{"value":"true","label":"صح"},{"value":"false","label":"خطأ"}],
+      "correctAnswer": "false",
+      "evidenceId": "henk-3"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The Henk suitcase is designed to feel as if you are pulling no more than 25 grams.",
+      "options": [{"value":"true","label":"صح"},{"value":"false","label":"خطأ"}],
+      "correctAnswer": "true",
+      "evidenceId": "henk-5"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The fold-up bike is available in a variety of styles.",
+      "options": [{"value":"true","label":"صح"},{"value":"false","label":"خطأ"}],
+      "correctAnswer": "true",
+      "evidenceId": "bike-5"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The first bicycles had small front wheels because smaller wheels were believed to be faster.",
+      "options": [{"value":"true","label":"صح"},{"value":"false","label":"خطأ"}],
+      "correctAnswer": "false",
+      "evidenceId": "history-4"
+    }
+  ],
   "pdfDownloadUrl": "./assets/art-advertising-source.pdf",
   "pageTwoQuestions": [
     {
