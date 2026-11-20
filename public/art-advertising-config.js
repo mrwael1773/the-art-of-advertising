@@ -457,48 +457,124 @@ window.ART_AD_CONFIG = {
       "evidenceId": "henk-8"
     },
     {
-      "type": "fill_blank",
+      "type": "single_select",
       "prompt": "The Henk suitcase can cost from $20,000 to $________.",
-      "acceptedAnswers": [
-        "40,000",
-        "40000",
-        "forty thousand"
+      "evidenceId": "henk-9",
+      "options": [
+        {
+          "value": "30000",
+          "label": "$30,000"
+        },
+        {
+          "value": "35000",
+          "label": "$35,000"
+        },
+        {
+          "value": "40000",
+          "label": "$40,000"
+        },
+        {
+          "value": "50000",
+          "label": "$50,000"
+        }
       ],
-      "evidenceId": "henk-9"
+      "correctAnswer": "40000"
     },
     {
-      "type": "fill_blank",
+      "type": "single_select",
       "prompt": "A fold-up bike is portable and easy to ________ when it is not being used.",
-      "acceptedAnswers": [
-        "store",
-        "be stored"
+      "evidenceId": "bike-2",
+      "options": [
+        {
+          "value": "carry",
+          "label": "carry"
+        },
+        {
+          "value": "store",
+          "label": "store"
+        },
+        {
+          "value": "repair",
+          "label": "repair"
+        },
+        {
+          "value": "decorate",
+          "label": "decorate"
+        }
       ],
-      "evidenceId": "bike-2"
+      "correctAnswer": "store"
     },
     {
-      "type": "fill_blank",
+      "type": "single_select",
       "prompt": "The first bicycles were invented in ________.",
-      "acceptedAnswers": [
-        "France",
-        "france"
+      "evidenceId": "history-1",
+      "options": [
+        {
+          "value": "Germany",
+          "label": "Germany"
+        },
+        {
+          "value": "France",
+          "label": "France"
+        },
+        {
+          "value": "Scotland",
+          "label": "Scotland"
+        },
+        {
+          "value": "Italy",
+          "label": "Italy"
+        }
       ],
-      "evidenceId": "history-1"
+      "correctAnswer": "France"
     },
     {
-      "type": "fill_blank",
+      "type": "single_select",
       "prompt": "Baron Karl von Drais developed a steerable front wheel in ________.",
-      "acceptedAnswers": [
-        "1817"
+      "evidenceId": "history-3",
+      "options": [
+        {
+          "value": "1790",
+          "label": "1790"
+        },
+        {
+          "value": "1817",
+          "label": "1817"
+        },
+        {
+          "value": "1839",
+          "label": "1839"
+        },
+        {
+          "value": "1957",
+          "label": "1957"
+        }
       ],
-      "evidenceId": "history-3"
+      "correctAnswer": "1817"
     },
     {
-      "type": "fill_blank",
+      "type": "single_select",
       "prompt": "The first pedals were introduced in ________.",
-      "acceptedAnswers": [
-        "1839"
+      "evidenceId": "history-3",
+      "options": [
+        {
+          "value": "1790",
+          "label": "1790"
+        },
+        {
+          "value": "1817",
+          "label": "1817"
+        },
+        {
+          "value": "1839",
+          "label": "1839"
+        },
+        {
+          "value": "1957",
+          "label": "1957"
+        }
       ],
-      "evidenceId": "history-3"
+      "correctAnswer": "1839"
     }
   ],
   "pdfDownloadUrl": "./assets/art-advertising-source.pdf",
@@ -507,8 +583,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The new FIAT 500 is one of the world’s most compact cars.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "true",
       "evidenceId": "fiat-1"
@@ -517,8 +599,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The car will be available in only one color.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "false",
       "evidenceId": "fiat-3"
@@ -527,8 +615,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The Henk suitcase was designed in Germany.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "false",
       "evidenceId": "henk-2"
@@ -537,8 +631,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The suitcase can be made of wood.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "true",
       "evidenceId": "henk-6"
@@ -547,8 +647,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The fold-up bike isn’t as bulky as an ordinary bike.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "true",
       "evidenceId": "bike-4"
@@ -557,8 +663,14 @@ window.ART_AD_CONFIG = {
       "type": "true_false",
       "prompt": "The first bikes didn’t have any pedals.",
       "options": [
-        { "value": "true", "label": "صح" },
-        { "value": "false", "label": "خطأ" }
+        {
+          "value": "true",
+          "label": "صح"
+        },
+        {
+          "value": "false",
+          "label": "خطأ"
+        }
       ],
       "correctAnswer": "true",
       "evidenceId": "history-2"
