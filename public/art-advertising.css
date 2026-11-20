@@ -129,3 +129,23 @@
  .quiz-page .question-actions{display:grid;grid-template-columns:1fr 1fr}
  .quiz-page .question-actions button,.quiz-page .question-actions a{width:100%;padding:8px 6px;font-size:12px}
 }
+
+/* Matching visual treatment for the true/false questions beneath textbook page two. */
+.page-two-question-panel{margin-top:20px;padding:clamp(14px,3vw,20px);border:1px solid #344963;border-radius:17px;background:linear-gradient(145deg,#192a42 0%,#142238 100%);box-shadow:0 12px 28px #0002}
+.page-two-question-panel>h3{margin:0 0 7px;padding:0;border:0;background:transparent;color:#f2f6ff;font-family:Tahoma,Arial,sans-serif;font-size:18px;line-height:1.7}
+.page-two-question-panel>p{margin:0 0 16px;color:#b9c8dc;font-family:Tahoma,Arial,sans-serif;font-size:13px;line-height:1.85}
+.page-two-question-panel .question-list{gap:12px;margin-top:12px}
+.page-two-question-panel .page-two-question{margin:0;padding:15px 16px;border:1px solid #3b506b;border-radius:14px;background:#1b2c44;box-shadow:0 5px 15px #00000014}
+.page-two-question-panel .page-two-question>h3{margin:0 0 13px;color:#f3f6fc;font-family:Tahoma,Arial,sans-serif;font-size:15px;font-weight:700;line-height:1.9}
+.page-two-question-panel .answer-options{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:0 0 13px}
+.page-two-question-panel .answer-option{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:45px;margin:0;padding:9px 12px;border:1px solid #405570;border-radius:10px;background:#15243a;color:#e1eaf7;font-family:Tahoma,Arial,sans-serif;font-size:14px;font-weight:500;line-height:1.7;cursor:pointer}
+.page-two-question-panel .answer-option:has(input:checked){border-color:#8db8ff;background:#294668;color:#fff}
+.page-two-question-panel .answer-option input[type=radio]{flex:0 0 18px;width:18px;height:18px;min-height:18px;margin:0;accent-color:#8db8ff}
+.page-two-question-panel .question-actions{display:flex;flex-wrap:wrap;gap:9px}
+.page-two-question-panel .question-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 14px;border-radius:10px;font-family:Tahoma,Arial,sans-serif;font-size:13px;font-weight:800;cursor:pointer}
+.page-two-question-panel .check-answer{border:1px solid #6f9bd0;background:#315f96;color:#fff}
+.page-two-question-panel .evidence-button{border:1px solid #4b6380;background:#263b56;color:#e4efff}
+.page-two-question-panel .question-feedback{margin-top:10px;font-size:13px;font-weight:800;line-height:1.7}
+.page-two-question-panel .question-feedback.is-correct{color:#8de0bd}
+.page-two-question-panel .question-feedback.is-wrong{color:#ffd18b}
+@media(max-width:520px){.page-two-question-panel{padding:12px;border-radius:14px}.page-two-question-panel .page-two-question{padding:13px 11px}.page-two-question-panel .page-two-question>h3{font-size:14px}.page-two-question-panel .answer-option{min-height:43px;font-size:13px}.page-two-question-panel .question-actions{display:grid;grid-template-columns:1fr 1fr}.page-two-question-panel .question-actions button{width:100%;padding:8px 5px;font-size:12px}}
