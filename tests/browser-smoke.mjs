@@ -440,21 +440,24 @@ async function main() {
       window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.correctAnswer)
     );
     assert.deepEqual(pageTwoQuestionKeys, ["false", "true", "true", "true", "false"]);
+    const evidenceIds = await page.evaluate(() => window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.evidenceId));
     for (let index = 0; index < 5; index++) {
       const card = pageTwoCards.nth(index);
       const expected = pageTwoQuestionKeys[index] === "true" ? "صح" : "خطأ";
       assert.match(await card.locator(".answer-solution").textContent(), new RegExp(expected));
-      const link = card.locator(".solution-jump-button");
-      const targetId = "page2-solution-" + (index + 1);
-      assert.equal(await link.getAttribute("href"), "#" + targetId);
-      await link.click();
-      assert.equal(new URL(page.url()).hash, "#" + targetId);
-      const target = await page.locator("#" + targetId).evaluate(el => {
-        const rect = el.getBoundingClientRect();
-        return { top: rect.top, bottom: rect.bottom, height: window.innerHeight };
-      });
-      assert.ok(target.top >= 0 && target.top < target.height,
-        "Each page-two answer button must scroll to its own solution: " + targetId + " " + JSON.stringify(target));
+      assert.equal(await card.locator(".page-two-evidence").count(), 1,
+        "Each question must have exactly one answer-location button.");
+      assert.equal(await card.locator(".evidence-button").count(), 1);
+      await card.locator(".page-two-evidence").click();
+      const highlight = page.locator(".answer-sentence-highlight");
+      await highlight.waitFor();
+      assert.equal(await highlight.getAttribute("data-sentence-id"), evidenceIds[index]);
+      const highlightedText = await highlight.getAttribute("data-highlighted-text");
+      assert.ok(highlightedText.length > 20,
+        "The evidence button must highlight the complete source sentence, not only its first word.");
+      const firstFragment = await highlight.locator(".answer-sentence-fragment").first().boundingBox();
+      assert.ok(firstFragment && firstFragment.width > 10 && firstFragment.height > 5,
+        "The complete evidence sentence must have a visible highlight.");
     }
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
@@ -809,7 +812,7 @@ async function main() {
     await unsupportedContext.close();
 
     await context.close();
-    console.log("Browser checks passed: original-page PDF text layer, on-page sentence highlighting, playback controls, speed control, all 26 evidence-linked questions, accessibility, responsive layouts, and no persistence/API calls.");
+    console.log("Browser checks passed: original-page PDF text layer, on-page sentence highlighting, playback controls, speed control, all 21 quiz evidence links plus five full-sentence page-two evidence jumps, accessibility, responsive layouts, and no persistence/API calls.");
   } finally {
     await browser.close();
   }
