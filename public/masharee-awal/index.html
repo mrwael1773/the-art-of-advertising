@@ -57,7 +57,7 @@ const wordRows=[
 const wordSvg=document.createElementNS("http://www.w3.org/2000/svg","svg");
 wordSvg.setAttribute("class","word-layer");wordSvg.setAttribute("viewBox","0 0 790 1024");wordSvg.setAttribute("preserveAspectRatio","none");page.append(wordSvg);
 const measureCanvas=document.createElement("canvas"),measure=measureCanvas.getContext("2d");
-const wordMarks=[],rowY=[210,226,243,260,277,294,311,328,345,362,379,396,413,430,447];
+const wordMarks=[],rowY=[171,190,208,226,244,263,281,299,317,335,353,371,389,407,425];
 measure.font="12px Arial";
 let globalRow=0;
 wordRows.forEach((rows,lineIndex)=>{const marks=[];rows.forEach(rowText=>{
