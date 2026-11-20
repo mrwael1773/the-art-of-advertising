@@ -281,7 +281,8 @@
     const range = document.createRange();
     try {
       range.setStart(firstNode, first.start);
-      range.setEnd(lastNode, last.end);
+      const trailingPunctuation = String(lastNode.textContent).slice(last.end).match(/^[.,!?;:)"'’”]+/)?.[0] || "";
+      range.setEnd(lastNode, last.end + trailingPunctuation.length);
     } catch { return false; }
     const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
     if (!rects.length) return false;
