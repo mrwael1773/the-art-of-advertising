@@ -456,8 +456,8 @@ async function main() {
       const highlightedText = await highlight.getAttribute("data-highlighted-text");
       const expectedEvidence = await page.evaluate(id =>
         window.ART_AD_CONFIG.passageSentences.find(sentence => sentence.id === id).text, evidenceIds[index]);
-      assert.equal(highlightedText.replace(/\\s+/g, " ").trim(),
-        expectedEvidence.replace(/\\s+/g, " ").trim(),
+      assert.equal(highlightedText.replace(/\s+/g, " ").trim(),
+        expectedEvidence.replace(/\s+/g, " ").trim(),
         "The evidence button must highlight the entire matching source sentence.");
       const firstFragment = await highlight.locator(".answer-sentence-fragment").first().boundingBox();
       assert.ok(firstFragment && firstFragment.width > 10 && firstFragment.height > 5,
