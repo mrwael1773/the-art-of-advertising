@@ -113,7 +113,7 @@ function controls(active){pauseBtn.disabled=!active;stopBtn.disabled=!active;pau
 function clearActive(){spots.flat().forEach(b=>b.classList.remove("active","selected"));clearWordMarks();activeRow=-1;}
 function mark(i,row=0){if(activeRow!==row||!spots[i][row]?.classList.contains("active")){clearActive();spots[i][row]?.classList.add("active","selected");activeRow=row;}status.textContent=lines[i][0]+" — الجملة "+(i+1);}
 function lineAtProgress(i,progress){const weights=lines[i][3]||spots[i].map(()=>1/spots[i].length);let total=0;for(let r=0;r<weights.length;r++){total+=weights[r];if(progress<=total||r===weights.length-1)return r;}return 0;}
-function finish(t,msg){if(t!==token)return;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
+function finish(t,msg){if(t!==token)return;token++;mode="idle";current=-1;clearActive();controls(false);status.textContent=msg;}
 function say(i,t,onDone){
  current=i;mark(i);
  const isOmar=lines[i][0]==="Omar";
