@@ -461,9 +461,16 @@ async function main() {
         window.ART_AD_CONFIG.passageSentences.find(sentence => sentence.id === id).text, evidenceIds[index]);
       assert.equal(compactEvidenceText(highlightedText), compactEvidenceText(expectedEvidence),
         "The evidence button must highlight the complete matching source sentence.");
-      const firstFragment = await highlight.locator(".answer-sentence-fragment").first().boundingBox();
-      assert.ok(firstFragment && firstFragment.width > 10 && firstFragment.height > 5,
-        "The complete evidence sentence must have a visible highlight.");
+      const firstFragment = highlight.locator(".answer-sentence-fragment").first();
+      const fragmentStyle = await firstFragment.evaluate(element => ({
+        width: parseFloat(element.style.width),
+        height: parseFloat(element.style.height),
+        background: getComputedStyle(element).backgroundColor,
+        display: getComputedStyle(element).display
+      }));
+      assert.ok(fragmentStyle.width > 10 && fragmentStyle.height > 5 &&
+        fragmentStyle.background !== "rgba(0, 0, 0, 0)" && fragmentStyle.display === "block",
+        "The complete evidence sentence must have a visible highlighted fragment.");
     }
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
