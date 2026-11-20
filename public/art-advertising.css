@@ -80,3 +80,8 @@
 .page-two-question-panel>h3{margin-top:0}
 .page-two-question{margin:12px 0}
 .page-two-question .answer-solution{scroll-margin:24px}
+
+/* Full-sentence evidence highlight is independent from speech word highlighting. */
+.answer-highlight-layer{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.answer-sentence-highlight{position:absolute;inset:0;pointer-events:none}
+.answer-sentence-fragment{position:absolute;display:block;background:rgba(255,220,55,.52);border:1px solid rgba(205,151,0,.78);border-radius:3px;box-shadow:0 0 0 1px rgba(255,239,150,.25)}
