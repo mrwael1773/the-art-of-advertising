@@ -84,4 +84,4 @@
 /* Full-sentence evidence highlight is independent from speech word highlighting. */
 .answer-highlight-layer{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
 .answer-sentence-highlight{position:absolute;inset:0;pointer-events:none}
-.answer-sentence-fragment{position:absolute;display:block;box-sizing:border-box;background:rgba(255,239,170,.68);border:0;border-radius:2px;box-shadow:none;mix-blend-mode:multiply;pointer-events:none}
+.answer-sentence-fragment{position:absolute;display:block;box-sizing:border-box;background:rgba(204,153,0,.62);border:0;border-radius:2px;box-shadow:none;mix-blend-mode:multiply;pointer-events:none}
