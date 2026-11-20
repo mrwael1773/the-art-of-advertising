@@ -401,6 +401,7 @@
     queueToken++;
     activeUtterance = null;
     synth.cancel();
+    pageNodes.forEach(info => info.answerHighlightLayer?.replaceChildren());
     speakFrom(Math.max(0, index), queueToken, Math.max(0, wordIndex));
   }
 
