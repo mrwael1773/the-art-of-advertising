@@ -34,14 +34,14 @@ main{max-width:850px;margin:auto}header{display:flex;justify-content:space-betwe
 </main>
 <script>
 const lines=[
-["Adnan","Hi, Omar. What are you up to?",[[19.1,20.5,17.0,1.35]]],
-["Omar","I'm turning off my alarm.",[[19.1,22.2,16.1,1.35]]],
-["Adnan","What on earth is that?",[[19.1,23.8,15.8,1.35]]],
-["Omar","It's the new flying helicopter alarm. It runs on rechargeable batteries! It's the best alarm clock I've ever had.",[[19.1,25.5,41.0,1.35],[19.1,27.1,33.0,1.35]],[0.56,0.44]],
-["Adnan","How does it work?",[[19.1,28.8,14.8,1.35]]],
-["Omar","You see, the top part, in other words the flying part, is placed on a base. The alarm is set and when it goes off the top part flies off the base. It is made to fly in order to make you get up, catch it, and put it back on its base.",[[19.1,30.5,58.0,1.35],[19.1,32.1,55.0,1.35],[19.1,33.8,50.0,1.35]],[0.36,0.34,0.30]],
-["Adnan","And why is it here?",[[19.1,35.4,15.4,1.35]]],
-["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[[19.1,37.1,60.0,1.35],[19.1,38.8,58.0,1.35],[19.1,40.4,56.5,1.35],[19.1,42.1,58.5,1.35],[19.1,43.8,14.8,1.35]],[0.24,0.22,0.20,0.22,0.12]]
+["Adnan","Hi, Omar. What are you up to?",[[19.1,19.34,20.5,1.7]]],
+["Omar","I'm turning off my alarm.",[[19.1,21.09,18.5,1.7]]],
+["Adnan","What on earth is that?",[[19.1,22.75,18.0,1.7]]],
+["Omar","It's the new flying helicopter alarm. It runs on rechargeable batteries! It's the best alarm clock I've ever had.",[[19.1,24.51,41.0,1.7],[19.1,26.17,33.0,1.7]],[0.56,0.44]],
+["Adnan","How does it work?",[[19.1,27.93,16.0,1.7]]],
+["Omar","You see, the top part, in other words the flying part, is placed on a base. The alarm is set and when it goes off the top part flies off the base. It is made to fly in order to make you get up, catch it, and put it back on its base.",[[19.1,29.69,58.0,1.7],[19.1,31.35,55.0,1.7],[19.1,33.11,50.0,1.7]],[0.36,0.34,0.30]],
+["Adnan","And why is it here?",[[19.1,34.86,17.0,1.7]]],
+["Omar","Well, you know how it is when you have a lot to do at work and you also have to attend meetings. I don't have an assistant so if I am working on an important project I forget. The flying alarm can solve the problem. I set it in time for any meeting or conference that I have and I don't have to worry. What do you think?",[[19.1,36.62,60.0,1.7],[19.1,38.28,58.0,1.7],[19.1,40.04,56.5,1.7],[19.1,41.80,58.5,1.7],[19.1,43.46,17.0,1.7]],[0.24,0.22,0.20,0.22,0.12]]
 ];
 const $=s=>document.querySelector(s),page=$("#page"),status=$("#status"),pauseBtn=$("#pause"),stopBtn=$("#stop"),spots=[];
 const wordRows=[
@@ -57,7 +57,7 @@ const wordRows=[
 const wordSvg=document.createElementNS("http://www.w3.org/2000/svg","svg");
 wordSvg.setAttribute("class","word-layer");wordSvg.setAttribute("viewBox","0 0 790 1024");wordSvg.setAttribute("preserveAspectRatio","none");page.append(wordSvg);
 const measureCanvas=document.createElement("canvas"),measure=measureCanvas.getContext("2d");
-const wordMarks=[],rowY=[171,190,208,226,244,263,281,299,317,335,353,371,389,407,425];
+const wordMarks=[],rowY=[210,228,245,263,280,298,316,333,351,369,387,404,422,440,457];
 measure.font="12px Arial";
 let globalRow=0;
 wordRows.forEach((rows,lineIndex)=>{const marks=[];rows.forEach(rowText=>{
