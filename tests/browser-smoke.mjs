@@ -440,6 +440,12 @@ async function main() {
     // textbook page, not in the separate exercises page. Verify every answer
     // key and that each jump link scrolls to its own visible solution.
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    // PDF.js renders the original pages asynchronously after the document network is idle.
+    // Wait for its explicit ready status before testing the evidence controls.
+    await page.waitForFunction(() => {
+      const status = document.querySelector("#speech-status")?.textContent || "";
+      return status.includes("الصفحتان الأصليتان جاهزتان") || status.includes("تم عرض الصفحتين الأصليتين");
+    });
     const pageTwoCards = page.locator("#page-two-questions .page-two-question");
     assert.equal(await pageTwoCards.count(), 5);
     const pageTwoQuestionKeys = await page.evaluate(() =>
