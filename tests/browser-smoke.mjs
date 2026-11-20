@@ -456,7 +456,7 @@ async function main() {
       const highlightedText = await highlight.getAttribute("data-highlighted-text");
       const expectedEvidence = await page.evaluate(id =>
         window.ART_AD_CONFIG.passageSentences.find(sentence => sentence.id === id).text, evidenceIds[index]);
-      const wordsOnly = value => (value.match(/[a-z0-9]+(?:['’][a-z]+)?/gi) || []).join(" ").toLowerCase();
+      const wordsOnly = value => (value.replace(/([a-z])([0-9])/gi, "$1 $2").replace(/([0-9])([a-z])/gi, "$1 $2").match(/[a-z0-9]+(?:['’][a-z]+)?/gi) || []).join(" ").toLowerCase();
       assert.equal(wordsOnly(highlightedText), wordsOnly(expectedEvidence),
         "The evidence button must highlight every word in the complete matching source sentence.");
       const firstFragment = await highlight.locator(".answer-sentence-fragment").first().boundingBox();
