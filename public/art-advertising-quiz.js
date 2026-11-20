@@ -19,21 +19,29 @@
       : '<button type="button" class="evidence-button" disabled>اعرض مكان الإجابة</button>';
   };
 
-  root.innerHTML = '<section class="exercise-section"><h3>الأسئلة 1–15: اختيار من متعدد</h3>' +
-    exercises.map((q, index) => {
+  const renderGroup = (items, start, heading, expectedType, expectedOptions) =>
+    '<section class="exercise-section"><h3>' + heading + '</h3>' +
+    items.map((q, index) => {
       const options = Array.isArray(q.options) ? q.options : [];
-      const valid = q.type === "single_select" && options.length === 4 && Boolean(q.correctAnswer) &&
-        Boolean(q.evidenceId && sentenceIds.has(String(q.evidenceId)));
+      const valid = q.type === expectedType && options.length === expectedOptions &&
+        Boolean(q.correctAnswer) && Boolean(q.evidenceId && sentenceIds.has(String(q.evidenceId)));
+      const number = start + index;
       return '<article class="question-card" data-correct="' + esc(q.correctAnswer || "") + '">' +
-        '<h3>السؤال ' + (index + 1) + ': ' + esc(q.prompt || "") + '</h3>' +
+        '<h3>السؤال ' + number + ': ' + esc(q.prompt || "") + '</h3>' +
         '<div class="answer-options">' + options.map(option =>
-          '<label class="answer-option"><input type="radio" name="exercise-' + index +
+          '<label class="answer-option"><input type="radio" name="exercise-' + number +
           '" value="' + esc(option.value) + '"> ' + esc(option.label) + '</label>'
         ).join("") + '</div>' +
         '<div class="question-actions"><button type="button" class="check-answer" ' +
         (valid ? "" : "disabled") + '>تحقق من الإجابة</button>' + evidenceButton(q) + '</div>' +
         '<span class="question-feedback" aria-live="polite"></span></article>';
     }).join("") + '</section>';
+
+  const multipleChoice = exercises.slice(0, 15);
+  const trueFalse = exercises.slice(15, 20);
+  root.innerHTML =
+    renderGroup(multipleChoice, 1, "الأسئلة 1–15: اختيار من متعدد", "single_select", 4) +
+    renderGroup(trueFalse, 16, "الأسئلة 16–20: صح أو خطأ", "true_false", 2);
 
   root.querySelectorAll(".check-answer").forEach(button => {
     button.addEventListener("click", () => {
@@ -51,13 +59,16 @@
     });
   });
 
-  const missingEvidence = exercises.filter(q => !q.evidenceId || !sentenceIds.has(String(q.evidenceId))).length;
-  const invalid = exercises.filter(q => q.type !== "single_select" || !q.correctAnswer ||
-    !Array.isArray(q.options) || q.options.length !== 4).length;
-  const complete = exercises.length === 15 && invalid === 0 && missingEvidence === 0;
+  const invalid = exercises.filter((q, index) => {
+    const expectedType = index < 15 ? "single_select" : "true_false";
+    const expectedOptions = index < 15 ? 4 : 2;
+    return q.type !== expectedType || !q.correctAnswer ||
+      !Array.isArray(q.options) || q.options.length !== expectedOptions ||
+      !q.evidenceId || !sentenceIds.has(String(q.evidenceId));
+  }).length;
+  const complete = exercises.length === 20 && invalid === 0;
   status.textContent = complete
-    ? "اكتملت التمارين الخمسة عشر، وجميعها اختيار من متعدد مع أدلة مرتبطة بالقطعة."
-    : "المراجعة: " + exercises.length + "/15 سؤالًا، " + invalid + " سؤالًا يحتاج إلى مراجعة، و" +
-      missingEvidence + " سؤالًا بلا دليل.";
+    ? "اكتملت الأسئلة العشرون: 15 اختيارًا من متعدد و5 صح أو خطأ، ولكل سؤال دليل مرتبط بالقطعة."
+    : "المراجعة: " + exercises.length + "/20 سؤالًا، " + invalid + " سؤالًا يحتاج إلى مراجعة.";
   status.classList.toggle("is-complete", complete);
 })();
