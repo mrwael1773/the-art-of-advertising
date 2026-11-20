@@ -43,6 +43,57 @@
     renderGroup(multipleChoice, 1, "الأسئلة 1–15: اختيار من متعدد", "single_select", 4) +
     renderGroup(trueFalse, 16, "الأسئلة 16–20: صح أو خطأ", "true_false", 2);
 
+  // Keep selected answers and checked feedback when students open the passage
+  // and return to this page in the same browser tab.
+  const answerStorageKey = "art-advertising-quiz-answers-v1";
+  const readSavedAnswers = () => {
+    try {
+      const raw = sessionStorage.getItem(answerStorageKey);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+  let savedAnswers = readSavedAnswers();
+  const saveAnswers = () => {
+    try {
+      sessionStorage.setItem(answerStorageKey, JSON.stringify(savedAnswers));
+    } catch {
+      // The quiz remains usable if browser storage is unavailable.
+    }
+  };
+
+  // Restore each question's selected option and its previous check result.
+  root.querySelectorAll(".question-card").forEach((card, index) => {
+    const number = index + 1;
+    const saved = savedAnswers[String(number)];
+    if (!saved || typeof saved.value !== "string") return;
+    const input = Array.from(card.querySelectorAll('input[type="radio"]'))
+      .find(item => item.value === saved.value);
+    if (!input) return;
+    input.checked = true;
+    if (saved.checked) {
+      const feedback = card.querySelector(".question-feedback");
+      const correct = saved.value === card.dataset.correct;
+      feedback.textContent = correct ? "إجابة صحيحة!" : "إجابة غير صحيحة، حاول مرة أخرى.";
+      feedback.classList.toggle("is-correct", correct);
+      feedback.classList.toggle("is-wrong", !correct);
+    }
+  });
+
+  root.querySelectorAll('input[type="radio"]').forEach(input => {
+    input.addEventListener("change", () => {
+      const card = input.closest(".question-card");
+      const number = Array.from(root.querySelectorAll(".question-card")).indexOf(card) + 1;
+      savedAnswers[String(number)] = { value: input.value, checked: false };
+      const feedback = card.querySelector(".question-feedback");
+      feedback.textContent = "";
+      feedback.classList.remove("is-correct", "is-wrong");
+      saveAnswers();
+    });
+  });
+
   root.querySelectorAll(".check-answer").forEach(button => {
     button.addEventListener("click", () => {
       const card = button.closest(".question-card");
@@ -53,6 +104,9 @@
         return;
       }
       const correct = selected.value === card.dataset.correct;
+      const number = Array.from(root.querySelectorAll(".question-card")).indexOf(card) + 1;
+      savedAnswers[String(number)] = { value: selected.value, checked: true };
+      saveAnswers();
       feedback.textContent = correct ? "إجابة صحيحة!" : "إجابة غير صحيحة، حاول مرة أخرى.";
       feedback.classList.toggle("is-correct", correct);
       feedback.classList.toggle("is-wrong", !correct);
