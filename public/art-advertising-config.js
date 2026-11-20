@@ -505,83 +505,63 @@ window.ART_AD_CONFIG = {
   "pageTwoQuestions": [
     {
       "type": "true_false",
-      "prompt": "The earliest bicycles were made of metal.",
+      "prompt": "The new FIAT 500 is one of the world’s most compact cars.",
       "options": [
-        {
-          "value": "true",
-          "label": "صح"
-        },
-        {
-          "value": "false",
-          "label": "خطأ"
-        }
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
+      ],
+      "correctAnswer": "true",
+      "evidenceId": "fiat-1"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The car will be available in only one color.",
+      "options": [
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
       ],
       "correctAnswer": "false",
-      "evidenceId": "history-2"
+      "evidenceId": "fiat-3"
     },
     {
       "type": "true_false",
-      "prompt": "The first bicycles had a front wheel that could not turn from side to side.",
+      "prompt": "The Henk suitcase was designed in Germany.",
       "options": [
-        {
-          "value": "true",
-          "label": "صح"
-        },
-        {
-          "value": "false",
-          "label": "خطأ"
-        }
-      ],
-      "correctAnswer": "true",
-      "evidenceId": "history-2"
-    },
-    {
-      "type": "true_false",
-      "prompt": "The first pedals were introduced in 1839.",
-      "options": [
-        {
-          "value": "true",
-          "label": "صح"
-        },
-        {
-          "value": "false",
-          "label": "خطأ"
-        }
-      ],
-      "correctAnswer": "true",
-      "evidenceId": "history-3"
-    },
-    {
-      "type": "true_false",
-      "prompt": "People once believed that a larger front wheel made a bicycle faster.",
-      "options": [
-        {
-          "value": "true",
-          "label": "صح"
-        },
-        {
-          "value": "false",
-          "label": "خطأ"
-        }
-      ],
-      "correctAnswer": "true",
-      "evidenceId": "history-4"
-    },
-    {
-      "type": "true_false",
-      "prompt": "A fold-up bike is bulkier than a standard bicycle.",
-      "options": [
-        {
-          "value": "true",
-          "label": "صح"
-        },
-        {
-          "value": "false",
-          "label": "خطأ"
-        }
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
       ],
       "correctAnswer": "false",
+      "evidenceId": "henk-2"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The suitcase can be made of wood.",
+      "options": [
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
+      ],
+      "correctAnswer": "true",
+      "evidenceId": "henk-6"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The fold-up bike isn’t as bulky as an ordinary bike.",
+      "options": [
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
+      ],
+      "correctAnswer": "true",
       "evidenceId": "bike-4"
+    },
+    {
+      "type": "true_false",
+      "prompt": "The first bikes didn’t have any pedals.",
+      "options": [
+        { "value": "true", "label": "صح" },
+        { "value": "false", "label": "خطأ" }
+      ],
+      "correctAnswer": "true",
+      "evidenceId": "history-2"
     }
   ]
 };
