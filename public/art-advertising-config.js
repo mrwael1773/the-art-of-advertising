@@ -576,7 +576,6 @@ window.ART_AD_CONFIG = {
       ],
       "correctAnswer": "1839"
     }
-  ],
     ,
     {
       "type": "true_false",
