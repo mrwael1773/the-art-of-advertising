@@ -66,6 +66,7 @@
   function locateSentenceTokens(sentence, tokens) {
     const wanted = sentenceTokens(sentence.text);
     if (!wanted.length) return [];
+    const matches = [];
     for (let start = 0; start <= tokens.length - wanted.length; start++) {
       let matched = true;
       for (let offset = 0; offset < wanted.length; offset++) {
@@ -74,9 +75,11 @@
           break;
         }
       }
-      if (matched) return tokens.slice(start, start + wanted.length);
+      if (matched) matches.push(tokens.slice(start, start + wanted.length));
     }
-    return [];
+    // Never guess when the same sentence occurs more than once on a page.
+    // A guessed first match can send the student to the wrong passage location.
+    return matches.length === 1 ? matches[0] : [];
   }
 
   async function renderPage(pageInfo) {
@@ -273,33 +276,51 @@
     synth?.cancel();
     clearHighlight();
     pageNodes.forEach(info => info.answerHighlightLayer?.replaceChildren());
-    const first = tokens[0], last = tokens[tokens.length - 1];
-    const firstNode = pageInfo.model.textDivs[first.itemIndex]?.firstChild;
-    const lastNode = pageInfo.model.textDivs[last.itemIndex]?.firstChild;
-    if (!firstNode || !lastNode || firstNode.nodeType !== Node.TEXT_NODE ||
-        lastNode.nodeType !== Node.TEXT_NODE) return false;
-    const range = document.createRange();
-    try {
-      range.setStart(firstNode, first.start);
-      const trailingPunctuation = String(lastNode.textContent).slice(last.end).match(/^[.,!?;:)"'’”]+/)?.[0] || "";
-      range.setEnd(lastNode, last.end + trailingPunctuation.length);
-    } catch { return false; }
-    const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
-    if (!rects.length) return false;
     const pageRect = pageInfo.root.getBoundingClientRect();
     const pageScaleX = pageRect.width / Math.max(1, pageInfo.root.offsetWidth);
     const pageScaleY = pageRect.height / Math.max(1, pageInfo.root.offsetHeight);
     const group = document.createElement("span");
     group.className = "answer-sentence-highlight";
     group.dataset.sentenceId = sentence.id;
-    group.dataset.highlightedText = range.toString();
-    rects.forEach(rect => {
+    const lineRects = [];
+    for (const token of tokens) {
+      const node = pageInfo.model.textDivs[token.itemIndex]?.firstChild;
+      if (!node || node.nodeType !== Node.TEXT_NODE) return false;
+      const wordRange = document.createRange();
+      try {
+        wordRange.setStart(node, token.start);
+        wordRange.setEnd(node, token.end);
+      } catch { return false; }
+      for (const rect of Array.from(wordRange.getClientRects())) {
+        if (rect.width > 0 && rect.height > 0) lineRects.push(rect);
+      }
+    }
+    if (!lineRects.length) return false;
+    // Merge only the matched sentence's word boxes on each printed line.
+    // A whole-sentence DOM Range can produce oversized line boxes on PDFs with
+    // multiple columns; per-word geometry avoids highlighting unrelated text.
+    const lines = [];
+    lineRects.sort((a, b) => a.top - b.top || a.left - b.left);
+    for (const rect of lineRects) {
+      let line = lines.find(item => Math.abs(item.top - rect.top) <= Math.max(3, rect.height * 0.3));
+      if (!line) {
+        line = { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+        lines.push(line);
+      } else {
+        line.top = Math.min(line.top, rect.top);
+        line.bottom = Math.max(line.bottom, rect.bottom);
+        line.left = Math.min(line.left, rect.left);
+        line.right = Math.max(line.right, rect.right);
+      }
+    }
+    group.dataset.highlightedText = sentence.text;
+    lines.forEach(line => {
       const fragment = document.createElement("span");
       fragment.className = "answer-sentence-fragment";
-      fragment.style.left = ((rect.left - pageRect.left) / pageScaleX - 2) + "px";
-      fragment.style.top = ((rect.top - pageRect.top) / pageScaleY - 1) + "px";
-      fragment.style.width = (rect.width / pageScaleX + 4) + "px";
-      fragment.style.height = (rect.height / pageScaleY + 2) + "px";
+      fragment.style.left = ((line.left - pageRect.left) / pageScaleX - 1) + "px";
+      fragment.style.top = ((line.top - pageRect.top) / pageScaleY - 1) + "px";
+      fragment.style.width = ((line.right - line.left) / pageScaleX + 2) + "px";
+      fragment.style.height = ((line.bottom - line.top) / pageScaleY + 2) + "px";
       group.appendChild(fragment);
     });
     pageInfo.answerHighlightLayer.appendChild(group);
