@@ -324,7 +324,7 @@
       group.appendChild(fragment);
     });
     pageInfo.answerHighlightLayer.appendChild(group);
-    window.scrollTo({ top: Math.max(0, window.scrollY + rects[0].top - 120), behavior: "smooth" });
+    window.scrollTo({ top: Math.max(0, window.scrollY + pageRect.top - 120), behavior: "smooth" });
     setStatus("تم الانتقال إلى الجملة التي توضح الإجابة، وتم تظليل الجملة كاملة.");
     return true;
   }
