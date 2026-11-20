@@ -44,7 +44,7 @@ const wordRects=[];
 function detectPrintedRows(){
  const img=page.querySelector("img");
  if(!img?.complete||!img.naturalWidth)return [];
- canvas.width=W;canvas.height=H;
+ canvas.width=W;canvas.height=H;ctx.font="12px Arial";
  try{ctx.drawImage(img,0,0,W,H);}catch{return [];}
  const pixels=ctx.getImageData(0,0,W,H).data,active=[];
  for(let y=175;y<475;y++){
