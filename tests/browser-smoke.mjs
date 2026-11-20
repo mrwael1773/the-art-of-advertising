@@ -467,16 +467,19 @@ async function main() {
         window.ART_AD_CONFIG.passageSentences.find(sentence => sentence.id === id).text, evidenceIds[index]);
       assert.equal(compactEvidenceText(highlightedText), compactEvidenceText(expectedEvidence),
         "The evidence button must highlight the complete matching source sentence.");
-      const firstFragment = highlight.locator(".answer-sentence-fragment").first();
-      const fragmentStyle = await firstFragment.evaluate(element => ({
-        width: parseFloat(element.style.width),
-        height: parseFloat(element.style.height),
-        background: getComputedStyle(element).backgroundColor,
-        display: getComputedStyle(element).display
-      }));
-      assert.ok(fragmentStyle.width > 10 && fragmentStyle.height > 5 &&
-        fragmentStyle.background !== "rgba(0, 0, 0, 0)" && fragmentStyle.display === "block",
-        "The complete evidence sentence must have a visible highlighted fragment.");
+      const fragmentStyles = await highlight.locator(".answer-sentence-fragment").evaluateAll(elements =>
+        elements.map(element => ({
+          width: parseFloat(element.style.width),
+          height: parseFloat(element.style.height),
+          background: getComputedStyle(element).backgroundColor,
+          display: getComputedStyle(element).display
+        }))
+      );
+      assert.ok(fragmentStyles.length > 0 &&
+        fragmentStyles.every(style => style.width > 2 && style.height > 5 &&
+          style.background !== "rgba(0, 0, 0, 0)" && style.display === "block") &&
+        Math.max(...fragmentStyles.map(style => style.width)) > 10,
+        "The complete evidence sentence must have visible highlighted fragments across its text lines.");
     }
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
