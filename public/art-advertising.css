@@ -70,3 +70,13 @@
  .reader-controls .art-controls button{width:100%;padding:9px 7px;font-size:12px}
  .pdf-page{width:100%}
 }
+/* Answer key and in-page jump for page two reading questions. */
+.solution-jump-button{display:inline-flex;align-items:center;justify-content:center;border:1px solid #78a9df;border-radius:.7rem;padding:.7rem 1rem;font:inherit;font-weight:700;text-decoration:none;background:#203d5e;color:#e8f2ff}
+.answer-solution{margin-top:.85rem;padding:.85rem 1rem;border:1px solid #4b8b70;border-radius:.75rem;background:rgba(38,112,78,.16);color:inherit;scroll-margin:24px;line-height:1.8}
+.answer-solution strong{color:#7bd5a6}
+.solution-jump-button:focus-visible{outline:3px solid #7db4ff;outline-offset:2px}
+
+.page-two-question-panel{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel,rgba(255,255,255,.04))}
+.page-two-question-panel>h3{margin-top:0}
+.page-two-question{margin:12px 0}
+.page-two-question .answer-solution{scroll-margin:24px}

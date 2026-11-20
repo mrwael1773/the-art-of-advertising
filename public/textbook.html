@@ -7,7 +7,7 @@
 <meta name="description" content="اقرأ صفحات الكتاب الأصلية 54 و55 واستمع إلى القطعة مع تظليل الجملة في موضعها على الصفحة.">
 <title>القطعة والاستماع | The Art of Advertising</title>
 <link rel="stylesheet" href="./styles.css?v=13">
-<link rel="stylesheet" href="./art-advertising.css?v=12">
+<link rel="stylesheet" href="./art-advertising.css?v=14">
 </head>
 <body>
 <main class="shell art-shell textbook-reader">
@@ -55,6 +55,11 @@
 <canvas aria-label="صورة صفحة الكتاب 55"></canvas>
 <div class="textLayer" role="group" aria-label="نص صفحة الكتاب، اضغط على الجملة للاستماع وحدد النص بالسحب"></div><div class="sentence-highlight-layer" aria-hidden="true"></div>
 </div>
+<section class="page-two-question-panel" aria-labelledby="page-two-questions-title">
+<h3 id="page-two-questions-title">تدريبات الصفحة الثانية: صح أو خطأ</h3>
+<p>اختر الإجابة، أو استخدم الزر للانتقال مباشرةً إلى الإجابة الصحيحة.</p>
+<div id="page-two-questions" class="question-list" aria-live="polite"></div>
+</section>
 </article>
 </section>
 <p class="reader-footnote">اضغط على أي جملة للاستماع إليها كاملة. أثناء النطق تُظلَّل كلمة واحدة فقط في كل لحظة، وينتقل التظليل مع الصوت إلى الكلمة التالية. يمكنك تكبير صفحة الكتاب بإصبعين.</p>
@@ -63,7 +68,8 @@
 </footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-<script src="./art-advertising-config.js?v=5" defer></script>
+<script src="./art-advertising-config.js?v=6" defer></script>
 <script src="./art-advertising-viewer.js?v=27" defer></script>
+<script src="./art-advertising-page2.js?v=1" defer></script>
 </body>
 </html>

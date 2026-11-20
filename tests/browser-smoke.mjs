@@ -391,13 +391,13 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     assert.equal(await page.locator("#quick-questions .question-card").count(), 6);
-    assert.equal(await page.locator("#extra-exercises .question-card").count(), 20);
-    assert.equal(await page.locator(".question-card").count(), 26);
+    assert.equal(await page.locator("#extra-exercises .question-card").count(), 15);
+    assert.equal(await page.locator(".question-card").count(), 21);
     assert.equal(await page.locator("#extra-exercises [data-type='single_select']").count(), 10);
     assert.equal(await page.locator("#extra-exercises [data-type='fill_blank']").count(), 5);
-    assert.equal(await page.locator("#extra-exercises [data-type='true_false']").count(), 5);
-    assert.equal(await page.locator(".evidence-button").count(), 26);
+    assert.equal(await page.locator(".evidence-button").count(), 21);
     assert.equal(await page.locator(".evidence-button:disabled").count(), 0);
+
 
     const evidenceTargets = await page.locator(".evidence-button").evaluateAll(links =>
       links.map(link => decodeURIComponent(new URL(link.href).hash.replace(/^#sentence-/, "")))
@@ -407,7 +407,7 @@ async function main() {
     );
     assert.ok(evidenceTargets.every(id => sentenceIds.includes(id)));
     assert.equal(await page.locator("#extra-exercises .answer-options").nth(0).locator("input[type=radio]").count(), 4);
-    assert.equal(await page.locator("#extra-exercises .answer-options").nth(14).locator("input[type=radio]").count(), 2);
+    assert.equal(await page.locator("#extra-exercises .answer-options").nth(9).locator("input[type=radio]").count(), 4);
 
     const mcCard = page.locator("#extra-exercises .question-card").first();
     const mcAnswer = await mcCard.getAttribute("data-correct");
@@ -430,6 +430,34 @@ async function main() {
     assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
     await auditAccessibility(page);
 
+    // The five true/false questions about textbook page 55 belong on that
+    // textbook page, not in the separate exercises page. Verify every answer
+    // key and that each jump link scrolls to its own visible solution.
+    await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    const pageTwoCards = page.locator("#page-two-questions .page-two-question");
+    assert.equal(await pageTwoCards.count(), 5);
+    const pageTwoQuestionKeys = await page.evaluate(() =>
+      window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.correctAnswer)
+    );
+    assert.deepEqual(pageTwoQuestionKeys, ["false", "true", "true", "true", "false"]);
+    for (let index = 0; index < 5; index++) {
+      const card = pageTwoCards.nth(index);
+      const expected = pageTwoQuestionKeys[index] === "true" ? "صح" : "خطأ";
+      assert.match(await card.locator(".answer-solution").textContent(), new RegExp(expected));
+      const link = card.locator(".solution-jump-button");
+      const targetId = "page2-solution-" + (index + 1);
+      assert.equal(await link.getAttribute("href"), "#" + targetId);
+      await link.click();
+      assert.equal(new URL(page.url()).hash, "#" + targetId);
+      const target = await page.locator("#" + targetId).evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom, height: window.innerHeight };
+      });
+      assert.ok(target.top >= 0 && target.top < target.height,
+        "Each page-two answer button must scroll to its own solution: " + targetId + " " + JSON.stringify(target));
+    }
+
+    await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const dimensions = await page.evaluate(() => ({

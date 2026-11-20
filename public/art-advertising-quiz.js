@@ -39,7 +39,8 @@
       '<h3>' + esc(q.prompt || ("السؤال " + (index + 1))) + '</h3>' + answerUI +
       '<div class="question-actions"><button type="button" class="check-answer" ' +
       (answerValid ? "" : "disabled") + '>تحقق من الإجابة</button>' +
-      evidenceButton(q) + '</div><span class="question-feedback" aria-live="polite"></span></article>';
+      evidenceButton(q) + '<\/div>' +
+      '<span class="question-feedback" aria-live="polite"></span></article>';
   };
   const quick = Array.isArray(config.quickCheckQuestions) ? config.quickCheckQuestions : [];
   const exercises = Array.isArray(config.exercises) ? config.exercises : [];
@@ -49,8 +50,7 @@
 
   const groups = [
     { title:"الأسئلة 1–10: اختيار من متعدد", type:"single_select", start:0, end:10 },
-    { title:"الأسئلة 11–15: أكمل الفراغ", type:"fill_blank", start:10, end:15 },
-    { title:"الأسئلة 16–20: صح أو خطأ", type:"true_false", start:15, end:20 }
+    { title:"الأسئلة 11–15: أكمل الفراغ", type:"fill_blank", start:10, end:15 }
   ];
   extraRoot.innerHTML = groups.map(group => {
     const items = exercises.slice(group.start,group.end);
@@ -89,15 +89,15 @@
     return !q.correctAnswer;
   }).length;
   const invalidTypes = exercises.filter((q,i)=>{
-    const expected = i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false";
+    const expected = i < 10 ? "single_select" : "fill_blank";
     return q.type !== expected;
   }).length;
-  const complete = quick.length === 6 && exercises.length === 20 &&
+  const complete = quick.length === 6 && exercises.length === 15 &&
     quick.every(q=>q.type === "true_false") &&
-    exercises.every((q,i)=>q.type === (i < 10 ? "single_select" : i < 15 ? "fill_blank" : "true_false")) &&
+    exercises.every((q,i)=>q.type === (i < 10 ? "single_select" : "fill_blank")) &&
     missingEvidence === 0 && missingAnswerKeys === 0 && invalidTypes === 0;
   status.textContent = complete
-    ? "اكتملت أسئلة Quick Check والتمارين العشرون، مع مفاتيح إجابة وأدلة مرتبطة بجمل القطعة."
+    ? "اكتملت أسئلة Quick Check والتمارين الخمسة عشر، مع مفاتيح إجابة وأدلة مرتبطة بجمل القطعة."
     : "المراجعة: " + quick.length + "/6 أسئلة Quick Check، " + exercises.length + "/20 تمرينًا، " +
       missingEvidence + " سؤالًا بلا دليل، و" + missingAnswerKeys + " بلا مفتاح إجابة.";
   status.classList.toggle("is-complete",complete);
