@@ -20,7 +20,7 @@
       ).join("") + '</div>' +
       '<div class="question-actions"><button type="button" class="check-answer">تحقق من الإجابة</button>' +
       (hasEvidence ? '<button type="button" class="evidence-button page-two-evidence" data-evidence-id="' +
-        esc(q.evidenceId) + '">اعرض الإجابة في القطعة</button>' : '') + '</div>' +
+        esc(q.evidenceId) + '">اعرض مكان الإجابة في القطعة</button>' : '') + '</div>' +
       '<span class="question-feedback" aria-live="polite"></span></article>';
   }).join("");
   root.querySelectorAll(".check-answer").forEach(button => {
