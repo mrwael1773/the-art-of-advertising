@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript, headers, styles, workerDownloader] = await Promise.all([
+const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript, pageTwoScript, headers, styles, workerDownloader] = await Promise.all([
   read("../src/worker.js"),
   read("../wrangler.toml"),
   read("../public/index.html"),
@@ -12,6 +12,7 @@ const [worker, wrangler, home, textbook, quiz, configSource, viewer, quizScript,
   read("../public/art-advertising-config.js"),
   read("../public/art-advertising-viewer.js"),
   read("../public/art-advertising-quiz.js"),
+  read("../public/art-advertising-page2.js"),
   read("../public/_headers"),
   read("../public/art-advertising.css"),
   read("../scripts/download-pdf-worker.mjs")
@@ -107,19 +108,19 @@ test("reading page renders original textbook pages with audio and source-positio
 });
 
 
-test("lesson content contains six Quick Check and exactly twenty correctly ordered exercises", () => {
+test("lesson content keeps page two true-false questions separate from fifteen exercises", () => {
   assert.equal(lessonConfig.passageSentences.length, 23);
   assert.equal(lessonConfig.quickCheckQuestions.length, 6);
-  assert.equal(lessonConfig.exercises.length, 20);
+  assert.equal(lessonConfig.exercises.length, 15);
+  assert.equal(lessonConfig.pageTwoQuestions.length, 5);
   assert.deepEqual(
     lessonConfig.exercises.map(question => question.type),
     [
       ...Array(10).fill("single_select"),
-      ...Array(5).fill("fill_blank"),
-      ...Array(5).fill("true_false")
+      ...Array(5).fill("fill_blank")
     ]
   );
-  for (const question of [...lessonConfig.quickCheckQuestions, ...lessonConfig.exercises]) {
+  for (const question of [...lessonConfig.quickCheckQuestions, ...lessonConfig.exercises, ...lessonConfig.pageTwoQuestions]) {
     assert.ok(sentenceIds.has(String(question.evidenceId)), "each question must point to an existing evidence sentence");
     if (question.type === "fill_blank") {
       assert.ok(Array.isArray(question.acceptedAnswers) && question.acceptedAnswers.length > 0);
@@ -129,6 +130,8 @@ test("lesson content contains six Quick Check and exactly twenty correctly order
     }
   }
   assert.ok(lessonConfig.quickCheckQuestions.every(question => question.type === "true_false"));
+  assert.ok(lessonConfig.pageTwoQuestions.every(question => question.type === "true_false"));
+  assert.deepEqual(lessonConfig.pageTwoQuestions.map(question => question.correctAnswer), ["false", "true", "true", "true", "false"]);
   assert.ok(lessonConfig.passageSentences.every(sentence => [1, 2].includes(sentence.page)));
   assert.ok(lessonConfig.passageSentences.some(sentence => sentence.text.startsWith("The tiny classic is back, measuring")));
   assert.ok(lessonConfig.passageSentences.some(sentence => sentence.text === "Bicycles were invented in France in the 1790s."));
@@ -141,7 +144,12 @@ test("exercise page keeps Quick Check separate and uses the evidence-aware quiz 
   assert.match(quiz, /id="quick-questions"/);
   assert.match(quiz, /id="extra-exercises"/);
   assert.match(quiz, /id="quiz-status"/);
-  assert.match(quiz, /ثلاثة أنواع من التمارين/);
+  assert.match(quiz, /نوعان من التمارين/);
+  assert.doesNotMatch(quiz, /الأسئلة 16–20: صح أو خطأ/);
+  assert.match(textbook, /id="page-two-questions"/);
+  assert.match(textbook, /art-advertising-page2\.js/);
+  assert.match(pageTwoScript, /انتقل إلى الإجابة الصحيحة/);
+  assert.match(pageTwoScript, /page2-solution-/);
   assert.match(quizScript, /evidenceIsValid/);
   assert.match(quizScript, /اعرض مكان الإجابة/);
   assert.match(quizScript, /تحقق من الإجابة/);
