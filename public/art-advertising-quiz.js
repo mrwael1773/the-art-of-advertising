@@ -37,10 +37,12 @@
         '<span class="question-feedback" aria-live="polite"></span></article>';
     }).join("") + '</section>';
 
-  const multipleChoice = exercises.slice(0, 15);
+  const multipleChoice = exercises.slice(0, 10);
+  const fillBlanks = exercises.slice(10, 15);
   const trueFalse = exercises.slice(15, 20);
   root.innerHTML =
-    renderGroup(multipleChoice, 1, "الأسئلة 1–15: اختيار من متعدد", "single_select", 4) +
+    renderGroup(multipleChoice, 1, "الأسئلة 1–10: اختيار من متعدد", "single_select", 4) +
+    renderGroup(fillBlanks, 11, "الأسئلة 11–15: أكمل الفراغ بالاختيار من الخيارات", "single_select", 4) +
     renderGroup(trueFalse, 16, "الأسئلة 16–20: صح أو خطأ", "true_false", 2);
 
   // Keep selected answers and checked feedback when students open the passage
@@ -122,7 +124,7 @@
   }).length;
   const complete = exercises.length === 20 && invalid === 0;
   status.textContent = complete
-    ? "اكتملت الأسئلة العشرون: 15 اختيارًا من متعدد و5 صح أو خطأ، ولكل سؤال دليل مرتبط بالقطعة."
+    ? "اكتملت الأسئلة العشرون: 10 اختيار من متعدد، و5 أكمل الفراغ بالخيارات، و5 صح أو خطأ، ولكل سؤال دليل مرتبط بالقطعة."
     : "المراجعة: " + exercises.length + "/20 سؤالًا، " + invalid + " سؤالًا يحتاج إلى مراجعة.";
   status.classList.toggle("is-complete", complete);
 })();
