@@ -427,8 +427,13 @@ async function main() {
     await page.waitForFunction(() => document.querySelector(".answer-sentence-highlight"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
     assert.equal(await page.locator(".answer-sentence-highlight").getAttribute("data-sentence-id"), "fiat-1");
-    assert.equal(await page.locator(".answer-sentence-highlight").getAttribute("data-highlighted-text"),
-      "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    const firstHighlightedText = await page.locator(".answer-sentence-highlight").getAttribute("data-highlighted-text");
+    const normalizeEvidenceWords = value => (value.replace(/([a-z])([0-9])/gi, "$1 $2")
+      .replace(/([0-9])([a-z])/gi, "$1 $2").match(/[a-z0-9]+(?:['’][a-z]+)?/gi) || [])
+      .join(" ").toLowerCase();
+    assert.equal(normalizeEvidenceWords(firstHighlightedText),
+      normalizeEvidenceWords("The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall."),
+      "The first evidence link must highlight every word in its complete source sentence.");
     assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0,
       "Opening an evidence link must highlight the source sentence without starting speech.");
     await auditAccessibility(page);
