@@ -424,37 +424,62 @@ async function main() {
     const firstEvidence = page.locator(".evidence-button").first();
     assert.equal(await firstEvidence.getAttribute("href"), "./textbook.html#sentence-fiat-1");
     await page.goto(new URL(await firstEvidence.getAttribute("href"), page.url()).href, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.querySelector(".sentence-highlight-layer .active-spoken-word"));
+    await page.waitForFunction(() => document.querySelector(".answer-sentence-highlight"));
     assert.equal(new URL(page.url()).hash, "#sentence-fiat-1");
-    assert.ok(await page.locator(".sentence-highlight-layer .active-spoken-word").count() > 0);
-    assert.equal((await page.evaluate(() => window.__spoken.at(-1))).text, "The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall.");
+    assert.equal(await page.locator(".answer-sentence-highlight").getAttribute("data-sentence-id"), "fiat-1");
+    const firstHighlightedText = await page.locator(".answer-sentence-highlight").getAttribute("data-highlighted-text");
+    const compactEvidenceText = value => value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    assert.equal(compactEvidenceText(firstHighlightedText),
+      compactEvidenceText("The tiny classic is back, measuring 10 feet 11 inches (335 centimeters) long, 5 feet 5 inches (165 centimeters) wide, and 4 feet 11 inches (149 centimeters) tall."),
+      "The first evidence link must highlight the complete source sentence.");
+    assert.equal(await page.locator(".sentence-highlight-layer .active-spoken-word").count(), 0,
+      "Opening an evidence link must highlight the source sentence without starting speech.");
     await auditAccessibility(page);
 
     // The five true/false questions about textbook page 55 belong on that
     // textbook page, not in the separate exercises page. Verify every answer
     // key and that each jump link scrolls to its own visible solution.
     await page.goto(origin + "/textbook.html", { waitUntil: "networkidle" });
+    // PDF.js renders the original pages asynchronously after the document network is idle.
+    // Wait for its explicit ready status before testing the evidence controls.
+    await page.waitForFunction(() => {
+      const status = document.querySelector("#speech-status")?.textContent || "";
+      return status.includes("الصفحتان الأصليتان جاهزتان") || status.includes("تم عرض الصفحتين الأصليتين");
+    });
     const pageTwoCards = page.locator("#page-two-questions .page-two-question");
     assert.equal(await pageTwoCards.count(), 5);
     const pageTwoQuestionKeys = await page.evaluate(() =>
       window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.correctAnswer)
     );
     assert.deepEqual(pageTwoQuestionKeys, ["false", "true", "true", "true", "false"]);
+    const evidenceIds = await page.evaluate(() => window.ART_AD_CONFIG.pageTwoQuestions.map(question => question.evidenceId));
     for (let index = 0; index < 5; index++) {
       const card = pageTwoCards.nth(index);
-      const expected = pageTwoQuestionKeys[index] === "true" ? "صح" : "خطأ";
-      assert.match(await card.locator(".answer-solution").textContent(), new RegExp(expected));
-      const link = card.locator(".solution-jump-button");
-      const targetId = "page2-solution-" + (index + 1);
-      assert.equal(await link.getAttribute("href"), "#" + targetId);
-      await link.click();
-      assert.equal(new URL(page.url()).hash, "#" + targetId);
-      const target = await page.locator("#" + targetId).evaluate(el => {
-        const rect = el.getBoundingClientRect();
-        return { top: rect.top, bottom: rect.bottom, height: window.innerHeight };
-      });
-      assert.ok(target.top >= 0 && target.top < target.height,
-        "Each page-two answer button must scroll to its own solution: " + targetId + " " + JSON.stringify(target));
+      assert.equal(await card.locator(".page-two-evidence").count(), 1,
+        "Each question must have exactly one answer-location button.");
+      assert.equal(await card.locator(".evidence-button").count(), 1);
+      await card.locator(".page-two-evidence").click();
+      const highlight = page.locator(".answer-sentence-highlight");
+      await highlight.waitFor();
+      assert.equal(await highlight.getAttribute("data-sentence-id"), evidenceIds[index]);
+      const highlightedText = await highlight.getAttribute("data-highlighted-text");
+      const expectedEvidence = await page.evaluate(id =>
+        window.ART_AD_CONFIG.passageSentences.find(sentence => sentence.id === id).text, evidenceIds[index]);
+      assert.equal(compactEvidenceText(highlightedText), compactEvidenceText(expectedEvidence),
+        "The evidence button must highlight the complete matching source sentence.");
+      const fragmentStyles = await highlight.locator(".answer-sentence-fragment").evaluateAll(elements =>
+        elements.map(element => ({
+          width: parseFloat(element.style.width),
+          height: parseFloat(element.style.height),
+          background: getComputedStyle(element).backgroundColor,
+          display: getComputedStyle(element).display
+        }))
+      );
+      assert.ok(fragmentStyles.length > 0 &&
+        fragmentStyles.every(style => style.width > 2 && style.height > 5 &&
+          style.background !== "rgba(0, 0, 0, 0)" && style.display === "block") &&
+        Math.max(...fragmentStyles.map(style => style.width)) > 10,
+        "The complete evidence sentence must have visible highlighted fragments across its text lines.");
     }
 
     await page.goto(origin + "/quiz.html", { waitUntil: "networkidle" });
@@ -809,7 +834,7 @@ async function main() {
     await unsupportedContext.close();
 
     await context.close();
-    console.log("Browser checks passed: original-page PDF text layer, on-page sentence highlighting, playback controls, speed control, all 26 evidence-linked questions, accessibility, responsive layouts, and no persistence/API calls.");
+    console.log("Browser checks passed: original-page PDF text layer, on-page sentence highlighting, playback controls, speed control, all 21 quiz evidence links plus five full-sentence page-two evidence jumps, accessibility, responsive layouts, and no persistence/API calls.");
   } finally {
     await browser.close();
   }

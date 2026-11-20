@@ -148,8 +148,10 @@ test("exercise page keeps Quick Check separate and uses the evidence-aware quiz 
   assert.doesNotMatch(quiz, /الأسئلة 16–20: صح أو خطأ/);
   assert.match(textbook, /id="page-two-questions"/);
   assert.match(textbook, /art-advertising-page2\.js/);
-  assert.match(pageTwoScript, /انتقل إلى الإجابة الصحيحة/);
-  assert.match(pageTwoScript, /page2-solution-/);
+  assert.match(pageTwoScript, /اعرض مكان الإجابة في القطعة/);
+  assert.match(pageTwoScript, /page-two-evidence/);
+  assert.match(viewer, /showEvidenceSentence/);
+  assert.match(viewer, /answer-sentence-fragment/);
   assert.match(quizScript, /evidenceIsValid/);
   assert.match(quizScript, /اعرض مكان الإجابة/);
   assert.match(quizScript, /تحقق من الإجابة/);
