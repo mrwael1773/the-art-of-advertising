@@ -38,7 +38,7 @@ const lines=[
 ];
 const $=s=>document.querySelector(s),page=$("#page"),status=$("#status"),pauseBtn=$("#pause"),stopBtn=$("#stop"),spots=[];
 const svgNS="http://www.w3.org/2000/svg",W=790,H=1024,START_X=153;
-const svg=document.createElementNS(svgNS,"svg");svg.setAttribute("class","word-layer");svg.setAttribute("viewBox",\`0 0 \${W} \${H}\`);svg.setAttribute("preserveAspectRatio","none");page.append(svg);
+const svg=document.createElementNS(svgNS,"svg");svg.setAttribute("class","word-layer");svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("preserveAspectRatio","none");page.append(svg);
 const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");ctx.font="12px Arial";
 const wordRects=[];
 function detectPrintedRows(){
