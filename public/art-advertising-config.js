@@ -458,7 +458,7 @@ window.ART_AD_CONFIG = {
     },
     {
       "type": "single_select",
-      "prompt": "The Henk suitcase can cost from $20,000 to $________.",
+      "prompt": "What is the highest stated price of the Henk suitcase?",
       "evidenceId": "henk-9",
       "options": [
         {
